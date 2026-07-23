@@ -61,6 +61,7 @@
     <button data-tab="hist">Histórico trimestral</button>
   </div>
 
+  <!-- TAB INDICADORES -->
   <section id="tab-ind">
     <div class="toggle" id="toggle">
       <button data-p="annual" class="active">Ano fiscal — FY2025</button>
@@ -98,6 +99,7 @@
     </div>
   </section>
 
+  <!-- TAB VALUATION -->
   <section id="tab-val" class="hidden">
     <div class="grid">
       <div class="card"><h3>P/E — TTM aprox.</h3><canvas id="cPe"></canvas></div>
@@ -129,16 +131,22 @@
     </div>
   </section>
 
+  <!-- TAB HISTÓRICO -->
   <section id="tab-hist" class="hidden">
-    <div class="card full">
-      <h3>Receita trimestral (US$ bi) — Q1 2025 a Q1 2026</h3>
+    <div class="toggle" id="histToggle">
+      <button data-m="rev" class="active">Receita</button>
+      <button data-m="ni">Lucro líquido</button>
+    </div>
+    <div class="card full" style="margin-top:6px">
+      <h3 id="histTitle"></h3>
       <canvas id="cHist" style="max-height:420px"></canvas>
       <ul class="notes">
-        <li>Receita por trimestre-calendário. A Nvidia tem trimestres fiscais deslocados ~1 mês, aqui aproximados ao trimestre-calendário mais próximo.</li>
+        <li>Séries por trimestre-calendário. A Nvidia tem trimestres fiscais deslocados ~1 mês, aqui aproximados ao trimestre-calendário mais próximo.</li>
+        <li>Lucro líquido em GAAP: Meta Q3'25 reflete carga tributária não recorrente (~US$ 15,9 bi); Amazon Q3'25/Q1'26 e Alphabet Q4'25/Q1'26 incluem ganhos com investimentos/participações.</li>
       </ul>
     </div>
     <div class="card full" style="margin-top:16px">
-      <h3>Tabela — receita trimestral (US$ bi)</h3>
+      <h3 id="histTblTitle"></h3>
       <div style="overflow-x:auto"><table id="tblHist"><thead></thead><tbody></tbody></table></div>
     </div>
   </section>
@@ -167,10 +175,13 @@ function baseOpts(fmtV){
   return {responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtV(c.parsed.y)}}},
     scales:{x:{ticks:{color:'#9aa7c2'},grid:{display:false}},y:{ticks:{color:'#9aa7c2'},grid:{color:'#26314f'}}}};
 }
-function bar(id,labels,vals,colors,fmtV){
+function bar(id,labels,vals,colors,fmtV,logY){
   if(charts[id]) charts[id].destroy();
+  const o=baseOpts(fmtV);
+  if(logY){ o.scales.y.type='logarithmic'; o.scales.y.min=10;
+    o.scales.y.ticks.callback=(v)=>([10,20,30,50,100,150,200,300,500].indexOf(v)>=0?v+'x':''); }
   charts[id]=new Chart(document.getElementById(id),{type:'bar',
-    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:6}]},options:baseOpts(fmtV)});
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:6}]},options:o});
 }
 function doughnut(id,labels,vals,colors){
   if(charts[id]) charts[id].destroy();
@@ -180,6 +191,7 @@ function doughnut(id,labels,vals,colors){
       tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.parsed,0)+' bi'}}}}});
 }
 
+/* ---- TAB INDICADORES ---- */
 function renderKPIs(){
   const cs = DATA.companies;
   const totRev = cs.reduce((s,c)=>s+(pdata(c).revenueB||0),0);
@@ -227,11 +239,12 @@ function renderInd(){
   renderKPIs(); renderCharts(); renderTable();
 }
 
+/* ---- TAB VALUATION ---- */
 let sortV='marketCapB', sortVDir=-1;
 function renderVal(){
   const cs = DATA.companies, labels = cs.map(c=>c.ticker), colors = cs.map(c=>c.color);
-  bar('cPe',labels,cs.map(c=>c.valuation.pe),colors,v=>fmt(v,0)+'x');
-  bar('cEv',labels,cs.map(c=>c.valuation.evEbitda),colors,v=>fmt(v,1)+'x');
+  bar('cPe',labels,cs.map(c=>c.valuation.pe),colors,v=>fmt(v,0)+'x',true);
+  bar('cEv',labels,cs.map(c=>c.valuation.evEbitda),colors,v=>fmt(v,1)+'x',true);
   bar('cFcf',labels,cs.map(c=>c.valuation.fcfYield),cs.map(c=>c.valuation.fcfYield<0?'#ff6b6b':c.color),v=>fmt(v,1)+'%');
   bar('cDiv',labels,cs.map(c=>c.valuation.divYield),colors,v=>fmt(v,2)+'%');
   const rows=[...cs].sort((a,b)=>{
@@ -255,12 +268,18 @@ function renderVal(){
   }).join('');
 }
 
+/* ---- TAB HISTÓRICO ---- */
+let histMetric='rev';
 function renderHist(){
   const cs = DATA.companies, labels = DATA.meta.historyLabels;
+  const key = histMetric==='rev'?'revHistory':'niHistory';
+  const nm = histMetric==='rev'?'Receita':'Lucro líquido';
+  document.getElementById('histTitle').textContent = nm+' trimestral (US$ bi) — Q1 2025 a Q1 2026';
+  document.getElementById('histTblTitle').textContent = 'Tabela — '+nm.toLowerCase()+' trimestral (US$ bi)';
   if(charts.cHist) charts.cHist.destroy();
   charts.cHist = new Chart(document.getElementById('cHist'),{
     type:'line',
-    data:{labels,datasets:cs.map(c=>({label:c.ticker,data:c.revHistory,borderColor:c.color,
+    data:{labels,datasets:cs.map(c=>({label:c.ticker,data:c[key],borderColor:c.color,
       backgroundColor:c.color,tension:.3,borderWidth:2,pointRadius:3}))},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       plugins:{legend:{position:'top',labels:{color:'#9aa7c2',boxWidth:12,font:{size:11}}},
@@ -271,7 +290,7 @@ function renderHist(){
   document.querySelector('#tblHist thead').innerHTML = head;
   document.querySelector('#tblHist tbody').innerHTML = cs.map(c=>
     `<tr><td class="tick" style="color:${c.color}">${c.ticker}</td>`+
-    c.revHistory.map(x=>`<td>${fmt(x,1)}</td>`).join('')+'</tr>').join('');
+    c[key].map(x=>`<td>${fmt(x,1)}</td>`).join('')+'</tr>').join('');
 }
 
 function renderMeta(){
@@ -303,6 +322,12 @@ document.querySelectorAll('#tbl thead th').forEach(th=>th.addEventListener('clic
 document.querySelectorAll('#tblVal thead th').forEach(th=>th.addEventListener('click',()=>{
   const k=th.dataset.k; if(sortV===k) sortVDir*=-1; else {sortV=k;sortVDir=-1;} renderVal();
 }));
+
+document.getElementById('histToggle').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#histToggle button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active'); histMetric=e.target.dataset.m; renderHist();
+});
 
 function init(){ renderMeta(); showTab('ind'); }
 
