@@ -20,7 +20,7 @@
   .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:16px 0 18px;flex-wrap:wrap}
   .tabs button{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:10px 16px;cursor:pointer;font-size:14px;font-weight:600}
   .tabs button.active{color:#fff;border-bottom-color:var(--accent)}
-  .toggle{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px;margin:0 0 6px}
+  .toggle{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px;margin:0 0 6px;flex-wrap:wrap}
   .toggle button{background:transparent;border:0;color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
   .toggle button.active{background:var(--accent);color:#fff}
   .periodlabel{color:var(--muted);font-size:13px;margin-left:10px}
@@ -136,13 +136,16 @@
     <div class="toggle" id="histToggle">
       <button data-m="rev" class="active">Receita</button>
       <button data-m="ni">Lucro líquido</button>
+      <button data-m="margin">Margem líq. (%)</button>
+      <button data-m="fcf">FCF (TTM)</button>
     </div>
     <div class="card full" style="margin-top:6px">
       <h3 id="histTitle"></h3>
       <canvas id="cHist" style="max-height:420px"></canvas>
       <ul class="notes">
-        <li>Séries por trimestre-calendário. A Nvidia tem trimestres fiscais deslocados ~1 mês, aqui aproximados ao trimestre-calendário mais próximo.</li>
-        <li>Lucro líquido em GAAP: Meta Q3'25 reflete carga tributária não recorrente (~US$ 15,9 bi); Amazon Q3'25/Q1'26 e Alphabet Q4'25/Q1'26 incluem ganhos com investimentos/participações.</li>
+        <li>Séries por trimestre-calendário (Q1'24 a Q1'26). A Nvidia tem trimestres fiscais deslocados ~1 mês, aqui aproximados ao trimestre-calendário mais próximo.</li>
+        <li>Lucro em GAAP; itens não recorrentes: Apple Q3'24 (imposto UE ~US$ 10 bi), Meta Q3'25 (imposto ~US$ 15,9 bi), ganhos de Amazon/Alphabet em 2025–26.</li>
+        <li>FCF exibido como TTM aproximado, ancorado nos valores anuais reais FY2024/FY2025 e interpolado (o FCF de um único trimestre é sazonal e reportado de forma inconsistente).</li>
       </ul>
     </div>
     <div class="card full" style="margin-top:16px">
@@ -270,27 +273,36 @@ function renderVal(){
 
 /* ---- TAB HISTÓRICO ---- */
 let histMetric='rev';
+function histSeries(c){
+  if(histMetric==='margin') return c.revHistory.map((r,i)=> r?Math.round(c.niHistory[i]/r*1000)/10:null);
+  if(histMetric==='fcf') return c.fcfHistory;
+  if(histMetric==='ni') return c.niHistory;
+  return c.revHistory;
+}
 function renderHist(){
   const cs = DATA.companies, labels = DATA.meta.historyLabels;
-  const key = histMetric==='rev'?'revHistory':'niHistory';
-  const nm = histMetric==='rev'?'Receita':'Lucro líquido';
-  document.getElementById('histTitle').textContent = nm+' trimestral (US$ bi) — Q1 2025 a Q1 2026';
-  document.getElementById('histTblTitle').textContent = 'Tabela — '+nm.toLowerCase()+' trimestral (US$ bi)';
+  const pct = histMetric==='margin';
+  const nm = histMetric==='rev'?'Receita':histMetric==='ni'?'Lucro líquido':histMetric==='margin'?'Margem líquida':'FCF (TTM aprox.)';
+  const unit = pct?'%':'US$ bi';
+  const suf = pct?'%':' bi';
+  const pre = pct?'':'$';
+  document.getElementById('histTitle').textContent = nm+(pct?' (%)':' (US$ bi)')+' — Q1 2024 a Q1 2026';
+  document.getElementById('histTblTitle').textContent = 'Tabela — '+nm.toLowerCase()+' ('+unit+')';
   if(charts.cHist) charts.cHist.destroy();
   charts.cHist = new Chart(document.getElementById('cHist'),{
     type:'line',
-    data:{labels,datasets:cs.map(c=>({label:c.ticker,data:c[key],borderColor:c.color,
-      backgroundColor:c.color,tension:.3,borderWidth:2,pointRadius:3}))},
+    data:{labels,datasets:cs.map(c=>({label:c.ticker,data:histSeries(c),borderColor:c.color,
+      backgroundColor:c.color,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}))},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       plugins:{legend:{position:'top',labels:{color:'#9aa7c2',boxWidth:12,font:{size:11}}},
-        tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.parsed.y,1)+' bi'}}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+': '+pre+fmt(c.parsed.y,1)+suf}}},
       scales:{x:{ticks:{color:'#9aa7c2'},grid:{display:false}},y:{ticks:{color:'#9aa7c2'},grid:{color:'#26314f'}}}}
   });
   const head = '<tr><th>Empresa</th>'+labels.map(l=>`<th>${l}</th>`).join('')+'</tr>';
   document.querySelector('#tblHist thead').innerHTML = head;
   document.querySelector('#tblHist tbody').innerHTML = cs.map(c=>
     `<tr><td class="tick" style="color:${c.color}">${c.ticker}</td>`+
-    c[key].map(x=>`<td>${fmt(x,1)}</td>`).join('')+'</tr>').join('');
+    histSeries(c).map(x=>`<td>${x==null?'—':fmt(x,1)+(pct?'%':'')}</td>`).join('')+'</tr>').join('');
 }
 
 function renderMeta(){
