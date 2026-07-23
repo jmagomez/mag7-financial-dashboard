@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magnificent 7 — Dashboard Financeiro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#141b2e; --panel2:#1b2540; --line:#26314f;
+    --txt:#e8ecf5; --muted:#9aa7c2; --accent:#5b8cff; --good:#37d399; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,#0b1020,#0d1226);color:var(--txt);line-height:1.5}
+  header{padding:28px 24px 8px;max-width:1200px;margin:0 auto}
+  h1{margin:0 0 4px;font-size:26px;letter-spacing:-.5px}
+  .sub{color:var(--muted);font-size:14px}
+  .wrap{max-width:1200px;margin:0 auto;padding:12px 24px 60px}
+  .toggle{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px;margin:14px 0 6px}
+  .toggle button{background:transparent;border:0;color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+  .toggle button.active{background:var(--accent);color:#fff}
+  .periodlabel{color:var(--muted);font-size:13px;margin-left:10px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .kpi .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .kpi .v{font-size:24px;font-weight:700;margin-top:6px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h3{margin:0 0 12px;font-size:15px}
+  .card canvas{max-height:300px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;cursor:pointer}
+  tbody tr:hover{background:var(--panel2)}
+  .tick{font-weight:700}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+  .full{grid-column:1/3}
+  .notes{font-size:12px;color:var(--muted);margin-top:8px}
+  .notes li{margin-bottom:6px}
+  footer{max-width:1200px;margin:0 auto;padding:0 24px 50px;color:var(--muted);font-size:12px}
+  footer a{color:var(--accent);text-decoration:none}
+  .srcgrid{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px}
+  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.full{grid-column:1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Magnificent 7 — Dashboard de Indicadores Financeiros</h1>
+  <div class="sub">Apple · Microsoft · Alphabet · Amazon · Meta · Nvidia · Tesla — dados FY2025 e Q1 2026 · atualizado em <span id="gen"></span></div>
+</header>
+<div class="wrap">
+  <div class="toggle" id="toggle">
+    <button data-p="annual" class="active">Ano fiscal — FY2025</button>
+    <button data-p="quarter">Trimestre — Q1 2026</button>
+  </div>
+  <span class="periodlabel" id="periodlabel"></span>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <div class="card"><h3>Receita (US$ bi)</h3><canvas id="cRev"></canvas></div>
+    <div class="card"><h3>Margem líquida (%)</h3><canvas id="cMargin"></canvas></div>
+    <div class="card"><h3>Crescimento de receita a/a (%)</h3><canvas id="cGrowth"></canvas></div>
+    <div class="card"><h3>Valor de mercado (US$ bi) — 22/jul/2026</h3><canvas id="cCap"></canvas></div>
+    <div class="card full">
+      <h3>Tabela comparativa — <span id="tblPeriod"></span></h3>
+      <div style="overflow-x:auto">
+        <table id="tbl">
+          <thead><tr>
+            <th data-k="name">Empresa</th>
+            <th data-k="revenueB">Receita (bi)</th>
+            <th data-k="revGrowth">Cresc. a/a</th>
+            <th data-k="operatingIncomeB">Lucro op. (bi)</th>
+            <th data-k="netIncomeB">Lucro líq. (bi)</th>
+            <th data-k="netMargin">Margem líq.</th>
+            <th data-k="epsDiluted">LPA</th>
+            <th data-k="marketCapB">Market cap (bi)</th>
+            <th data-k="price">Preço</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <ul class="notes" id="rowNotes"></ul>
+    </div>
+  </div>
+
+  <div class="card full" style="margin-top:16px">
+    <h3>Notas metodológicas</h3>
+    <ul class="notes" id="metaNotes"></ul>
+  </div>
+</div>
+<footer>
+  <strong>Fontes</strong> (resultados oficiais das empresas / SEC / dados de mercado):
+  <div class="srcgrid" id="sources"></div>
+  <p style="margin-top:14px">Dashboard informativo, sem recomendação de investimento. Números em US$. Margens calculadas; market caps estimados por peso no grupo.</p>
+</footer>
+
+<script>
+let DATA = null;
+let period = 'annual';
+const charts = {};
+const fmt = (n,d=1)=> n==null?'—':n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const money = n => n==null?'—':(n>=1000?('$'+(n/1000).toLocaleString('pt-BR',{maximumFractionDigits:2})+' tri'):('$'+fmt(n,0)+' bi'));
+
+function pdata(c){ return c[period]; }
+
+function renderKPIs(){
+  const cs = DATA.companies;
+  const totRev = cs.reduce((s,c)=>s+(pdata(c).revenueB||0),0);
+  const totNI = cs.reduce((s,c)=>s+(pdata(c).netIncomeB||0),0);
+  const totCap = cs.reduce((s,c)=>s+(c.marketCapB||0),0);
+  const avgMargin = totNI/totRev*100;
+  const kpis = [
+    ['Receita somada', money(totRev)],
+    ['Lucro líquido somado', money(totNI)],
+    ['Margem líquida agregada', fmt(avgMargin,1)+'%'],
+    ['Valor de mercado total', money(totCap)]
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map(k=>
+    `<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div></div>`).join('');
+}
+
+function baseOpts(){
+  return {responsive:true,plugins:{legend:{display:false},
+    tooltip:{callbacks:{}}},
+    scales:{x:{ticks:{color:'#9aa7c2'},grid:{display:false}},
+            y:{ticks:{color:'#9aa7c2'},grid:{color:'#26314f'}}}};
+}
+
+function bar(id,labels,vals,colors,fmtV){
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:6}]},
+    options:{...baseOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtV(c.parsed.y)}}}}
+  });
+}
+
+function doughnut(id,labels,vals,colors){
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderColor:'#141b2e',borderWidth:2}]},
+    options:{responsive:true,plugins:{legend:{position:'right',labels:{color:'#9aa7c2',boxWidth:12,font:{size:11}}},
+      tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.parsed,0)+' bi'}}}}
+  });
+}
+
+function renderCharts(){
+  const cs = DATA.companies;
+  const labels = cs.map(c=>c.ticker);
+  const colors = cs.map(c=>c.color);
+  bar('cRev',labels,cs.map(c=>pdata(c).revenueB),colors,v=>'$'+fmt(v,1)+' bi');
+  bar('cMargin',labels,cs.map(c=>pdata(c).netMargin),colors,v=>fmt(v,1)+'%');
+  bar('cGrowth',labels,cs.map(c=>pdata(c).revGrowth),cs.map(c=>pdata(c).revGrowth<0?'#ff6b6b':c.color),v=>fmt(v,1)+'%');
+  doughnut('cCap',cs.map(c=>c.name),cs.map(c=>c.marketCapB),colors);
+}
+
+let sortK='marketCapB', sortDir=-1;
+function renderTable(){
+  const cs=[...DATA.companies].sort((a,b)=>{
+    const av = sortK==='name'?a.name:(sortK==='marketCapB'?a.marketCapB:(sortK==='price'?a.price:pdata(a)[sortK]));
+    const bv = sortK==='name'?b.name:(sortK==='marketCapB'?b.marketCapB:(sortK==='price'?b.price:pdata(b)[sortK]));
+    if(sortK==='name') return av<bv?-1*sortDir:sortDir;
+    return ((av||0)-(bv||0))*sortDir;
+  });
+  const rows = cs.map(c=>{
+    const p=pdata(c); const g=p.revGrowth;
+    const eps = p.epsDiluted!=null?p.epsDiluted:(p.epsNonGaap!=null?p.epsNonGaap+'*':null);
+    return `<tr>
+      <td class="tick" style="color:${c.color}">${c.name} <span style="color:var(--muted);font-weight:400">${c.ticker}</span></td>
+      <td>${fmt(p.revenueB,1)}</td>
+      <td class="${g<0?'neg':'pos'}">${g>0?'+':''}${fmt(g,1)}%</td>
+      <td>${p.operatingIncomeB!=null?fmt(p.operatingIncomeB,1):'—'}</td>
+      <td>${fmt(p.netIncomeB,2)}</td>
+      <td>${fmt(p.netMargin,1)}%</td>
+      <td>${eps!=null?'$'+eps:'—'}</td>
+      <td>${fmt(c.marketCapB,0)}</td>
+      <td>$${fmt(c.price,2)}</td>
+    </tr>`;
+  }).join('');
+  document.querySelector('#tbl tbody').innerHTML = rows;
+  document.getElementById('tblPeriod').textContent = period==='annual'?'FY2025':'Q1 2026';
+  document.getElementById('rowNotes').innerHTML = cs.map(c=>`<li><strong>${c.ticker}</strong> — ${pdata(c).period}: ${pdata(c).note||''}</li>`).join('') + '<li>* Tesla: LPA trimestral non-GAAP.</li>';
+}
+
+function renderMeta(){
+  document.getElementById('gen').textContent = DATA.meta.generated;
+  document.getElementById('metaNotes').innerHTML = DATA.meta.notes.map(n=>`<li>${n}</li>`).join('');
+  document.getElementById('sources').innerHTML = DATA.sources.map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join('');
+}
+
+function renderAll(){
+  document.getElementById('periodlabel').textContent = period==='annual'
+    ? 'Último ano fiscal rotulado como 2025 por cada empresa.'
+    : 'Trimestre-calendário Jan–Mar 2026 (alinhado entre as empresas).';
+  renderKPIs(); renderCharts(); renderTable();
+}
+
+document.getElementById('toggle').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#toggle button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  period=e.target.dataset.p; renderAll();
+});
+document.querySelectorAll('#tbl thead th').forEach(th=>th.addEventListener('click',()=>{
+  const k=th.dataset.k; if(sortK===k) sortDir*=-1; else {sortK=k;sortDir=-1;} renderTable();
+}));
+
+fetch('data.json').then(r=>r.json()).then(d=>{ DATA=d; renderMeta(); renderAll(); })
+  .catch(e=>{ document.getElementById('kpis').innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v">Falha ao carregar data.json</div></div>'; });
+</script>
+</body>
+</html>
