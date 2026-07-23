@@ -10,7 +10,7 @@
       "As 7 empresas têm anos fiscais diferentes. 'FY2025' refere-se ao ano fiscal rotulado como 2025 por cada empresa; 'Q1 2026' está alinhado ao trimestre-calendário Jan–Mar 2026 (para Apple = Q2 FY26, Microsoft = Q3 FY26, Nvidia = Q1 FY27; demais = Q1 2026).",
       "Margens são calculadas (lucro líquido ÷ receita). Valores de mercado (market cap) são estimados a partir do peso de cada empresa no grupo × cap total (US$ 22,63 tri) em 22/07/2026.",
       "Valuation: P/E é TTM aproximado (preço em 22/07/2026 ÷ LPA dos últimos 4 trimestres; para Alphabet/Meta usa-se o LPA do ano de 2025). EV/EBITDA é aproximado, de agregadores de terceiros (jun–jul/2026). FCF yield e FCF (TTM aprox.) baseiam-se em ranking Motley Fool (13/07/2026). Dividend yield e margem bruta são aproximados/TTM.",
-      "Histórico trimestral: receita por trimestre-calendário (Q1'25 a Q1'26). A Nvidia tem trimestres fiscais deslocados ~1 mês, aqui aproximados ao trimestre-calendário mais próximo.",
+      "Histórico trimestral: receita e lucro líquido (GAAP) por trimestre-calendário (Q1'25 a Q1'26). A Nvidia tem trimestres fiscais deslocados ~1 mês, aqui aproximados ao trimestre-calendário mais próximo. No lucro: Meta Q3'25 reflete carga tributária não recorrente de ~US$ 15,9 bi; Amazon Q3'25/Q1'26 e Alphabet Q4'25/Q1'26 incluem ganhos com investimentos/participações; Alphabet Q3'25 estimado a partir do total anual.",
       "Alguns lucros trimestrais contêm itens não recorrentes: Amazon Q1'26 inclui ~US$ 16,8 bi de ganho pré-imposto (Anthropic); Meta Q1'26 impulsionado por benefício fiscal; Alphabet Q1'26 inclui ganhos com participações."
     ]
   },
@@ -21,7 +21,8 @@
       "annual": {"period": "FY2025 (enc. 27/set/2025)", "revenueB": 416.2, "revGrowth": 6.4, "operatingIncomeB": 127.4, "netIncomeB": 112.0, "netMargin": 26.9, "epsDiluted": 7.39, "operatingCashFlowB": 118.3, "note": "Receita e lucro recordes históricos."},
       "quarter": {"period": "Q1 2026 cal. (Q2 FY26, enc. 28/mar/2026)", "revenueB": 111.2, "revGrowth": 17.0, "netIncomeB": 29.6, "netMargin": 26.6, "epsDiluted": 2.01, "grossMargin": 49.3, "note": "Recorde para trimestre de março; margem bruta 49,3%."},
       "valuation": {"pe": 39, "evEbitda": 28.5, "divYield": 0.33, "fcfYield": 2.8, "fcfB": 134, "grossMargin": 47.0},
-      "revHistory": [95.4, 94.0, 102.5, 143.8, 111.2]
+      "revHistory": [95.4, 94.0, 102.5, 143.8, 111.2],
+      "niHistory": [24.8, 23.4, 27.5, 42.1, 29.6]
     },
     {
       "ticker": "MSFT", "name": "Microsoft", "color": "#7fba00",
@@ -29,7 +30,8 @@
       "annual": {"period": "FY2025 (enc. 30/jun/2025)", "revenueB": 281.7, "revGrowth": 15.0, "operatingIncomeB": 128.5, "netIncomeB": 101.83, "netMargin": 36.1, "epsDiluted": 13.64, "note": "Azure superou US$ 75 bi no ano; +34%."},
       "quarter": {"period": "Q1 2026 cal. (Q3 FY26, enc. 31/mar/2026)", "revenueB": 82.9, "revGrowth": 18.0, "operatingIncomeB": 38.4, "netIncomeB": 31.78, "netMargin": 38.3, "epsDiluted": 4.27, "note": "Azure +40%; receita run-rate de IA ~US$ 37 bi."},
       "valuation": {"pe": 23, "evEbitda": 15.2, "divYield": 0.85, "fcfYield": 2.5, "fcfB": 73, "grossMargin": 69.0},
-      "revHistory": [70.1, 76.4, 77.7, 81.3, 82.9]
+      "revHistory": [70.1, 76.4, 77.7, 81.3, 82.9],
+      "niHistory": [25.8, 27.2, 27.7, 38.5, 31.8]
     },
     {
       "ticker": "NVDA", "name": "Nvidia", "color": "#76b900",
@@ -37,7 +39,8 @@
       "annual": {"period": "FY2025 (enc. 26/jan/2025)", "revenueB": 130.5, "revGrowth": 114.0, "operatingIncomeB": 81.5, "netIncomeB": 72.88, "netMargin": 55.9, "epsDiluted": 2.94, "freeCashFlowB": 60.85, "note": "Receita +114% impulsionada por data center/IA. FY2026: receita US$ 215,9 bi, LPA US$ 4,90."},
       "quarter": {"period": "Q1 2026 cal. (Q1 FY27, enc. 26/abr/2026)", "revenueB": 81.6, "revGrowth": 85.0, "operatingIncomeB": 53.5, "netIncomeB": 58.3, "netMargin": 71.4, "epsDiluted": 2.39, "grossMargin": 74.9, "note": "Receita recorde; lucro +211% a/a."},
       "valuation": {"pe": 32, "evEbitda": 29.5, "divYield": 0.13, "fcfYield": 2.3, "fcfB": 118, "grossMargin": 74.2},
-      "revHistory": [44.1, 46.7, 57.0, 68.1, 81.6]
+      "revHistory": [44.1, 46.7, 57.0, 68.1, 81.6],
+      "niHistory": [18.8, 26.4, 31.9, 43.0, 58.3]
     },
     {
       "ticker": "GOOGL", "name": "Alphabet", "color": "#4285f4",
@@ -45,7 +48,8 @@
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 402.96, "revGrowth": 15.1, "netIncomeB": 132.17, "netMargin": 32.8, "epsDiluted": 10.91, "note": "Receita anual recorde; LPA 2025 US$ 10,91."},
       "quarter": {"period": "Q1 2026 (enc. 31/mar/2026)", "revenueB": 109.9, "revGrowth": 22.0, "operatingIncomeB": 39.69, "netIncomeB": 62.58, "netMargin": 56.9, "note": "Google Cloud +63%; lucro inclui ganhos com participações."},
       "valuation": {"pe": 31, "evEbitda": 24.6, "divYield": 0.22, "fcfYield": 1.5, "fcfB": 63, "grossMargin": 58.0},
-      "revHistory": [90.2, 96.4, 102.3, 113.1, 109.9]
+      "revHistory": [90.2, 96.4, 102.3, 113.1, 109.9],
+      "niHistory": [34.5, 28.2, 35.0, 34.5, 62.6]
     },
     {
       "ticker": "AMZN", "name": "Amazon", "color": "#ff9900",
@@ -53,7 +57,8 @@
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 716.9, "revGrowth": 12.4, "operatingIncomeB": 80.0, "netIncomeB": 77.7, "netMargin": 10.8, "epsDiluted": 7.17, "operatingCashFlowB": 139.5, "note": "AWS lucro operacional US$ 45,6 bi."},
       "quarter": {"period": "Q1 2026 (enc. 31/mar/2026)", "revenueB": 181.5, "revGrowth": 17.0, "operatingIncomeB": 23.9, "netIncomeB": 30.3, "netMargin": 16.7, "epsDiluted": 2.78, "note": "Inclui ~US$ 16,8 bi de ganho pré-imposto (Anthropic); AWS +28%."},
       "valuation": {"pe": 29, "evEbitda": 17.2, "divYield": 0.0, "fcfYield": -0.1, "fcfB": -2.6, "grossMargin": 50.6},
-      "revHistory": [155.7, 167.7, 180.2, 213.3, 181.5]
+      "revHistory": [155.7, 167.7, 180.2, 213.3, 181.5],
+      "niHistory": [17.1, 18.2, 21.2, 21.2, 30.3]
     },
     {
       "ticker": "META", "name": "Meta Platforms", "color": "#0866ff",
@@ -61,7 +66,8 @@
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 200.97, "revGrowth": 22.2, "netIncomeB": 60.46, "netMargin": 30.1, "epsDiluted": 23.49, "note": "Primeira vez acima de US$ 200 bi de receita."},
       "quarter": {"period": "Q1 2026 (enc. 31/mar/2026)", "revenueB": 56.31, "revGrowth": 33.0, "netIncomeB": 26.77, "netMargin": 47.5, "note": "Lucro impulsionado por benefício fiscal relevante."},
       "valuation": {"pe": 27, "evEbitda": 15.0, "divYield": 0.31, "fcfYield": 2.8, "fcfB": 45, "grossMargin": 81.9},
-      "revHistory": [42.3, 47.5, 51.2, 59.9, 56.3]
+      "revHistory": [42.3, 47.5, 51.2, 59.9, 56.3],
+      "niHistory": [16.6, 18.3, 2.7, 22.8, 26.8]
     },
     {
       "ticker": "TSLA", "name": "Tesla", "color": "#e82127",
@@ -69,7 +75,8 @@
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 94.82, "revGrowth": -3.0, "operatingIncomeB": 4.35, "netIncomeB": 3.79, "netMargin": 4.0, "epsDiluted": 1.08, "freeCashFlowB": 6.2, "note": "Receita -3%; automotivo -10%, energia +27%."},
       "quarter": {"period": "Q1 2026 (enc. 31/mar/2026)", "revenueB": 22.39, "revGrowth": 16.0, "netIncomeB": 0.477, "netMargin": 2.1, "epsNonGaap": 0.41, "grossMargin": 21.1, "note": "Margem bruta subiu para 21,1% (de 16,3%)."},
       "valuation": {"pe": 310, "evEbitda": 145.7, "divYield": 0.0, "fcfYield": 0.5, "fcfB": 7, "grossMargin": 17.7},
-      "revHistory": [19.3, 22.5, 28.1, 24.9, 22.4]
+      "revHistory": [19.3, 22.5, 28.1, 24.9, 22.4],
+      "niHistory": [0.4, 1.2, 1.4, 0.8, 0.5]
     }
   ],
   "sources": [
