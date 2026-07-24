@@ -348,7 +348,7 @@ document.getElementById('histToggle').addEventListener('click',e=>{if(e.target.t
 document.querySelectorAll('#tbl thead th').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=-1;}renderTable();}));
 document.querySelectorAll('#tblVal thead th').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;if(sortV===k)sortVDir*=-1;else{sortV=k;sortVDir=-1;}renderVal();}));
 
-fetch('data.json').then(r=>r.json()).then(d=>{DATA=d;renderMeta();showTab('ind');})
+fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{DATA=d;renderMeta();showTab('ind');})
   .catch(()=>{document.getElementById('kpis').innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v">Falha ao carregar data.json</div></div>';});
 </script>
 </body>
