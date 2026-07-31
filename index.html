@@ -193,7 +193,7 @@
         <div style="overflow-x:auto"><table id="tblRating"><thead></thead><tbody></tbody></table></div>
       </div>
       <div class="card">
-        <h3>CDS 5 anos — níveis recentes</h3><p class="ch">bps · cotações pontuais jul 2026 · não é série histórica</p>
+        <h3>CDS 5 anos — níveis recentes</h3><p class="ch">bps · escala log · fim jul 2026 · Oracle e CoreWeave como referência</p>
         <canvas id="cCds"></canvas>
       </div>
     </div>
@@ -367,10 +367,17 @@ function renderCred(){
   document.getElementById('capexNotes').innerHTML="<li>CapEx = compras de imobilizado (caixa), por ano fiscal de cada empresa. Microsoft exclui arrendamentos financeiros (incluindo-os, o total do FY2025 é bem maior, ~US$ 88 bi). Nvidia é fabless — capex baixo.</li>"+
     "<li>O salto vem de data centers de IA: Amazon US$ 132 bi (FY2025), Alphabet US$ 91 bi, Meta US$ 70 bi, Microsoft US$ 55 bi (caixa). Guidance de 2026 é ainda maior: Amazon ~US$ 200 bi, Alphabet US$ 175–185 bi, Microsoft ~US$ 190 bi, Meta US$ 115–135 bi.</li>";
   document.querySelector('#tblRating thead').innerHTML='<tr><th>Empresa</th><th>S&P</th><th>Moody’s</th><th>CDS 5a (bps)</th></tr>';
+  const ref=DATA.meta.cdsRef||[];
   document.querySelector('#tblRating tbody').innerHTML=cs.map(c=>`<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.ticker}</td>`+
-    `<td>${c.rating.sp}</td><td>${c.rating.moody}</td><td>${c.cds!=null?fmt(c.cds,0):'n/d'}</td></tr>`).join('');
-  const cds=cs.filter(c=>c.cds!=null);
-  bar('cCds',cds.map(c=>c.ticker),cds.map(c=>c.cds),cds.map(c=>c.color),v=>fmt(v,0)+' bps');
+    `<td>${c.rating.sp}</td><td>${c.rating.moody}</td><td>${c.cds!=null?fmt(c.cds,0):'n/d'}</td></tr>`).join('')+
+    ref.map(r=>`<tr><td class="tick"><span class="dot" style="background:${r.color}"></span>${r.ticker} <span class="muted">ref.</span></td><td>${r.rating.sp}</td><td>${r.rating.moody}</td><td>${fmt(r.cds,0)}</td></tr>`).join('');
+  const cdsAll=cs.filter(c=>c.cds!=null).map(c=>({t:c.ticker,v:c.cds,col:c.color})).concat(ref.map(r=>({t:r.ticker,v:r.cds,col:r.color})));
+  if(charts.cCds)charts.cCds.destroy();
+  charts.cCds=new Chart(document.getElementById('cCds'),{type:'bar',
+    data:{labels:cdsAll.map(x=>x.t),datasets:[{data:cdsAll.map(x=>x.v),backgroundColor:cdsAll.map(x=>x.col),borderRadius:7,borderSkipped:false,maxBarThickness:44,categoryPercentage:.62,barPercentage:.82}]},
+    options:{responsive:true,animation:{duration:600},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{label:c=>' '+fmt(c.parsed.y,0)+' bps'}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
+        y:{type:'logarithmic',min:40,grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>([50,100,200,500,1000].indexOf(v)>=0?v:'')}}}}});
   document.getElementById('credNotes').innerHTML=DATA.meta.creditNotes.map(n=>`<li>${n}</li>`).join('');
 }
 
