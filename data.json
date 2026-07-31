@@ -7,6 +7,13 @@
     "totalMarketCapT": 22.63,
     "historyLabels": ["Q1'24", "Q2'24", "Q3'24", "Q4'24", "Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26"],
     "fcfLabels": ["FY2023", "FY2024", "FY2025"],
+    "capexLabels": ["FY2022", "FY2023", "FY2024", "FY2025"],
+    "creditNotes": [
+      "CDS: não existe uma série pública e consistente de vários anos para as Magnificent 7 — dados de credit default swaps são proprietários (ICE Data Services, S&P Global/Markit, Bloomberg). Além disso, o CDS de 5 anos da Nvidia só começou a ser negociado ativamente em novembro de 2025, ou seja, não há histórico de anos para ela. Por isso este painel NÃO apresenta um gráfico histórico de CDS: seria inventar dados.",
+      "Historicamente, os CDS dessas empresas eram irrelevantes/ilíquidos: com enormes posições de caixa líquido e ratings no topo (Microsoft AAA/Aaa, Apple AA+/Aaa), o risco de crédito precificado era mínimo.",
+      "Isso mudou em 2025–2026: com o boom de CapEx de IA e a emissão de dívida para financiá-lo, os spreads de CDS do grupo mais que dobraram desde o início de 2025 e estão perto das máximas de ~7 anos. Em 24/jul/2026 a Moody's alertou que os gastos 'sem precedentes' com IA pressionam a qualidade de crédito de Amazon, Meta e Alphabet (embora considere um rebaixamento improvável no curto prazo).",
+      "Níveis recentes de CDS 5 anos (jul/2026, citados pela imprensa — são cotações pontuais, não série histórica): Nvidia ~82 bps (recorde desde o lançamento), Meta ~93 bps, Alphabet ~67 bps (recorde, após FCF negativo no 2T). Referência fora do grupo: Oracle superou ~200 bps. Níveis públicos específicos de Apple, Microsoft, Amazon e Tesla no período não foram localizados de forma confiável (marcados como n/d)."
+    ],
     "notes": [
       "As 7 empresas têm anos fiscais diferentes. 'FY2025' refere-se ao ano fiscal rotulado como 2025 por cada empresa; 'Q1 2026' está alinhado ao trimestre-calendário Jan–Mar 2026 (para Apple = Q2 FY26, Microsoft = Q3 FY26, Nvidia = Q1 FY27; demais = Q1 2026).",
       "Margens são calculadas (lucro líquido ÷ receita). Valores de mercado (market cap) são estimados a partir do peso de cada empresa no grupo × cap total (US$ 22,63 tri) em 22/07/2026.",
@@ -25,7 +32,9 @@
       "valuation": {"pe": 39, "evEbitda": 28.5, "divYield": 0.33, "fcfYield": 2.8, "fcfB": 134, "grossMargin": 47.0},
       "revHistory": [90.75, 85.78, 94.93, 124.30, 95.4, 94.0, 102.5, 143.8, 111.2],
       "niHistory": [23.64, 21.45, 14.74, 36.33, 24.8, 23.4, 27.5, 42.1, 29.6],
-      "fcfAnnual": [99.6, 108.8, 98.8]
+      "fcfAnnual": [99.6, 108.8, 98.8],
+      "capex": [10.7, 11.0, 9.5, 12.7],
+      "rating": {"sp": "AA+", "moody": "Aaa"}, "cds": null
     },
     {
       "ticker": "MSFT", "name": "Microsoft", "color": "#57c0b6",
@@ -35,7 +44,9 @@
       "valuation": {"pe": 23, "evEbitda": 15.2, "divYield": 0.85, "fcfYield": 2.5, "fcfB": 73, "grossMargin": 69.0},
       "revHistory": [61.86, 64.73, 65.59, 69.63, 70.1, 76.4, 77.7, 81.3, 82.9],
       "niHistory": [21.94, 22.04, 24.67, 24.11, 25.8, 27.2, 27.7, 38.5, 31.8],
-      "fcfAnnual": [59.5, 74.1, 72.9]
+      "fcfAnnual": [59.5, 74.1, 72.9],
+      "capex": [23.9, 28.1, 44.5, 54.8],
+      "rating": {"sp": "AAA", "moody": "Aaa"}, "cds": null
     },
     {
       "ticker": "NVDA", "name": "Nvidia", "color": "#93cf72",
@@ -45,7 +56,9 @@
       "valuation": {"pe": 32, "evEbitda": 29.5, "divYield": 0.13, "fcfYield": 2.3, "fcfB": 118, "grossMargin": 74.2},
       "revHistory": [26.04, 30.04, 35.08, 39.33, 44.1, 46.7, 57.0, 68.1, 81.6],
       "niHistory": [14.88, 16.60, 19.31, 22.09, 18.8, 26.4, 31.9, 43.0, 58.3],
-      "fcfAnnual": [3.8, 27.0, 60.85]
+      "fcfAnnual": [3.8, 27.0, 60.85],
+      "capex": [1.0, 1.8, 1.1, 3.4],
+      "rating": {"sp": "A+", "moody": "A1"}, "cds": 82
     },
     {
       "ticker": "GOOGL", "name": "Alphabet", "color": "#7ba6f2",
@@ -55,7 +68,9 @@
       "valuation": {"pe": 31, "evEbitda": 24.6, "divYield": 0.22, "fcfYield": 1.5, "fcfB": 63, "grossMargin": 58.0},
       "revHistory": [80.54, 84.74, 88.27, 96.47, 90.2, 96.4, 102.3, 113.1, 109.9],
       "niHistory": [23.66, 23.62, 26.30, 26.54, 34.5, 28.2, 35.0, 34.5, 62.6],
-      "fcfAnnual": [69.5, 72.8, 73.3]
+      "fcfAnnual": [69.5, 72.8, 73.3],
+      "capex": [31.5, 32.3, 52.5, 91.4],
+      "rating": {"sp": "AA+", "moody": "Aa2"}, "cds": 67
     },
     {
       "ticker": "AMZN", "name": "Amazon", "color": "#f4b062",
@@ -65,7 +80,9 @@
       "valuation": {"pe": 29, "evEbitda": 17.2, "divYield": 0.0, "fcfYield": -0.1, "fcfB": -2.6, "grossMargin": 50.6},
       "revHistory": [143.31, 147.98, 158.88, 187.79, 155.7, 167.7, 180.2, 213.3, 181.5],
       "niHistory": [10.43, 13.49, 15.33, 20.00, 17.1, 18.2, 21.2, 21.2, 30.3],
-      "fcfAnnual": [36.8, 38.2, 11.0]
+      "fcfAnnual": [36.8, 38.2, 11.0],
+      "capex": [63.6, 52.7, 83.0, 131.8],
+      "rating": {"sp": "AA", "moody": "A1"}, "cds": null
     },
     {
       "ticker": "META", "name": "Meta Platforms", "color": "#a89cf3",
@@ -75,7 +92,9 @@
       "valuation": {"pe": 27, "evEbitda": 15.0, "divYield": 0.31, "fcfYield": 2.8, "fcfB": 45, "grossMargin": 81.9},
       "revHistory": [36.46, 39.07, 40.59, 48.39, 42.3, 47.5, 51.2, 59.9, 56.3],
       "niHistory": [12.37, 13.47, 15.69, 20.84, 16.6, 18.3, 2.7, 22.8, 26.8],
-      "fcfAnnual": [44.1, 54.1, 46.1]
+      "fcfAnnual": [44.1, 54.1, 46.1],
+      "capex": [31.4, 27.3, 37.3, 69.7],
+      "rating": {"sp": "AA-", "moody": "Aa3"}, "cds": 93
     },
     {
       "ticker": "TSLA", "name": "Tesla", "color": "#ef8085",
@@ -85,7 +104,9 @@
       "valuation": {"pe": 310, "evEbitda": 145.7, "divYield": 0.0, "fcfYield": 0.5, "fcfB": 7, "grossMargin": 17.7},
       "revHistory": [21.30, 25.50, 25.18, 25.71, 19.3, 22.5, 28.1, 24.9, 22.4],
       "niHistory": [1.13, 1.48, 2.17, 2.32, 0.4, 1.2, 1.4, 0.8, 0.5],
-      "fcfAnnual": [4.4, 3.6, 6.2]
+      "fcfAnnual": [4.4, 3.6, 6.2],
+      "capex": [7.2, 8.9, 11.3, 8.5],
+      "rating": {"sp": "BBB", "moody": "Baa3"}, "cds": null
     }
   ],
   "sources": [
@@ -102,6 +123,9 @@
     {"label": "Tesla Q4/FY2025 e Q1 2026 (IR)", "url": "https://ir.tesla.com/press-release/tesla-releases-first-quarter-2026-financial-results"},
     {"label": "FCF yield Magnificent 7 (Motley Fool, 13/07/2026)", "url": "https://www.fool.com/investing/2026/07/13/rank-magnificent-7-stocks-free-cash-flow-yield/"},
     {"label": "EV/EBITDA (financecharts / GuruFocus, jun–jul/2026)", "url": "https://www.financecharts.com/compare/AAPL,AMZN,GOOGL,META,MSFT,NVDA,TSLA/value/ev-to-ebitda"},
-    {"label": "Market cap / preços (Slickcharts)", "url": "https://www.slickcharts.com/magnificent7"}
+    {"label": "Market cap / preços (Slickcharts)", "url": "https://www.slickcharts.com/magnificent7"},
+    {"label": "CapEx (filings / macrotrends / Visual Capitalist)", "url": "https://www.visualcapitalist.com/visualized-big-tech-ai-spending/"},
+    {"label": "Crédito & CDS (Moody's via CNBC, 24/07/2026)", "url": "https://www.cnbc.com/2026/07/24/moodys-ai-spending-credit-quality-amazon-meta-alphabet.html"},
+    {"label": "CDS Nvidia / hyperscalers (Yahoo Finance, jul/2026)", "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-rising-cds-talk-wall-123955612.html"}
   ]
 }
