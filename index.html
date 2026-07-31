@@ -31,7 +31,7 @@
   .sub{color:var(--muted);font-size:13.5px;margin-top:6px}
   .sub b{color:var(--txt);font-weight:500}
 
-  .tabs{display:flex;gap:4px;margin:26px 0 4px}
+  .tabs{display:flex;gap:4px;margin:26px 0 4px;flex-wrap:wrap}
   .tabs button{background:none;border:0;color:var(--muted);padding:9px 4px;margin-right:20px;
     cursor:pointer;font-size:14px;font-weight:500;position:relative;transition:color .2s}
   .tabs button:hover{color:var(--txt)}
@@ -41,7 +41,7 @@
   .tabline{height:1px;background:var(--card-brd);margin-bottom:22px}
 
   .seg{display:inline-flex;gap:2px;background:rgba(255,255,255,.03);border:1px solid var(--card-brd);
-    border-radius:999px;padding:4px}
+    border-radius:999px;padding:4px;flex-wrap:wrap}
   .seg button{background:none;border:0;color:var(--muted);padding:7px 15px;border-radius:999px;
     cursor:pointer;font-size:13px;font-weight:500;transition:.2s}
   .seg button:hover{color:var(--txt)}
@@ -102,6 +102,7 @@
     <button data-tab="ind" class="active">Indicadores</button>
     <button data-tab="val">Valuation</button>
     <button data-tab="hist">Histórico</button>
+    <button data-tab="cred">Crédito &amp; CapEx</button>
   </div>
   <div class="tabline"></div>
 
@@ -179,6 +180,29 @@
     </div>
   </section>
 
+  <section id="tab-cred" class="hidden">
+    <div class="card full">
+      <h3>Investimento em capital (CapEx)</h3><p class="ch">US$ bilhões · por ano fiscal · compras de imobilizado (caixa)</p>
+      <canvas id="cCapex" style="max-height:420px"></canvas>
+      <ul class="notes" id="capexNotes"></ul>
+      <div style="overflow-x:auto;margin-top:6px"><table id="tblCapex"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <h3>Rating de crédito &amp; CDS</h3><p class="ch">rating de emissor S&amp;P / Moody's (aprox. 2025–26)</p>
+        <div style="overflow-x:auto"><table id="tblRating"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <h3>CDS 5 anos — níveis recentes</h3><p class="ch">bps · cotações pontuais jul 2026 · não é série histórica</p>
+        <canvas id="cCds"></canvas>
+      </div>
+    </div>
+    <div class="card full" style="margin-top:16px">
+      <h3>Análise de crédito / CDS — leitura crítica</h3>
+      <ul class="notes" id="credNotes"></ul>
+    </div>
+  </section>
+
   <div class="card full" style="margin-top:16px">
     <h3>Notas metodológicas</h3>
     <ul class="notes" id="metaNotes"></ul>
@@ -244,6 +268,7 @@ function groupedBar(id,labels,datasets){
       tooltip:{...TIP,callbacks:{label:c=>' '+c.dataset.label+': $'+fmt(c.parsed.y,1)+' bi'}}},scales:axes(false,false)}});
 }
 
+/* ---- INDICADORES ---- */
 function renderKPIs(){
   const cs=DATA.companies, tR=cs.reduce((s,c)=>s+pdata(c).revenueB,0), tN=cs.reduce((s,c)=>s+pdata(c).netIncomeB,0),
     tC=cs.reduce((s,c)=>s+c.marketCapB,0);
@@ -279,6 +304,7 @@ function renderInd(){
   renderKPIs();renderCharts();renderTable();
 }
 
+/* ---- VALUATION ---- */
 let sortV='marketCapB',sortVDir=-1;
 function renderVal(){
   const cs=DATA.companies,l=cs.map(c=>c.ticker),co=cs.map(c=>c.color);
@@ -296,6 +322,7 @@ function renderVal(){
   }).join('');
 }
 
+/* ---- HISTÓRICO ---- */
 function renderHist(){
   const cs=DATA.companies;
   const notes=document.getElementById('histNotes');
@@ -329,6 +356,24 @@ function renderHist(){
     ser(c).map(x=>`<td>${x==null?'—':fmt(x,1)+(pct?'%':'')}</td>`).join('')+'</tr>').join('');
 }
 
+/* ---- CRÉDITO & CAPEX ---- */
+function renderCred(){
+  const cs=DATA.companies, cl=DATA.meta.capexLabels, tones=['#2f3a5c','#5566c9','#7c8cff','#c2ccff'];
+  groupedBar('cCapex',cs.map(c=>c.ticker),cl.map((y,i)=>({label:y,data:cs.map(c=>c.capex[i]),backgroundColor:tones[i]})));
+  const ch='<tr><th>Empresa</th>'+cl.map(y=>`<th>${y}</th>`).join('')+'</tr>';
+  document.querySelector('#tblCapex thead').innerHTML=ch;
+  document.querySelector('#tblCapex tbody').innerHTML=cs.map(c=>`<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.ticker}</td>`+
+    c.capex.map(x=>`<td>${fmt(x,1)}</td>`).join('')+'</tr>').join('');
+  document.getElementById('capexNotes').innerHTML="<li>CapEx = compras de imobilizado (caixa), por ano fiscal de cada empresa. Microsoft exclui arrendamentos financeiros (incluindo-os, o total do FY2025 é bem maior, ~US$ 88 bi). Nvidia é fabless — capex baixo.</li>"+
+    "<li>O salto vem de data centers de IA: Amazon US$ 132 bi (FY2025), Alphabet US$ 91 bi, Meta US$ 70 bi, Microsoft US$ 55 bi (caixa). Guidance de 2026 é ainda maior: Amazon ~US$ 200 bi, Alphabet US$ 175–185 bi, Microsoft ~US$ 190 bi, Meta US$ 115–135 bi.</li>";
+  document.querySelector('#tblRating thead').innerHTML='<tr><th>Empresa</th><th>S&P</th><th>Moody’s</th><th>CDS 5a (bps)</th></tr>';
+  document.querySelector('#tblRating tbody').innerHTML=cs.map(c=>`<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.ticker}</td>`+
+    `<td>${c.rating.sp}</td><td>${c.rating.moody}</td><td>${c.cds!=null?fmt(c.cds,0):'n/d'}</td></tr>`).join('');
+  const cds=cs.filter(c=>c.cds!=null);
+  bar('cCds',cds.map(c=>c.ticker),cds.map(c=>c.cds),cds.map(c=>c.color),v=>fmt(v,0)+' bps');
+  document.getElementById('credNotes').innerHTML=DATA.meta.creditNotes.map(n=>`<li>${n}</li>`).join('');
+}
+
 function renderMeta(){
   document.getElementById('gen').textContent=DATA.meta.generated;
   document.getElementById('metaNotes').innerHTML=DATA.meta.notes.map(n=>`<li>${n}</li>`).join('');
@@ -337,8 +382,8 @@ function renderMeta(){
 function showTab(t){
   curTab=t;
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
-  ['ind','val','hist'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('hidden',x!==t));
-  if(t==='ind')renderInd();else if(t==='val')renderVal();else renderHist();
+  ['ind','val','hist','cred'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('hidden',x!==t));
+  if(t==='ind')renderInd();else if(t==='val')renderVal();else if(t==='hist')renderHist();else renderCred();
 }
 document.getElementById('tabs').addEventListener('click',e=>{if(e.target.tagName==='BUTTON')showTab(e.target.dataset.tab)});
 document.getElementById('toggle').addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')return;
