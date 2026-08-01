@@ -1,0 +1,29 @@
+name: Enviar Dashboard Mag7
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "data.json"
+  workflow_dispatch:
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Enviar e-mail (SMTP)
+        env:
+          MAG7_SMTP_USER:         ${{ secrets.MAG7_SMTP_USER }}
+          MAG7_SMTP_APP_PASSWORD: ${{ secrets.MAG7_SMTP_APP_PASSWORD }}
+          MAG7_EMAIL_DEST:        ${{ secrets.MAG7_EMAIL_DEST }}
+          MAG7_EMAIL_BCC:         ${{ secrets.MAG7_EMAIL_BCC }}
+        run: python src/send_email.py
