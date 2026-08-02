@@ -31,7 +31,7 @@
   .sub{color:var(--muted);font-size:13.5px;margin-top:6px}
   .sub b{color:var(--txt);font-weight:500}
 
-  .tabs{display:flex;gap:4px;margin:26px 0 4px;flex-wrap:wrap}
+  .tabs{display:flex;gap:4px;margin:26px 0 4px}
   .tabs button{background:none;border:0;color:var(--muted);padding:9px 4px;margin-right:20px;
     cursor:pointer;font-size:14px;font-weight:500;position:relative;transition:color .2s}
   .tabs button:hover{color:var(--txt)}
@@ -41,7 +41,7 @@
   .tabline{height:1px;background:var(--card-brd);margin-bottom:22px}
 
   .seg{display:inline-flex;gap:2px;background:rgba(255,255,255,.03);border:1px solid var(--card-brd);
-    border-radius:999px;padding:4px;flex-wrap:wrap}
+    border-radius:999px;padding:4px}
   .seg button{background:none;border:0;color:var(--muted);padding:7px 15px;border-radius:999px;
     cursor:pointer;font-size:13px;font-weight:500;transition:.2s}
   .seg button:hover{color:var(--txt)}
@@ -106,6 +106,7 @@
   </div>
   <div class="tabline"></div>
 
+  <!-- TAB INDICADORES -->
   <section id="tab-ind">
     <div class="seg" id="toggle">
       <button data-p="annual" class="active">Ano fiscal · FY2025</button>
@@ -137,6 +138,7 @@
     </div>
   </section>
 
+  <!-- TAB VALUATION -->
   <section id="tab-val" class="hidden">
     <div class="grid">
       <div class="card"><h3>P/E</h3><p class="ch">TTM aprox. · escala log</p><canvas id="cPe"></canvas></div>
@@ -162,6 +164,7 @@
     </div>
   </section>
 
+  <!-- TAB HISTÓRICO -->
   <section id="tab-hist" class="hidden">
     <div class="seg" id="histToggle">
       <button data-m="rev" class="active">Receita</button>
@@ -364,8 +367,10 @@ function renderCred(){
   document.querySelector('#tblCapex thead').innerHTML=ch;
   document.querySelector('#tblCapex tbody').innerHTML=cs.map(c=>`<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.ticker}</td>`+
     c.capex.map(x=>`<td>${fmt(x,1)}</td>`).join('')+'</tr>').join('');
-  document.getElementById('capexNotes').innerHTML="<li>CapEx = compras de imobilizado (caixa), por ano fiscal de cada empresa. Microsoft exclui arrendamentos financeiros (incluindo-os, o total do FY2025 é bem maior, ~US$ 88 bi). Nvidia é fabless — capex baixo.</li>"+
-    "<li>O salto vem de data centers de IA: Amazon US$ 132 bi (FY2025), Alphabet US$ 91 bi, Meta US$ 70 bi, Microsoft US$ 55 bi (caixa). Guidance de 2026 é ainda maior: Amazon ~US$ 200 bi, Alphabet US$ 175–185 bi, Microsoft ~US$ 190 bi, Meta US$ 115–135 bi.</li>";
+  document.getElementById('capexNotes').innerHTML="<li>CapEx = compras de imobilizado (caixa), por ano fiscal de cada empresa. Microsoft exclui arrendamentos financeiros (incluindo-os, o total do FY2025 é bem maior, ~US$ 88 bi).</li>"+
+    "<li><b>Nvidia é fabless</b>: não possui fábricas — quem carrega o CapEx pesado de manufatura são a TSMC (wafers e empacotamento CoWoS) e SK Hynix/Samsung/Micron (memória HBM). Esse custo entra no CMV/estoque, não no CapEx. Por isso o CapEx próprio da Nvidia (escritórios, laboratórios de P&D, servidores internos/DGX Cloud) é minúsculo: FY2025 US$ 3,2 bi e FY2026 (enc. jan/2026) US$ 6,0 bi — quase o dobro, mas ~3% da receita, contra 15–25% nos hyperscalers.</li>"+
+    "<li><b>O investimento econômico real da Nvidia é bem maior</b> do que a linha de CapEx sugere: prépagamentos e compromissos de compra à TSMC (dezenas de bilhões, contabilizados como estoque/compromissos), arrendamentos de capacidade (DGX Cloud, ~US$ 2,9 bi em ativos de lease) e participações estratégicas (ex.: ~US$ 13 bi ligados à Groq, além de CoreWeave) — nenhum entra no CapEx. Obs.: o ano fiscal da Nvidia é ~11 meses adiantado; a coluna FY2025 do gráfico é o exercício encerrado em jan/2025.</li>"+
+    "<li><b>Do outro lado:</b> o CapEx dos hyperscalers é, em boa parte, a receita da Nvidia. Amazon US$ 132 bi (FY2025), Alphabet US$ 91 bi, Meta US$ 70 bi, Microsoft US$ 55 bi (caixa). Guidance de 2026 é ainda maior: Amazon ~US$ 200 bi, Alphabet US$ 175–185 bi, Microsoft ~US$ 190 bi, Meta US$ 115–135 bi.</li>";
   document.querySelector('#tblRating thead').innerHTML='<tr><th>Empresa</th><th>S&P</th><th>Moody’s</th><th>CDS 5a (bps)</th></tr>';
   const ref=DATA.meta.cdsRef||[];
   document.querySelector('#tblRating tbody').innerHTML=cs.map(c=>`<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.ticker}</td>`+
