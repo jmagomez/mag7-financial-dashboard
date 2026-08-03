@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Magnificent 7 — Dashboard de Indicadores Financeiros",
-    "generated": "2026-08-01",
+    "generated": "2026-08-03",
     "currency": "USD",
     "marketSnapshot": "2026-07-22",
     "totalMarketCapT": 22.63,
@@ -9,14 +9,14 @@
     "fcfLabels": ["FY2023", "FY2024", "FY2025"],
     "capexLabels": ["FY2022", "FY2023", "FY2024", "FY2025"],
     "cdsRef": [
-      {"ticker": "ORCL", "name": "Oracle", "color": "#c99a6a", "cds": 215, "rating": {"sp": "BBB-", "moody": "Baa2"}},
+      {"ticker": "ORCL", "name": "Oracle", "color": "#c99a6a", "cds": 200, "rating": {"sp": "BBB-", "moody": "Baa2"}},
       {"ticker": "CRWV", "name": "CoreWeave", "color": "#e06666", "cds": 855, "rating": {"sp": "spec.", "moody": "spec."}}
     ],
     "creditNotes": [
       "CDS: não existe uma série pública e consistente de vários anos para as Magnificent 7 — dados de credit default swaps são proprietários (ICE Data Services, S&P Global/Markit, Bloomberg). Além disso, o CDS de 5 anos da Nvidia só começou a ser negociado ativamente em novembro de 2025, ou seja, não há histórico de anos para ela. Por isso este painel NÃO apresenta um gráfico histórico de CDS: seria inventar dados.",
       "Historicamente, os CDS dessas empresas eram irrelevantes/ilíquidos: com enormes posições de caixa líquido e ratings no topo (Microsoft AAA/Aaa, Apple AA+/Aaa), o risco de crédito precificado era mínimo.",
       "Isso mudou em 2025–2026: com o boom de CapEx de IA e a emissão de dívida para financiá-lo, os spreads de CDS do grupo mais que dobraram desde o início de 2025 e estão perto das máximas de ~7 anos. Em 24/jul/2026 a Moody's alertou que os gastos 'sem precedentes' com IA pressionam a qualidade de crédito de Amazon, Meta e Alphabet (embora considere um rebaixamento improvável no curto prazo).",
-      "Níveis de CDS 5 anos (atualizado em 01/08/2026, cotações pontuais da imprensa — não é série histórica): Nvidia ~79 bps (recorde recente 82 bps, desde nov/2025), Meta ~90 bps (recorde), Alphabet ~67 bps (recorde). Referências fora das Mag 7: Oracle ~215 bps (máxima de ~18 anos; a S&P rebaixou a Oracle para BBB-, o menor grau de investimento) e, sobretudo, a CoreWeave (neocloud de GPUs, altamente alavancada) ~855 bps — nível que modelos de CDS associam a ~50% de probabilidade de default em 5 anos. Apple, Microsoft, Amazon e Tesla: nível público específico não localizado (n/d). Obs.: a CoreWeave obteve rating de investimento (Moody's A3) apenas para uma linha garantida por GPUs (DDTL); o risco de emissor é especulativo.",
+      "Níveis de CDS 5 anos (atualizado em 03/08/2026, cotações pontuais da imprensa — não é série histórica): Nvidia ~79 bps (recorde recente 82 bps, desde nov/2025), Meta ~90 bps (recorde; uma fonte cita ~94 bps em 27/jul), Alphabet ~67 bps (recorde). NENHUMA das Magnificent 7 está acima de 100 bps. Referências fora das Mag 7: Oracle ~200 bps em 03/08/2026 (recuo ante o recorde de ~215 bps, máxima de ~18 anos; a S&P rebaixou a Oracle para BBB-, o menor grau de investimento) e, sobretudo, a CoreWeave (neocloud de GPUs, altamente alavancada) ~855 bps — nível que modelos de CDS associam a ~50% de probabilidade de default em 5 anos. Apple, Microsoft, Amazon e Tesla: nível público específico não localizado (n/d). Obs.: a CoreWeave obteve rating de investimento (Moody's A3) apenas para uma linha garantida por GPUs (DDTL); o risco de emissor é especulativo.",
       "Status de resultados do 2T 2026 (em 31/07/2026): 6 das 7 já divulgaram — Alphabet e Tesla (22/jul), Microsoft e Meta (29/jul), Amazon e Apple (30/jul). Falta apenas a Nvidia, que reporta em 26/ago (calendário fiscal deslocado). O alerta automático de e-mail dispara quando as 7 estiverem completas."
     ],
     "notes": [
@@ -131,6 +131,7 @@
     {"label": "Market cap / preços (Slickcharts)", "url": "https://www.slickcharts.com/magnificent7"},
     {"label": "CapEx (filings / macrotrends / Visual Capitalist)", "url": "https://www.visualcapitalist.com/visualized-big-tech-ai-spending/"},
     {"label": "Crédito & CDS (Moody's via CNBC, 24/07/2026)", "url": "https://www.cnbc.com/2026/07/24/moodys-ai-spending-credit-quality-amazon-meta-alphabet.html"},
-    {"label": "CDS Nvidia / hyperscalers (Yahoo Finance, jul/2026)", "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-rising-cds-talk-wall-123955612.html"}
+    {"label": "CDS Nvidia / hyperscalers (Yahoo Finance, jul/2026)", "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-rising-cds-talk-wall-123955612.html"},
+    {"label": "CDS hyperscalers / Oracle ~200 bps (Advisor Perspectives, 03/08/2026)", "url": "https://www.advisorperspectives.com/articles/2026/08/03/there-carnage-hyperscaler-credit"}
   ]
 }
