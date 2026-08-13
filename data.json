@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Magnificent 7 — Dashboard de Indicadores Financeiros",
-    "generated": "2026-08-07",
+    "generated": "2026-08-13",
     "currency": "USD",
     "marketSnapshot": "2026-07-22",
     "totalMarketCapT": 22.63,
@@ -16,7 +16,7 @@
       "CDS: não existe uma série pública e consistente de vários anos para as Magnificent 7 — dados de credit default swaps são proprietários (ICE Data Services, S&P Global/Markit, Bloomberg). Além disso, o CDS de 5 anos da Nvidia só começou a ser negociado ativamente em novembro de 2025, ou seja, não há histórico de anos para ela. Por isso este painel NÃO apresenta um gráfico histórico de CDS: seria inventar dados.",
       "Historicamente, os CDS dessas empresas eram irrelevantes/ilíquidos: com enormes posições de caixa líquido e ratings no topo (Microsoft AAA/Aaa, Apple AA+/Aaa), o risco de crédito precificado era mínimo.",
       "Isso mudou em 2025–2026: com o boom de CapEx de IA e a emissão de dívida para financiá-lo, os spreads de CDS do grupo mais que dobraram desde o início de 2025 e estão perto das máximas de ~7 anos. Em 24/jul/2026 a Moody's alertou que os gastos 'sem precedentes' com IA pressionam a qualidade de crédito de Amazon, Meta e Alphabet (embora considere um rebaixamento improvável no curto prazo).",
-      "Níveis de CDS 5 anos (atualizado em 07/08/2026, cotações pontuais da imprensa — não é série histórica): Nvidia ~82 bps (recorde em 27/jul, maior salto diário desde o início da negociação ativa em nov/2025), Meta ~95 bps (recorde em 28/jul; era ~56 bps no fim de 2025), Amazon ~68 bps (recorde; era ~36 bps no início do ano), Alphabet ~67 bps (recorde, após o primeiro fluxo de caixa livre negativo desde o IPO; era ~50 bps quando passou a negociar ativamente em mar/2026), Microsoft ~53 bps (era ~35 bps no fim de 2025 — a menor alta do grupo, reflexo do rating AAA e de nenhuma emissão de bonds desde 2017). NENHUMA das Magnificent 7 está acima de 100 bps. Apple e Tesla: nível público específico não localizado (n/d) — a imprensa aponta que o CDS da Apple é o mais baixo entre as big techs, dado que sua estratégia de IA não exige CapEx de centenas de bilhões. Referências fora das Mag 7: Oracle ~200 bps em 03/08/2026 (recuo ante o recorde de ~215 bps em 28/jul, máxima de ~18 anos; a S&P rebaixou a Oracle para BBB-, o menor grau de investimento) e, sobretudo, a CoreWeave (neocloud de GPUs, altamente alavancada) ~855 bps — nível que modelos de CDS associam a ~50% de probabilidade de default em 5 anos. Fontes: Bloomberg (28–29/jul/2026), ICE Data Services, LSEG e Advisor Perspectives (03/08/2026). Obs.: a CoreWeave obteve rating de investimento (Moody's A3) apenas para uma linha garantida por GPUs (DDTL); o risco de emissor é especulativo.",
+      "Níveis de CDS 5 anos (atualizado em 13/08/2026, cotações pontuais da imprensa — não é série histórica): Nvidia ~80 bps (recuo ante o recorde de ~82 bps em 27/jul, mas ainda mais que o dobro do nível do fim de maio), Meta ~95 bps (recorde em 28/jul; era ~56 bps no fim de 2025), Amazon ~68 bps (recorde; era ~36 bps no início do ano), Alphabet ~67 bps (recorde, após o primeiro fluxo de caixa livre negativo desde o IPO; era ~50 bps quando passou a negociar ativamente em mar/2026), Microsoft ~53 bps (era ~35 bps no fim de 2025 — a menor alta do grupo, reflexo do rating AAA e de nenhuma emissão de bonds desde 2017). NENHUMA das Magnificent 7 está acima de 100 bps. Apple e Tesla: nível público específico não localizado (n/d) — a imprensa aponta que o CDS da Apple é o mais baixo entre as big techs, dado que sua estratégia de IA não exige CapEx de centenas de bilhões. Referências fora das Mag 7: Oracle ~200 bps (nível confirmado em 10/08/2026; recuo ante o recorde de ~215 bps em 28/jul, máxima de ~18 anos; a S&P rebaixou a Oracle para BBB-, o menor grau de investimento) e, sobretudo, a CoreWeave (neocloud de GPUs, altamente alavancada) ~855 bps — nível que modelos de CDS associam a ~50% de probabilidade de default em 5 anos. Análise de 10/08/2026 (Advisor Perspectives) reforça que o alargamento é essencialmente uma história da Oracle: os spreads de Microsoft, Amazon, Alphabet e Meta seguem relativamente estáveis e em nível igual ou abaixo do índice de bonds com rating AA. Fontes: Bloomberg (28–29/jul/2026), ICE Data Services, LSEG, Advisor Perspectives (03 e 10/08/2026) e imprensa de 12/08/2026 sobre o CDS da Nvidia (~79,8 bps). Obs.: a CoreWeave obteve rating de investimento (Moody's A3) apenas para uma linha garantida por GPUs (DDTL); o risco de emissor é especulativo.",
       "Status de resultados do 2T 2026 (em 31/07/2026): 6 das 7 já divulgaram — Alphabet e Tesla (22/jul), Microsoft e Meta (29/jul), Amazon e Apple (30/jul). Falta apenas a Nvidia, que reporta em 26/ago (calendário fiscal deslocado). O alerta automático de e-mail dispara quando as 7 estiverem completas."
     ],
     "notes": [
@@ -63,7 +63,7 @@
       "niHistory": [14.88, 16.60, 19.31, 22.09, 18.8, 26.4, 31.9, 43.0, 58.3],
       "fcfAnnual": [3.8, 27.0, 60.85],
       "capex": [1.0, 1.8, 1.1, 3.2],
-      "rating": {"sp": "A+", "moody": "A1"}, "cds": 82
+      "rating": {"sp": "A+", "moody": "A1"}, "cds": 80
     },
     {
       "ticker": "GOOGL", "name": "Alphabet", "color": "#7ba6f2",
