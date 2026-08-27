@@ -3,8 +3,8 @@
     "title": "Magnificent 7 — Dashboard de Indicadores Financeiros",
     "generated": "2026-08-27",
     "currency": "USD",
-    "marketSnapshot": "2026-07-22",
-    "totalMarketCapT": 22.63,
+    "marketSnapshot": "2026-08-27",
+    "totalMarketCapT": 23.46,
     "annualLabel": "FY2025",
     "quarterLabel": "Q2 2026",
     "historyLabels": ["Q1'24", "Q2'24", "Q3'24", "Q4'24", "Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26", "Q2'26"],
@@ -23,8 +23,8 @@
     ],
     "notes": [
       "As 7 empresas têm anos fiscais diferentes. 'FY2025' refere-se ao ano fiscal rotulado como 2025 por cada empresa; 'Q2 2026' está alinhado ao trimestre-calendário Abr–Jun 2026 (para Apple = Q3 FY26, Microsoft = Q4 FY26, Nvidia = Q2 FY27; demais = Q2 2026).",
-      "Margens são calculadas (lucro líquido ÷ receita). Valores de mercado (market cap) são estimados a partir do peso de cada empresa no grupo × cap total (US$ 22,63 tri) em 22/07/2026 — preços e pesos não foram reatualizados neste ciclo.",
-      "Valuation: P/E é TTM aproximado (preço em 22/07/2026 ÷ LPA dos últimos 4 trimestres; para Alphabet/Meta usa-se o LPA do ano de 2025). EV/EBITDA é aproximado, de agregadores de terceiros (jun–jul/2026). FCF yield e FCF (TTM aprox.) baseiam-se em ranking Motley Fool (13/07/2026). Dividend yield e margem bruta são aproximados/TTM.",
+      "Margens são calculadas (lucro líquido ÷ receita). Preços, pesos e valores de mercado (market cap) foram atualizados em 27/08/2026 (fonte: Slickcharts) — cap total do grupo US$ 23,46 tri; cada market cap é o peso da empresa × esse total.",
+      "Valuation: os múltiplos (P/E, EV/EBITDA) são aproximados de jul/2026 e NÃO foram reatualizados para os preços de 27/08/2026 — por exemplo, a alta da Microsoft no período elevaria seu P/E ante o valor exibido. Use-os como ordem de grandeza. P/E é TTM aproximado (LPA dos últimos 4 trimestres; para Alphabet/Meta usa-se o LPA de 2025). FCF yield e FCF (TTM aprox.) baseiam-se em ranking Motley Fool (13/07/2026). Dividend yield e margem bruta são aproximados/TTM.",
       "IMPORTANTE — ganhos não recorrentes no 2T 2026: vários lucros GAAP foram inflados por ganhos NÃO REALIZADOS com participações (mark-to-market, sem caixa): Alphabet +~US$ 77,1 bi, Amazon +~US$ 53,4 bi (Anthropic), Microsoft +~US$ 3,2 bi (Anthropic) e Tesla +~US$ 1 bi (SpaceX). Por isso o lucro/margem de Alphabet e Amazon no trimestre NÃO reflete a operação — para comparar use o lucro operacional (Alphabet US$ 40,8 bi; Amazon US$ 27,5 bi).",
       "Histórico trimestral (Q1'24 a Q2'26, 10 trimestres-calendário): receita e lucro líquido (GAAP) reais; a margem é calculada (lucro ÷ receita). A Nvidia tem trimestres fiscais deslocados ~1 mês, aqui aproximados ao trimestre-calendário mais próximo. Itens não recorrentes no lucro: Apple Q3'24 (imposto UE ~US$ 10 bi); Meta Q3'25 (imposto ~US$ 15,9 bi); Amazon/Alphabet em 2025–26 com ganhos de investimento; Meta Q2'26 com encargos jurídicos/rescisões.",
       "FCF (free cash flow) é mostrado por ANO FISCAL (FY2023, FY2024, FY2025) com valores reais — o FCF de um único trimestre é sazonal e reportado de forma inconsistente entre fontes, então a granularidade anual é mais fiel. Ano fiscal conforme cada empresa (Nvidia FY2025 enc. jan/2025; FY2026 chegou a US$ 96,6 bi). Destaques: Amazon caiu de US$ 38 bi (FY2024) para ~US$ 11 bi (FY2025) por CapEx de IA; Nvidia saltou de US$ 3,8 bi (FY2023) para US$ 60,9 bi (FY2025).",
@@ -34,7 +34,7 @@
   "companies": [
     {
       "ticker": "AAPL", "name": "Apple", "color": "#b0b8c4",
-      "fiscalYearEnd": "final de setembro", "price": 325.89, "weight": 21.16, "marketCapB": 4788,
+      "fiscalYearEnd": "final de setembro", "price": 311.58, "weight": 19.38, "marketCapB": 4547,
       "annual": {"period": "FY2025 (enc. 27/set/2025)", "revenueB": 416.2, "revGrowth": 6.4, "operatingIncomeB": 127.4, "netIncomeB": 112.0, "netMargin": 26.9, "epsDiluted": 7.39, "operatingCashFlowB": 118.3, "note": "Receita e lucro recordes históricos."},
       "quarter": {"period": "Q2 2026 cal. (Q3 FY26, enc. 27/jun/2026)", "revenueB": 109.4, "revGrowth": 16.0, "netIncomeB": 29.8, "netMargin": 27.2, "epsDiluted": 2.02, "grossMargin": 50.1, "note": "Maior trimestre de junho da história; iPhone +22%, Serviços +12%, Mac +29% (recordes de junho)."},
       "valuation": {"pe": 39, "evEbitda": 28.5, "divYield": 0.33, "fcfYield": 2.8, "fcfB": 134, "grossMargin": 47.0},
@@ -46,7 +46,7 @@
     },
     {
       "ticker": "MSFT", "name": "Microsoft", "color": "#57c0b6",
-      "fiscalYearEnd": "30 de junho", "price": 390.34, "weight": 12.82, "marketCapB": 2901,
+      "fiscalYearEnd": "30 de junho", "price": 499.44, "weight": 15.81, "marketCapB": 3708,
       "annual": {"period": "FY2025 (enc. 30/jun/2025)", "revenueB": 281.7, "revGrowth": 15.0, "operatingIncomeB": 128.5, "netIncomeB": 101.83, "netMargin": 36.1, "epsDiluted": 13.64, "note": "Azure superou US$ 75 bi no ano; +34%."},
       "quarter": {"period": "Q2 2026 cal. (Q4 FY26, enc. 30/jun/2026)", "revenueB": 90.0, "revGrowth": 18.0, "operatingIncomeB": 40.6, "netIncomeB": 35.8, "netMargin": 39.8, "epsDiluted": 4.81, "note": "Azure +43% e ultrapassou US$ 100 bi de receita anual; lucro inclui ~US$ 3,2 bi de ganho (Anthropic)."},
       "valuation": {"pe": 23, "evEbitda": 15.2, "divYield": 0.85, "fcfYield": 2.5, "fcfB": 73, "grossMargin": 69.0},
@@ -58,7 +58,7 @@
     },
     {
       "ticker": "NVDA", "name": "Nvidia", "color": "#93cf72",
-      "fiscalYearEnd": "final de janeiro", "price": 212.06, "weight": 22.70, "marketCapB": 5137,
+      "fiscalYearEnd": "final de janeiro", "price": 224.22, "weight": 23.15, "marketCapB": 5431,
       "annual": {"period": "FY2025 (enc. 26/jan/2025)", "revenueB": 130.5, "revGrowth": 114.0, "operatingIncomeB": 81.5, "netIncomeB": 72.88, "netMargin": 55.9, "epsDiluted": 2.94, "freeCashFlowB": 60.85, "note": "Receita +114% impulsionada por data center/IA. FY2026: receita US$ 215,9 bi, LPA US$ 4,90."},
       "quarter": {"period": "Q2 2026 cal. (Q2 FY27, enc. 26/jul/2026)", "revenueB": 96.2, "revGrowth": 106.0, "netIncomeB": 59.7, "netMargin": 62.1, "epsDiluted": 2.46, "grossMargin": 75.0, "note": "Data Center US$ 89,0 bi (+117% a/a); lucro +126% a/a. Guidance 3T: ~US$ 108 bi."},
       "valuation": {"pe": 32, "evEbitda": 29.5, "divYield": 0.13, "fcfYield": 2.3, "fcfB": 118, "grossMargin": 74.2},
@@ -70,7 +70,7 @@
     },
     {
       "ticker": "GOOGL", "name": "Alphabet", "color": "#7ba6f2",
-      "fiscalYearEnd": "31 de dezembro", "price": 341.91, "weight": 18.44, "marketCapB": 4173,
+      "fiscalYearEnd": "31 de dezembro", "price": 337.42, "weight": 17.59, "marketCapB": 4127,
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 402.96, "revGrowth": 15.1, "netIncomeB": 132.17, "netMargin": 32.8, "epsDiluted": 10.91, "note": "Receita anual recorde; LPA 2025 US$ 10,91."},
       "quarter": {"period": "Q2 2026 (enc. 30/jun/2026)", "revenueB": 119.8, "revGrowth": 24.0, "operatingIncomeB": 40.8, "netIncomeB": 112.1, "netMargin": 93.6, "epsDiluted": 9.11, "note": "Google Cloud +82% (US$ 24,8 bi); lucro operacional US$ 40,8 bi (+30%). ATENÇÃO: o lucro líquido inclui ~US$ 77,1 bi de ganho NÃO realizado com participações — sem ele o lucro seria ~US$ 35 bi."},
       "valuation": {"pe": 31, "evEbitda": 24.6, "divYield": 0.22, "fcfYield": 1.5, "fcfB": 63, "grossMargin": 58.0},
@@ -82,7 +82,7 @@
     },
     {
       "ticker": "AMZN", "name": "Amazon", "color": "#f4b062",
-      "fiscalYearEnd": "31 de dezembro", "price": 244.85, "weight": 11.64, "marketCapB": 2634,
+      "fiscalYearEnd": "31 de dezembro", "price": 257.46, "weight": 11.84, "marketCapB": 2778,
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 716.9, "revGrowth": 12.4, "operatingIncomeB": 80.0, "netIncomeB": 77.7, "netMargin": 10.8, "epsDiluted": 7.17, "operatingCashFlowB": 139.5, "note": "AWS lucro operacional US$ 45,6 bi."},
       "quarter": {"period": "Q2 2026 (enc. 30/jun/2026)", "revenueB": 200.6, "revGrowth": 20.0, "operatingIncomeB": 27.5, "netIncomeB": 62.6, "netMargin": 31.2, "epsDiluted": 5.75, "note": "AWS +37% (US$ 42,2 bi; margem op. 39,4%); lucro operacional US$ 27,5 bi. ATENÇÃO: o lucro líquido inclui ~US$ 53,4 bi de ganho não operacional (Anthropic)."},
       "valuation": {"pe": 29, "evEbitda": 17.2, "divYield": 0.0, "fcfYield": -0.1, "fcfB": -2.6, "grossMargin": 50.6},
@@ -94,7 +94,7 @@
     },
     {
       "ticker": "META", "name": "Meta Platforms", "color": "#a89cf3",
-      "fiscalYearEnd": "31 de dezembro", "price": 627.17, "weight": 7.04, "marketCapB": 1593,
+      "fiscalYearEnd": "31 de dezembro", "price": 582.63, "weight": 6.33, "marketCapB": 1485,
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 200.97, "revGrowth": 22.2, "netIncomeB": 60.46, "netMargin": 30.1, "epsDiluted": 23.49, "note": "Primeira vez acima de US$ 200 bi de receita."},
       "quarter": {"period": "Q2 2026 (enc. 30/jun/2026)", "revenueB": 60.8, "revGrowth": 28.0, "operatingIncomeB": 18.78, "netIncomeB": 15.85, "netMargin": 26.1, "epsDiluted": 6.18, "note": "Receita +28%; lucro operacional -8% por ~US$ 2,4 bi de encargos jurídicos e ~US$ 1,18 bi de rescisões. Reality Labs: prejuízo de US$ 4,62 bi."},
       "valuation": {"pe": 27, "evEbitda": 15.0, "divYield": 0.31, "fcfYield": 2.8, "fcfB": 45, "grossMargin": 81.9},
@@ -106,7 +106,7 @@
     },
     {
       "ticker": "TSLA", "name": "Tesla", "color": "#ef8085",
-      "fiscalYearEnd": "31 de dezembro", "price": 374.01, "weight": 6.21, "marketCapB": 1405,
+      "fiscalYearEnd": "31 de dezembro", "price": 350.22, "weight": 5.90, "marketCapB": 1384,
       "annual": {"period": "FY2025 (ano-calendário)", "revenueB": 94.82, "revGrowth": -3.0, "operatingIncomeB": 4.35, "netIncomeB": 3.79, "netMargin": 4.0, "epsDiluted": 1.08, "freeCashFlowB": 6.2, "note": "Receita -3%; automotivo -10%, energia +27%."},
       "quarter": {"period": "Q2 2026 (enc. 30/jun/2026)", "revenueB": 28.24, "revGrowth": 25.5, "operatingIncomeB": 0.398, "netIncomeB": 1.11, "netMargin": 3.9, "epsDiluted": 0.32, "epsNonGaap": 0.33, "note": "Receita e entregas recordes (480.126, +25%), mas margem operacional 1,4%. Lucro inclui ~US$ 1 bi (SpaceX); FCF negativo em US$ 1,1 bi; CapEx +142% (IA/robótica)."},
       "valuation": {"pe": 310, "evEbitda": 145.7, "divYield": 0.0, "fcfYield": 0.5, "fcfB": 7, "grossMargin": 17.7},
