@@ -95,7 +95,7 @@
 <div class="wrap">
   <header>
     <h1>Magnificent 7 · Indicadores Financeiros</h1>
-    <div class="sub">Apple · Microsoft · Alphabet · Amazon · Meta · Nvidia · Tesla &nbsp;—&nbsp; FY2025 e Q1 2026 · atualizado em <b id="gen"></b></div>
+    <div class="sub">Apple · Microsoft · Alphabet · Amazon · Meta · Nvidia · Tesla &nbsp;—&nbsp; FY2025 e Q2 2026 · atualizado em <b id="gen"></b></div>
   </header>
 
   <div class="tabs" id="tabs">
@@ -110,7 +110,7 @@
   <section id="tab-ind">
     <div class="seg" id="toggle">
       <button data-p="annual" class="active">Ano fiscal · FY2025</button>
-      <button data-p="quarter">Trimestre · Q1 2026</button>
+      <button data-p="quarter">Trimestre · Q2 2026</button>
     </div>
     <div class="caption" id="periodlabel"></div>
 
@@ -297,13 +297,13 @@ function renderTable(){
       <td>${p.operatingIncomeB!=null?fmt(p.operatingIncomeB,1):'—'}</td><td>${fmt(p.netIncomeB,2)}</td>
       <td>${fmt(p.netMargin,1)}%</td><td>${eps!=null?'$'+eps:'—'}</td><td>${fmt(c.marketCapB,0)}</td><td>$${fmt(c.price,2)}</td></tr>`;
   }).join('');
-  document.getElementById('tblPeriod').textContent=period==='annual'?'FY2025':'Q1 2026';
-  document.getElementById('rowNotes').innerHTML=cs.map(c=>`<li><b>${c.ticker}</b> · ${pdata(c).period}: ${pdata(c).note||''}</li>`).join('')+'<li>* Tesla: LPA trimestral non-GAAP.</li>';
+  document.getElementById('tblPeriod').textContent=period==='annual'?(DATA.meta.annualLabel||'FY2025'):(DATA.meta.quarterLabel||'Q2 2026');
+  document.getElementById('rowNotes').innerHTML=cs.map(c=>`<li><b>${c.ticker}</b> · ${pdata(c).period}: ${pdata(c).note||''}</li>`).join('')+'<li>Valores GAAP salvo indicação. Tesla 2T 2026: LPA ajustado (non-GAAP) US$ 0,33.</li>';
 }
 function renderInd(){
   document.getElementById('periodlabel').textContent=period==='annual'
     ?'Último ano fiscal rotulado como 2025 por cada empresa.'
-    :'Trimestre-calendário Jan–Mar 2026, alinhado entre as empresas.';
+    :'Trimestre-calendário Abr–Jun 2026, alinhado entre as empresas.';
   renderKPIs();renderCharts();renderTable();
 }
 
@@ -348,11 +348,12 @@ function renderHist(){
     :histMetric==='ni'?c.niHistory:c.revHistory;
   const nm=histMetric==='rev'?'Receita':histMetric==='ni'?'Lucro líquido':'Margem líquida';
   document.getElementById('histTitle').textContent=nm;
-  document.getElementById('histSub').textContent=(pct?'%':'US$ bilhões')+' · Q1 2024 – Q1 2026';
+  document.getElementById('histSub').textContent=(pct?'%':'US$ bilhões')+' · Q1 2024 – Q2 2026';
   document.getElementById('histTblTitle').textContent='Tabela — '+nm.toLowerCase()+(pct?' (%)':' (US$ bi)');
   lineChart('cHist',labels,cs.map(c=>({label:c.ticker,data:ser(c),borderColor:c.color})),pct);
   notes.innerHTML="<li>Séries por trimestre-calendário; Nvidia tem trimestres fiscais deslocados ~1 mês (aproximados).</li>"+
-    "<li>Lucro GAAP: Apple Q3'24 (imposto UE ~US$ 10 bi) e Meta Q3'25 (imposto ~US$ 15,9 bi) reduzem pontualmente o resultado; ganhos de investimento elevam Amazon/Alphabet em 2025–26.</li>";
+    "<li>Lucro GAAP: Apple Q3'24 (imposto UE ~US$ 10 bi) e Meta Q3'25 (imposto ~US$ 15,9 bi) reduzem pontualmente o resultado; ganhos de investimento elevam Amazon/Alphabet em 2025–26.</li>"+
+    "<li><b>2T'26:</b> os picos de lucro de Alphabet (US$ 112 bi) e Amazon (US$ 63 bi) vêm de ganhos NÃO realizados com participações (~US$ 77 bi e ~US$ 53 bi, sem caixa); nesses trimestres a margem não reflete a operação — compare pelo lucro operacional.</li>";
   const head='<tr><th>Empresa</th>'+labels.map(l=>`<th>${l}</th>`).join('')+'</tr>';
   document.querySelector('#tblHist thead').innerHTML=head;
   document.querySelector('#tblHist tbody').innerHTML=cs.map(c=>`<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.ticker}</td>`+
@@ -388,6 +389,9 @@ function renderCred(){
 
 function renderMeta(){
   document.getElementById('gen').textContent=DATA.meta.generated;
+  const aL=DATA.meta.annualLabel||'FY2025', qL=DATA.meta.quarterLabel||'Q2 2026';
+  document.querySelector('#toggle button[data-p="annual"]').textContent='Ano fiscal · '+aL;
+  document.querySelector('#toggle button[data-p="quarter"]').textContent='Trimestre · '+qL;
   document.getElementById('metaNotes').innerHTML=DATA.meta.notes.map(n=>`<li>${n}</li>`).join('');
   document.getElementById('sources').innerHTML=DATA.sources.map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join('');
 }
