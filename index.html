@@ -145,7 +145,7 @@
   <!-- TAB VALUATION -->
   <section id="tab-val" class="hidden">
     <div class="grid">
-      <div class="card"><h3>P/E</h3><p class="ch">TTM aprox. · escala log</p><canvas id="cPe"></canvas></div>
+      <div class="card"><h3>P/E — TTM (GAAP) vs core</h3><p class="ch">preço 27 ago ÷ LPA 4T · ◆ = P/E core (ex-itens não recorr.) · escala log</p><canvas id="cPe"></canvas></div>
       <div class="card"><h3>EV / EBITDA</h3><p class="ch">aprox. · escala log</p><canvas id="cEv"></canvas></div>
       <div class="card"><h3>FCF yield</h3><p class="ch">%</p><canvas id="cFcf"></canvas></div>
       <div class="card"><h3>Dividend yield</h3><p class="ch">%</p><canvas id="cDiv"></canvas></div>
@@ -164,15 +164,15 @@
         <div style="overflow-x:auto">
           <table id="tblVal">
             <thead><tr>
-              <th data-k="name">Empresa</th><th data-k="marketCapB">Market cap</th><th data-k="pe">P/E</th>
+              <th data-k="name">Empresa</th><th data-k="marketCapB">Market cap</th><th data-k="pe">P/E TTM</th><th data-k="peCore">P/E core*</th>
               <th data-k="evEbitda">EV/EBITDA</th><th data-k="divYield">Div. yield</th>
               <th data-k="fcfYield">FCF yield</th><th data-k="fcfB">FCF TTM</th><th data-k="grossMargin">Margem bruta</th>
             </tr></thead><tbody></tbody>
           </table>
         </div>
         <ul class="notes">
-          <li>Preços e market caps: 27 ago 2026. Múltiplos (P/E, EV/EBITDA): aproximados de jul/2026, NÃO reatualizados para os preços de 27 ago — use como ordem de grandeza. Tesla distorcido por lucro baixo.</li>
-          <li>EV/EBITDA de agregadores de terceiros (jun–jul 2026). FCF yield/TTM do ranking Motley Fool; Amazon negativo por CapEx de IA.</li>
+          <li><b>P/E recalculado (TTM GAAP)</b> = market cap (27/08/2026) ÷ lucro líquido GAAP dos últimos 4 trimestres (3T'25–2T'26). Cuidado com a leitura ingênua: Alphabet aparece a 16,9x e Amazon a 20,5x, mas é uma ARMADILHA — o lucro TTM de ambas está inflado por ganhos NÃO operacionais/não realizados com participações (Alphabet +US$ 77 bi líquidos no 2T'26; Amazon ~US$ 70 bi pré-imposto com a Anthropic no 1T+2T'26). Excluindo esses itens, o <b>P/E core (◆)</b> é ~24,7x na Alphabet (e ainda é um piso: 4T'25/1T'26 também tiveram ganhos não estornados) e ~37x na Amazon.</li>
+          <li><b>Distorção inversa na Meta:</b> o P/E GAAP (21,8x) está SUPERestimado porque o lucro TTM carrega o encargo tributário não recorrente de ~US$ 15,9 bi do 3T'25; normalizado, o P/E core cai para ~17,7x. Microsoft ~28x (ex-ganho de US$ 3,2 bi com Anthropic). Apple (35,2x) e Nvidia (28,2x) têm lucro TTM limpo. <b>Tesla (>360x) não é significativo</b> — lucro quase nulo; avalie por EV/EBITDA, P/S ou múltiplos forward. *P/E core é aproximado (líq. de impostos estimado). EV/EBITDA e FCF yield permanecem de jun–jul/2026.</li>
         </ul>
       </div>
     </div>
@@ -330,7 +330,16 @@ function renderInd(){
 let sortV='marketCapB',sortVDir=-1;
 function renderVal(){
   const cs=DATA.companies,l=cs.map(c=>c.ticker),co=cs.map(c=>c.color);
-  bar('cPe',l,cs.map(c=>c.valuation.pe),co,v=>fmt(v,0)+'x',true);
+  if(charts.cPe)charts.cPe.destroy();
+  charts.cPe=new Chart(document.getElementById('cPe'),{
+    data:{labels:l,datasets:[
+      {type:'bar',data:cs.map(c=>c.valuation.pe),backgroundColor:co,borderRadius:7,borderSkipped:false,maxBarThickness:40,categoryPercentage:.62,barPercentage:.82,order:2},
+      {type:'line',data:cs.map(c=>c.valuation.peCore),showLine:false,pointStyle:'rectRot',pointRadius:6,pointHoverRadius:7,pointBackgroundColor:'#eef0f6',pointBorderColor:'#0a0b10',pointBorderWidth:1,order:1}
+    ]},
+    options:{responsive:true,animation:{duration:600},plugins:{legend:{display:false},
+      tooltip:{...TIP,callbacks:{label:c=>c.dataset.type==='line'?' P/E core ~'+fmt(c.parsed.y,1)+'x':' P/E TTM '+fmt(c.parsed.y,1)+'x'}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
+        y:{type:'logarithmic',min:10,grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>([10,20,30,50,100,150,200,300,500].indexOf(v)>=0?v+'x':'')}}}}});
   bar('cEv',l,cs.map(c=>c.valuation.evEbitda),co,v=>fmt(v,1)+'x',true);
   bar('cFcf',l,cs.map(c=>c.valuation.fcfYield),cs.map(c=>c.valuation.fcfYield<0?'#fb7185':c.color),v=>fmt(v,1)+'%');
   bar('cDiv',l,cs.map(c=>c.valuation.divYield),co,v=>fmt(v,2)+'%');
@@ -338,7 +347,7 @@ function renderVal(){
     const av=g(a),bv=g(b);return sortV==='name'?(av<bv?-sortVDir:sortVDir):((av||0)-(bv||0))*sortVDir;});
   document.querySelector('#tblVal tbody').innerHTML=rows.map(c=>{const v=c.valuation;
     return `<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.name} <span class="muted">${c.ticker}</span></td>
-      <td>${fmt(c.marketCapB,0)}</td><td>${fmt(v.pe,0)}x</td><td>${fmt(v.evEbitda,1)}x</td>
+      <td>${fmt(c.marketCapB,0)}</td><td>${fmt(v.pe,1)}x</td><td>${v.peCore!=null?'~'+fmt(v.peCore,1)+'x':(c.ticker==='TSLA'?'n/s':'—')}</td><td>${fmt(v.evEbitda,1)}x</td>
       <td>${v.divYield>0?fmt(v.divYield,2)+'%':'—'}</td><td class="${v.fcfYield<0?'neg':'pos'}">${fmt(v.fcfYield,1)}%</td>
       <td class="${v.fcfB<0?'neg':''}">${fmt(v.fcfB,0)}</td><td>${fmt(v.grossMargin,1)}%</td></tr>`;
   }).join('');
@@ -461,9 +470,10 @@ document.querySelectorAll('#tblVal thead th').forEach(th=>th.addEventListener('c
 function exportCSV(){
   if(!DATA)return;
   const cs=DATA.companies;
-  const hdr=['Ticker','Empresa','Preco_USD','MarketCap_B','Peso_pct','Rev_FY2025_B','RevGrowth_FY2025_pct','NI_FY2025_B','NetMargin_FY2025_pct','EPS_FY2025','Rev_Q2-2026_B','RevGrowth_Q2-2026_pct','OpInc_Q2-2026_B','NI_Q2-2026_B','NetMargin_Q2-2026_pct','PE','EV_EBITDA','DivYield_pct','FCFYield_pct','FCF_TTM_B','GrossMargin_pct','CapEx_FY2025_B','CapExIntensity_pct','CDS_bps','Rating_SP','Rating_Moody'];
+  const hdr=['Ticker','Empresa','Preco_USD','MarketCap_B','Peso_pct','Rev_FY2025_B','RevGrowth_FY2025_pct','NI_FY2025_B','NetMargin_FY2025_pct','EPS_FY2025','Rev_Q2-2026_B','RevGrowth_Q2-2026_pct','OpInc_Q2-2026_B','NI_Q2-2026_B','NetMargin_Q2-2026_pct','TTM_NI_B','PE_TTM_GAAP','PE_core_adj','EV_EBITDA','DivYield_pct','FCFYield_pct','FCF_TTM_B','GrossMargin_pct','CapEx_FY2025_B','CapExIntensity_pct','CDS_bps','Rating_SP','Rating_Moody'];
   const g=(o,k)=>o&&o[k]!=null?o[k]:'';
-  const rows=cs.map(c=>[c.ticker,c.name,c.price,c.marketCapB,c.weight,g(c.annual,'revenueB'),g(c.annual,'revGrowth'),g(c.annual,'netIncomeB'),g(c.annual,'netMargin'),g(c.annual,'epsDiluted'),g(c.quarter,'revenueB'),g(c.quarter,'revGrowth'),g(c.quarter,'operatingIncomeB'),g(c.quarter,'netIncomeB'),g(c.quarter,'netMargin'),c.valuation.pe,c.valuation.evEbitda,c.valuation.divYield,c.valuation.fcfYield,c.valuation.fcfB,c.valuation.grossMargin,c.capex[c.capex.length-1],Math.round(c.capex[c.capex.length-1]/c.annual.revenueB*1000)/10,(c.cds==null?'':c.cds),c.rating.sp,c.rating.moody]);
+  const ttm=c=>Math.round(c.niHistory.slice(-4).reduce((a,b)=>a+b,0)*10)/10;
+  const rows=cs.map(c=>[c.ticker,c.name,c.price,c.marketCapB,c.weight,g(c.annual,'revenueB'),g(c.annual,'revGrowth'),g(c.annual,'netIncomeB'),g(c.annual,'netMargin'),g(c.annual,'epsDiluted'),g(c.quarter,'revenueB'),g(c.quarter,'revGrowth'),g(c.quarter,'operatingIncomeB'),g(c.quarter,'netIncomeB'),g(c.quarter,'netMargin'),ttm(c),c.valuation.pe,(c.valuation.peCore==null?'':c.valuation.peCore),c.valuation.evEbitda,c.valuation.divYield,c.valuation.fcfYield,c.valuation.fcfB,c.valuation.grossMargin,c.capex[c.capex.length-1],Math.round(c.capex[c.capex.length-1]/c.annual.revenueB*1000)/10,(c.cds==null?'':c.cds),c.rating.sp,c.rating.moody]);
   const esc=x=>{const s=String(x);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   const csv=[hdr].concat(rows).map(r=>r.map(esc).join(',')).join('\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
@@ -472,7 +482,16 @@ function exportCSV(){
 }
 document.getElementById('csvBtn').addEventListener('click',exportCSV);
 
-fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{DATA=d;renderMeta();showTab('ind');})
+function computeDerived(){
+  const oneOff={MSFT:3.2,GOOGL:77.1,AMZN:60,META:-15.9};
+  DATA.companies.forEach(c=>{
+    const ttmNI=c.niHistory.slice(-4).reduce((a,b)=>a+b,0);
+    c.valuation.pe=Math.round(c.marketCapB/ttmNI*10)/10;
+    c.valuation.peCore=(c.ticker in oneOff)?Math.round(c.marketCapB/(ttmNI-oneOff[c.ticker])*10)/10:null;
+  });
+  DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de 27/08/2026 ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA e FCF yield permanecem aproximados de jun–jul/2026. Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E.";
+}
+fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{DATA=d;computeDerived();renderMeta();showTab('ind');})
   .catch(()=>{document.getElementById('kpis').innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v">Falha ao carregar data.json</div></div>';});
 </script>
 </body>
