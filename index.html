@@ -170,6 +170,11 @@
         <ul class="notes" id="netCashNotes"></ul>
       </div>
       <div class="card full">
+        <h3>O que está no preço — crescimento de FCF implícito (DCF reverso)</h3><p class="ch">CAGR de FCF nos próximos 10 anos que o EV atual embute · WACC 9% · crescimento terminal 3%</p>
+        <canvas id="cImplied" style="max-height:360px"></canvas>
+        <ul class="notes" id="impliedNotes"></ul>
+      </div>
+      <div class="card full">
         <h3>Múltiplos e caixa</h3><p class="ch">por empresa · EV = market cap − caixa líquido; EV/Vendas sobre receita TTM</p>
         <div style="overflow-x:auto">
           <table id="tblVal">
@@ -403,6 +408,17 @@ function renderVal(){
   document.getElementById('netCashNotes').innerHTML="<li>Definição uniforme: <b>caixa + títulos negociáveis</b> (curto e longo prazo) menos <b>dívida financiada</b> (bonds/commercial paper), excluindo arrendamentos e participações não negociáveis. Fonte: balanços do 2T 2026 (10-Q/8-K, SEC); Tesla aprox.</li>"+
     "<li><b>A tese do balanço:</b> o CapEx de IA está consumindo caixa — a <b>Amazon</b> já ficou levemente negativa (−US$ 6 bi) e a <b>Microsoft</b> desacumulou (mas segue +US$ 37 bi por dívida financiada; incluindo ~US$ 50 bi+ de arrendamentos financeiros de data centers, ficaria negativa). No extremo oposto, <b>Alphabet</b> (+US$ 144 bi) e <b>Apple</b> (+US$ 62 bi) seguem fortíssimas; Nvidia +US$ 23 bi (mais ~US$ 43 bi em ações de terceiros, à parte). É o mesmo enredo dos CDS.</li>"+
     "<li>Para megacaps o caixa líquido é só ±1–4% do valor de mercado, então <b>EV ≈ market cap</b> — por isso o EV/EBITDA muda pouco; adicionei EV/Vendas (TTM) à tabela como referência limpa (Amazon ~3,6x por ser varejo; Nvidia ~18x).</li>";
+
+  const ig=cs.filter(c=>c.valuation.impliedG!=null).map(c=>({t:c.ticker,v:c.valuation.impliedG,col:c.color}));
+  if(charts.cImplied)charts.cImplied.destroy();
+  charts.cImplied=new Chart(document.getElementById('cImplied'),{type:'bar',
+    data:{labels:ig.map(x=>x.t),datasets:[{data:ig.map(x=>x.v),backgroundColor:ig.map(x=>x.col),borderRadius:6,borderSkipped:false,maxBarThickness:46}]},
+    options:{responsive:true,animation:{duration:600},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{label:c=>' crescimento de FCF implícito: '+fmt(c.parsed.y,1)+'% a.a. por 10 anos'}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
+        y:{grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>v+'%'}}}}});
+  document.getElementById('impliedNotes').innerHTML="<li>DCF reverso: resolve o <b>CAGR de FCF nos próximos 10 anos</b> que iguala o valor presente ao EV atual, com <b>WACC 9%</b>, <b>crescimento terminal 3%</b> e FCF inicial = FCF TTM (10-Q/8-K). Quanto maior a barra, mais crescimento o preço já embute.</li>"+
+    "<li>Leitura: <b>Alphabet exige ~22%/ano</b> — o mais alto — não por estar “cara” no lucro, mas porque seu FCF está temporariamente deprimido pelo CapEx de IA (EV/FCF ~75x), então o mercado precifica forte recuperação. Microsoft ~18%, Nvidia ~15%, Apple ~15%, Meta ~13%. <b>Amazon e Tesla ficam n/s</b> — FCF TTM negativo/quase nulo (Amazon −US$ 7,6 bi por CapEx), o que torna o DCF reverso sem significado; para elas use EV/Vendas ou múltiplos forward.</li>"+
+    "<li>Sensibilidade: a premissa de WACC/terminal move os números — WACC menor ou terminal maior reduz o crescimento implícito exigido, e vice-versa. É uma “barra de expectativa”, não uma previsão.</li>";
 }
 
 /* ---- HISTÓRICO ---- */
@@ -500,10 +516,10 @@ document.querySelectorAll('#tblVal thead th').forEach(th=>th.addEventListener('c
 function exportCSV(){
   if(!DATA)return;
   const cs=DATA.companies;
-  const hdr=['Ticker','Empresa','Preco_USD','MarketCap_B','Peso_pct','Rev_FY2025_B','RevGrowth_FY2025_pct','NI_FY2025_B','NetMargin_FY2025_pct','EPS_FY2025','Rev_Q2-2026_B','RevGrowth_Q2-2026_pct','OpInc_Q2-2026_B','NI_Q2-2026_B','NetMargin_Q2-2026_pct','TTM_NI_B','PE_TTM_GAAP','PE_core_adj','EV_EBITDA','DivYield_pct','FCFYield_pct','FCF_TTM_B','GrossMargin_pct','NetCash_B','EV_B','EV_Sales','CapEx_FY2025_B','CapExIntensity_pct','CDS_bps','Rating_SP','Rating_Moody'];
+  const hdr=['Ticker','Empresa','Preco_USD','MarketCap_B','Peso_pct','Rev_FY2025_B','RevGrowth_FY2025_pct','NI_FY2025_B','NetMargin_FY2025_pct','EPS_FY2025','Rev_Q2-2026_B','RevGrowth_Q2-2026_pct','OpInc_Q2-2026_B','NI_Q2-2026_B','NetMargin_Q2-2026_pct','TTM_NI_B','PE_TTM_GAAP','PE_core_adj','EV_EBITDA','DivYield_pct','FCFYield_pct','FCF_TTM_B','GrossMargin_pct','NetCash_B','EV_B','EV_Sales','ImpliedFCFGrowth_10y_pct','CapEx_FY2025_B','CapExIntensity_pct','CDS_bps','Rating_SP','Rating_Moody'];
   const g=(o,k)=>o&&o[k]!=null?o[k]:'';
   const ttm=c=>Math.round(c.niHistory.slice(-4).reduce((a,b)=>a+b,0)*10)/10;
-  const rows=cs.map(c=>[c.ticker,c.name,c.price,c.marketCapB,c.weight,g(c.annual,'revenueB'),g(c.annual,'revGrowth'),g(c.annual,'netIncomeB'),g(c.annual,'netMargin'),g(c.annual,'epsDiluted'),g(c.quarter,'revenueB'),g(c.quarter,'revGrowth'),g(c.quarter,'operatingIncomeB'),g(c.quarter,'netIncomeB'),g(c.quarter,'netMargin'),ttm(c),c.valuation.pe,(c.valuation.peCore==null?'':c.valuation.peCore),c.valuation.evEbitda,c.valuation.divYield,c.valuation.fcfYield,c.valuation.fcfB,c.valuation.grossMargin,(c.valuation.net==null?'':c.valuation.net),(c.valuation.ev==null?'':c.valuation.ev),(c.valuation.evSales==null?'':c.valuation.evSales),c.capex[c.capex.length-1],Math.round(c.capex[c.capex.length-1]/c.annual.revenueB*1000)/10,(c.cds==null?'':c.cds),c.rating.sp,c.rating.moody]);
+  const rows=cs.map(c=>[c.ticker,c.name,c.price,c.marketCapB,c.weight,g(c.annual,'revenueB'),g(c.annual,'revGrowth'),g(c.annual,'netIncomeB'),g(c.annual,'netMargin'),g(c.annual,'epsDiluted'),g(c.quarter,'revenueB'),g(c.quarter,'revGrowth'),g(c.quarter,'operatingIncomeB'),g(c.quarter,'netIncomeB'),g(c.quarter,'netMargin'),ttm(c),c.valuation.pe,(c.valuation.peCore==null?'':c.valuation.peCore),c.valuation.evEbitda,c.valuation.divYield,c.valuation.fcfYield,c.valuation.fcfB,c.valuation.grossMargin,(c.valuation.net==null?'':c.valuation.net),(c.valuation.ev==null?'':c.valuation.ev),(c.valuation.evSales==null?'':c.valuation.evSales),(c.valuation.impliedG==null?'':c.valuation.impliedG),c.capex[c.capex.length-1],Math.round(c.capex[c.capex.length-1]/c.annual.revenueB*1000)/10,(c.cds==null?'':c.cds),c.rating.sp,c.rating.moody]);
   const esc=x=>{const s=String(x);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   const csv=[hdr].concat(rows).map(r=>r.map(esc).join(',')).join('\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
@@ -516,6 +532,18 @@ document.getElementById('csvBtn').addEventListener('click',exportCSV);
 const BAL={AAPL:[146.5,84.3],MSFT:[76.8,40.3],NVDA:[56.6,33.4],GOOGL:[242.5,98.2],AMZN:[123.0,128.9],META:[90.3,83.7],TSLA:[37.0,7.0]};
 // Segmentos de nuvem/IA — receita 2T 2026 (US$ bi) e crescimento a/a (%) — fonte: releases oficiais
 const SEG=[{n:'Nvidia Data Center',v:89.0,g:117,c:'#93cf72'},{n:'AWS (Amazon)',v:42.2,g:37,c:'#f4b062'},{n:'MSFT Intelligent Cloud',v:39.3,g:32,c:'#57c0b6'},{n:'Google Cloud',v:24.8,g:82,c:'#7ba6f2'}];
+// FCF TTM (US$ bi) para DCF reverso (fonte: 10-Q/8-K). Amazon FCF TTM negativo (−7,6) e Tesla ~0 -> n/s.
+const FCF0={AAPL:108,MSFT:67,NVDA:127,GOOGL:53,META:40};
+// DCF reverso: crescimento de FCF nos próximos 10 anos implícito no EV atual (WACC 9%, terminal 3%)
+function impliedGrowth(ev,f){
+  if(!(f>0)||!(ev>0))return null;
+  const W=0.09,GT=0.03,N=10;
+  const dcf=g=>{let pv=0;for(let t=1;t<=N;t++)pv+=f*Math.pow((1+g)/(1+W),t);
+    const fN=f*Math.pow(1+g,N),tv=fN*(1+GT)/(W-GT);return pv+tv/Math.pow(1+W,N);};
+  let lo=-0.3,hi=0.9;
+  for(let i=0;i<80;i++){const m=(lo+hi)/2;if(dcf(m)<ev)lo=m;else hi=m;}
+  return Math.round((lo+hi)/2*1000)/10;
+}
 function computeDerived(){
   const oneOff={MSFT:3.2,GOOGL:77.1,AMZN:60,META:-15.9};
   DATA.companies.forEach(c=>{
@@ -531,6 +559,7 @@ function computeDerived(){
       c.valuation.net=net;
       c.valuation.ev=Math.round(ev);
       c.valuation.evSales=Math.round(ev/ttmRev*10)/10;
+      c.valuation.impliedG=impliedGrowth(ev,FCF0[c.ticker]);
     }
   });
   DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de 27/08/2026 ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA e FCF yield permanecem aproximados de jun–jul/2026. Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E.";
