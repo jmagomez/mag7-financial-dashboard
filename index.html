@@ -126,6 +126,11 @@
       <div class="card"><h3>Crescimento de receita</h3><p class="ch">a/a, %</p><canvas id="cGrowth"></canvas></div>
       <div class="card"><h3>Valor de mercado</h3><p class="ch">US$ bilhões · 27 ago 2026</p><canvas id="cCap"></canvas></div>
       <div class="card full">
+        <h3>Motor de nuvem/IA — receita do trimestre (2T 2026)</h3><p class="ch">segmentos de nuvem/data center · US$ bilhões · crescimento a/a no tooltip</p>
+        <canvas id="cSeg" style="max-height:340px"></canvas>
+        <ul class="notes" id="segNotes"></ul>
+      </div>
+      <div class="card full">
         <h3>Comparativo — <span id="tblPeriod"></span></h3><p class="ch">clique nos cabeçalhos para ordenar</p>
         <div style="overflow-x:auto">
           <table id="tbl">
@@ -160,13 +165,18 @@
         <ul class="notes" id="rule40Notes"></ul>
       </div>
       <div class="card full">
-        <h3>Múltiplos e caixa</h3><p class="ch">por empresa</p>
+        <h3>Balanço — caixa líquido (+) vs dívida líquida (−)</h3><p class="ch">caixa + títulos negociáveis menos dívida financiada · US$ bilhões · balanços 2T 2026 (SEC)</p>
+        <canvas id="cNetCash" style="max-height:360px"></canvas>
+        <ul class="notes" id="netCashNotes"></ul>
+      </div>
+      <div class="card full">
+        <h3>Múltiplos e caixa</h3><p class="ch">por empresa · EV = market cap − caixa líquido; EV/Vendas sobre receita TTM</p>
         <div style="overflow-x:auto">
           <table id="tblVal">
             <thead><tr>
               <th data-k="name">Empresa</th><th data-k="marketCapB">Market cap</th><th data-k="pe">P/E TTM</th><th data-k="peCore">P/E core*</th>
               <th data-k="evEbitda">EV/EBITDA</th><th data-k="divYield">Div. yield</th>
-              <th data-k="fcfYield">FCF yield</th><th data-k="fcfB">FCF TTM</th><th data-k="grossMargin">Margem bruta</th>
+              <th data-k="fcfYield">FCF yield</th><th data-k="fcfB">FCF TTM</th><th data-k="grossMargin">Margem bruta</th><th data-k="net">Caixa líq.</th><th data-k="evSales">EV/Vendas</th>
             </tr></thead><tbody></tbody>
           </table>
         </div>
@@ -304,6 +314,14 @@ function renderCharts(){
   bar('cMargin',l,cs.map(c=>pdata(c).netMargin),co,v=>fmt(v,1)+'%');
   bar('cGrowth',l,cs.map(c=>pdata(c).revGrowth),cs.map(c=>pdata(c).revGrowth<0?'#fb7185':c.color),v=>fmt(v,1)+'%');
   doughnut('cCap',cs.map(c=>c.name),cs.map(c=>c.marketCapB),co);
+  if(charts.cSeg)charts.cSeg.destroy();
+  charts.cSeg=new Chart(document.getElementById('cSeg'),{type:'bar',
+    data:{labels:SEG.map(s=>s.n),datasets:[{data:SEG.map(s=>s.v),backgroundColor:SEG.map(s=>s.c),borderRadius:7,borderSkipped:false,maxBarThickness:52,categoryPercentage:.66,barPercentage:.8}]},
+    options:{indexAxis:'y',responsive:true,animation:{duration:600},plugins:{legend:{display:false},
+      tooltip:{...TIP,callbacks:{label:c=>' US$ '+fmt(SEG[c.dataIndex].v,1)+' bi · +'+SEG[c.dataIndex].g+'% a/a'}}},
+      scales:{x:{grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>'$'+v}},
+        y:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}}}}});
+  document.getElementById('segNotes').innerHTML="<li>Receita do trimestre abr–jun 2026 dos segmentos de nuvem/IA (fonte: releases): <b>Nvidia Data Center US$ 89,0 bi (+117%)</b> — o “picks & shovels”, maior que os hyperscalers somados; <b>AWS US$ 42,2 bi (+37%)</b>, melhor crescimento em 18 trimestres; <b>Microsoft Intelligent Cloud US$ 39,3 bi (+32%)</b> — o Azure em si cresceu +43%, mas a Microsoft não divulga o US$ isolado; <b>Google Cloud US$ 24,8 bi (+82%)</b>, forte aceleração. Meta, Apple e Tesla não têm segmento de nuvem.</li>";
 }
 let sortK='marketCapB',sortDir=-1;
 function renderTable(){
@@ -349,14 +367,14 @@ function renderVal(){
     return `<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.name} <span class="muted">${c.ticker}</span></td>
       <td>${fmt(c.marketCapB,0)}</td><td>${fmt(v.pe,1)}x</td><td>${v.peCore!=null?'~'+fmt(v.peCore,1)+'x':(c.ticker==='TSLA'?'n/s':'—')}</td><td>${fmt(v.evEbitda,1)}x</td>
       <td>${v.divYield>0?fmt(v.divYield,2)+'%':'—'}</td><td class="${v.fcfYield<0?'neg':'pos'}">${fmt(v.fcfYield,1)}%</td>
-      <td class="${v.fcfB<0?'neg':''}">${fmt(v.fcfB,0)}</td><td>${fmt(v.grossMargin,1)}%</td></tr>`;
+      <td class="${v.fcfB<0?'neg':''}">${fmt(v.fcfB,0)}</td><td>${fmt(v.grossMargin,1)}%</td><td class="${v.net<0?'neg':'pos'}">${v.net!=null?(v.net>=0?'+':'')+fmt(v.net,0):'—'}</td><td>${v.evSales!=null?fmt(v.evSales,1)+'x':'—'}</td></tr>`;
   }).join('');
 
   if(charts.cScatter)charts.cScatter.destroy();
   charts.cScatter=new Chart(document.getElementById('cScatter'),{type:'bubble',
     data:{datasets:cs.map(c=>({label:c.ticker,data:[{x:c.annual.revGrowth,y:c.valuation.evEbitda,r:Math.max(6,Math.sqrt(c.marketCapB)/6)}],backgroundColor:c.color+'cc',borderColor:c.color,borderWidth:1}))},
     options:{responsive:true,animation:{duration:600},plugins:{legend:{...LEG,display:true},
-      tooltip:{...TIP,callbacks:{label:c=>' '+c.dataset.label+': cresc. '+fmt(c.raw.x,1)+'% · EV/EBITDA '+fmt(c.raw.y,1)+'x · cap $'+fmt(cs.find(z=>z.ticker===c.dataset.label).marketCapB,0)+' bi'}}},
+      tooltip:{...TIP,callbacks:{label:c=>' '+c.dataset.label+': cresc. '+fmt(c.raw.x,1)+'% · EV/EBITDA '+fmt(c.raw.y,1)+'x · cap $'+fmt(c.dataset.data[0]&&cs.find(z=>z.ticker===c.dataset.label).marketCapB,0)+' bi'}}},
       scales:{x:{title:{display:true,text:'Crescimento de receita a/a (%)',color:AXIS,font:{family:'Inter',size:11}},grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
         y:{type:'logarithmic',min:10,title:{display:true,text:'EV/EBITDA (x)',color:AXIS,font:{family:'Inter',size:11}},grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>([10,20,30,50,100,150].indexOf(v)>=0?v+'x':'')}}}}});
   document.getElementById('scatterNotes').innerHTML="<li>Cada bolha é uma empresa; o tamanho é proporcional ao market cap. Quadrante mais atraente: crescimento alto (à direita) com múltiplo baixo (embaixo). EV ≈ market cap (caixa líquido aprox. compensado); EV/EBITDA aprox. de jul/2026 e crescimento do FY2025 — Tesla sai da escala (EV/EBITDA ~146x).</li>";
@@ -373,6 +391,18 @@ function renderVal(){
       scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
         y:{grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>v+'%'}}}}});
   document.getElementById('rule40Notes').innerHTML="<li>Regra dos 40 (heurística de software/tech) = crescimento de receita (a/a) + margem de FCF (FCF FY2025 ÷ receita FY2025). Acima da linha de 40% indica equilíbrio saudável entre crescer e gerar caixa. Nvidia domina (crescimento de 114%); Tesla e Amazon ficam abaixo por baixa geração de FCF/CapEx elevado.</li>";
+
+  const nc=cs.filter(c=>c.balance).map(c=>({t:c.ticker,v:c.balance.net,col:c.balance.net<0?'#fb7185':c.color}));
+  if(charts.cNetCash)charts.cNetCash.destroy();
+  charts.cNetCash=new Chart(document.getElementById('cNetCash'),{type:'bar',
+    data:{labels:nc.map(x=>x.t),datasets:[{data:nc.map(x=>x.v),backgroundColor:nc.map(x=>x.col),borderRadius:6,borderSkipped:false,maxBarThickness:46}]},
+    options:{responsive:true,animation:{duration:600},plugins:{legend:{display:false},
+      tooltip:{...TIP,callbacks:{label:c=>{const b=cs.find(z=>z.ticker===c.label).balance;return ' caixa líq. '+(c.parsed.y>=0?'+':'')+fmt(c.parsed.y,1)+' bi (caixa $'+fmt(b.cash,0)+' − dívida $'+fmt(b.debt,0)+')';}}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
+        y:{grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>'$'+v}}}}});
+  document.getElementById('netCashNotes').innerHTML="<li>Definição uniforme: <b>caixa + títulos negociáveis</b> (curto e longo prazo) menos <b>dívida financiada</b> (bonds/commercial paper), excluindo arrendamentos e participações não negociáveis. Fonte: balanços do 2T 2026 (10-Q/8-K, SEC); Tesla aprox.</li>"+
+    "<li><b>A tese do balanço:</b> o CapEx de IA está consumindo caixa — a <b>Amazon</b> já ficou levemente negativa (−US$ 6 bi) e a <b>Microsoft</b> desacumulou (mas segue +US$ 37 bi por dívida financiada; incluindo ~US$ 50 bi+ de arrendamentos financeiros de data centers, ficaria negativa). No extremo oposto, <b>Alphabet</b> (+US$ 144 bi) e <b>Apple</b> (+US$ 62 bi) seguem fortíssimas; Nvidia +US$ 23 bi (mais ~US$ 43 bi em ações de terceiros, à parte). É o mesmo enredo dos CDS.</li>"+
+    "<li>Para megacaps o caixa líquido é só ±1–4% do valor de mercado, então <b>EV ≈ market cap</b> — por isso o EV/EBITDA muda pouco; adicionei EV/Vendas (TTM) à tabela como referência limpa (Amazon ~3,6x por ser varejo; Nvidia ~18x).</li>";
 }
 
 /* ---- HISTÓRICO ---- */
@@ -470,10 +500,10 @@ document.querySelectorAll('#tblVal thead th').forEach(th=>th.addEventListener('c
 function exportCSV(){
   if(!DATA)return;
   const cs=DATA.companies;
-  const hdr=['Ticker','Empresa','Preco_USD','MarketCap_B','Peso_pct','Rev_FY2025_B','RevGrowth_FY2025_pct','NI_FY2025_B','NetMargin_FY2025_pct','EPS_FY2025','Rev_Q2-2026_B','RevGrowth_Q2-2026_pct','OpInc_Q2-2026_B','NI_Q2-2026_B','NetMargin_Q2-2026_pct','TTM_NI_B','PE_TTM_GAAP','PE_core_adj','EV_EBITDA','DivYield_pct','FCFYield_pct','FCF_TTM_B','GrossMargin_pct','CapEx_FY2025_B','CapExIntensity_pct','CDS_bps','Rating_SP','Rating_Moody'];
+  const hdr=['Ticker','Empresa','Preco_USD','MarketCap_B','Peso_pct','Rev_FY2025_B','RevGrowth_FY2025_pct','NI_FY2025_B','NetMargin_FY2025_pct','EPS_FY2025','Rev_Q2-2026_B','RevGrowth_Q2-2026_pct','OpInc_Q2-2026_B','NI_Q2-2026_B','NetMargin_Q2-2026_pct','TTM_NI_B','PE_TTM_GAAP','PE_core_adj','EV_EBITDA','DivYield_pct','FCFYield_pct','FCF_TTM_B','GrossMargin_pct','NetCash_B','EV_B','EV_Sales','CapEx_FY2025_B','CapExIntensity_pct','CDS_bps','Rating_SP','Rating_Moody'];
   const g=(o,k)=>o&&o[k]!=null?o[k]:'';
   const ttm=c=>Math.round(c.niHistory.slice(-4).reduce((a,b)=>a+b,0)*10)/10;
-  const rows=cs.map(c=>[c.ticker,c.name,c.price,c.marketCapB,c.weight,g(c.annual,'revenueB'),g(c.annual,'revGrowth'),g(c.annual,'netIncomeB'),g(c.annual,'netMargin'),g(c.annual,'epsDiluted'),g(c.quarter,'revenueB'),g(c.quarter,'revGrowth'),g(c.quarter,'operatingIncomeB'),g(c.quarter,'netIncomeB'),g(c.quarter,'netMargin'),ttm(c),c.valuation.pe,(c.valuation.peCore==null?'':c.valuation.peCore),c.valuation.evEbitda,c.valuation.divYield,c.valuation.fcfYield,c.valuation.fcfB,c.valuation.grossMargin,c.capex[c.capex.length-1],Math.round(c.capex[c.capex.length-1]/c.annual.revenueB*1000)/10,(c.cds==null?'':c.cds),c.rating.sp,c.rating.moody]);
+  const rows=cs.map(c=>[c.ticker,c.name,c.price,c.marketCapB,c.weight,g(c.annual,'revenueB'),g(c.annual,'revGrowth'),g(c.annual,'netIncomeB'),g(c.annual,'netMargin'),g(c.annual,'epsDiluted'),g(c.quarter,'revenueB'),g(c.quarter,'revGrowth'),g(c.quarter,'operatingIncomeB'),g(c.quarter,'netIncomeB'),g(c.quarter,'netMargin'),ttm(c),c.valuation.pe,(c.valuation.peCore==null?'':c.valuation.peCore),c.valuation.evEbitda,c.valuation.divYield,c.valuation.fcfYield,c.valuation.fcfB,c.valuation.grossMargin,(c.valuation.net==null?'':c.valuation.net),(c.valuation.ev==null?'':c.valuation.ev),(c.valuation.evSales==null?'':c.valuation.evSales),c.capex[c.capex.length-1],Math.round(c.capex[c.capex.length-1]/c.annual.revenueB*1000)/10,(c.cds==null?'':c.cds),c.rating.sp,c.rating.moody]);
   const esc=x=>{const s=String(x);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   const csv=[hdr].concat(rows).map(r=>r.map(esc).join(',')).join('\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
@@ -482,12 +512,26 @@ function exportCSV(){
 }
 document.getElementById('csvBtn').addEventListener('click',exportCSV);
 
+// Balanço 2T 2026 (fontes: 10-Q/8-K SEC): [caixa + títulos negociáveis, dívida financiada] em US$ bi. TSLA aprox.
+const BAL={AAPL:[146.5,84.3],MSFT:[76.8,40.3],NVDA:[56.6,33.4],GOOGL:[242.5,98.2],AMZN:[123.0,128.9],META:[90.3,83.7],TSLA:[37.0,7.0]};
+// Segmentos de nuvem/IA — receita 2T 2026 (US$ bi) e crescimento a/a (%) — fonte: releases oficiais
+const SEG=[{n:'Nvidia Data Center',v:89.0,g:117,c:'#93cf72'},{n:'AWS (Amazon)',v:42.2,g:37,c:'#f4b062'},{n:'MSFT Intelligent Cloud',v:39.3,g:32,c:'#57c0b6'},{n:'Google Cloud',v:24.8,g:82,c:'#7ba6f2'}];
 function computeDerived(){
   const oneOff={MSFT:3.2,GOOGL:77.1,AMZN:60,META:-15.9};
   DATA.companies.forEach(c=>{
     const ttmNI=c.niHistory.slice(-4).reduce((a,b)=>a+b,0);
     c.valuation.pe=Math.round(c.marketCapB/ttmNI*10)/10;
     c.valuation.peCore=(c.ticker in oneOff)?Math.round(c.marketCapB/(ttmNI-oneOff[c.ticker])*10)/10:null;
+    const b=BAL[c.ticker];
+    if(b){
+      const cash=b[0], debt=b[1], net=Math.round((cash-debt)*10)/10;
+      const ttmRev=c.revHistory.slice(-4).reduce((a,x)=>a+x,0);
+      const ev=c.marketCapB-net;
+      c.balance={cash,debt,net};
+      c.valuation.net=net;
+      c.valuation.ev=Math.round(ev);
+      c.valuation.evSales=Math.round(ev/ttmRev*10)/10;
+    }
   });
   DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de 27/08/2026 ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA e FCF yield permanecem aproximados de jun–jul/2026. Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E.";
 }
