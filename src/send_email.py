@@ -3,6 +3,11 @@
 Le data.json, monta o resumo de CDS (com alerta se algum das 7 > 100 bps)
 e envia. Roda no GitHub Actions -- nao precisa de navegador aberto.
 
+Guarda [skip-email]: se o commit que disparou o workflow tiver "[skip-email]"
+na mensagem, o envio e PULADO. Assim commits de manutencao (refactor, ajustes
+de layout no data.json) nao disparam e-mail. Envio manual (workflow_dispatch)
+ou MAG7_FORCE_SEND=1 sempre enviam.
+
 Secrets esperados (repo Settings -> Secrets and variables -> Actions):
   MAG7_SMTP_USER          -> endereco Gmail remetente (ex.: seuemail@gmail.com)
   MAG7_SMTP_APP_PASSWORD  -> senha de app do Gmail (16 caracteres)
@@ -13,6 +18,7 @@ import os
 import json
 import ssl
 import smtplib
+import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -24,7 +30,27 @@ def fmt(v):
     return "n/d" if v is None else f"{v:g}"
 
 
+def skip_email():
+    """True se o commit que disparou o workflow tem [skip-email] na mensagem."""
+    if os.environ.get("MAG7_FORCE_SEND") == "1":
+        return False
+    msg = ""
+    ev = os.environ.get("GITHUB_EVENT_PATH")
+    if ev and os.path.exists(ev):
+        try:
+            with open(ev, encoding="utf-8") as f:
+                payload = json.load(f)
+            msg = ((payload.get("head_commit") or {}).get("message")) or ""
+        except Exception:
+            msg = ""
+    return "[skip-email]" in msg
+
+
 def main():
+    if skip_email():
+        print("Commit marcado com [skip-email]: e-mail NAO enviado (manutencao).")
+        return
+
     user = os.environ["MAG7_SMTP_USER"]
     pwd = os.environ["MAG7_SMTP_APP_PASSWORD"]
     dest = [x.strip() for x in os.environ.get("MAG7_EMAIL_DEST", user).split(",") if x.strip()]
