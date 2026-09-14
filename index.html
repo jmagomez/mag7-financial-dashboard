@@ -38,6 +38,7 @@
   .tabs button.active{color:var(--txt)}
   .tabs button.active::after{content:'';position:absolute;left:0;right:0;bottom:-5px;height:2px;
     border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  .tabs button:focus-visible,.seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
   .tabline{height:1px;background:var(--card-brd);margin-bottom:22px}
 
   .seg{display:inline-flex;gap:2px;background:rgba(255,255,255,.03);border:1px solid var(--card-brd);
@@ -92,6 +93,7 @@
     padding:7px 14px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:500;transition:.2s}
   .btn:hover{background:rgba(124,140,255,.24);border-color:rgba(124,140,255,.4)}
   @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.full{grid-column:1}}
+  @media(prefers-reduced-motion: reduce){*{transition:none !important}}
 </style>
 </head>
 <body>
@@ -99,20 +101,20 @@
   <header>
     <h1>Magnificent 7 · Indicadores Financeiros</h1>
     <div class="sub">Apple · Microsoft · Alphabet · Amazon · Meta · Nvidia · Tesla &nbsp;—&nbsp; FY2025 e Q2 2026 · atualizado em <b id="gen"></b></div>
-    <div style="margin-top:13px"><button class="btn" id="csvBtn">⭳ Exportar dados (CSV)</button></div>
+    <div style="margin-top:13px"><button class="btn" id="csvBtn" aria-label="Exportar todos os dados do painel em arquivo CSV">⭳ Exportar dados (CSV)</button></div>
   </header>
 
-  <div class="tabs" id="tabs">
-    <button data-tab="ind" class="active">Indicadores</button>
-    <button data-tab="val">Valuation</button>
-    <button data-tab="hist">Histórico</button>
-    <button data-tab="cred">Crédito &amp; CapEx</button>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Seções do dashboard">
+    <button data-tab="ind" class="active" role="tab">Indicadores</button>
+    <button data-tab="val" role="tab">Valuation</button>
+    <button data-tab="hist" role="tab">Histórico</button>
+    <button data-tab="cred" role="tab">Crédito &amp; CapEx</button>
   </div>
   <div class="tabline"></div>
 
   <!-- TAB INDICADORES -->
   <section id="tab-ind">
-    <div class="seg" id="toggle">
+    <div class="seg" id="toggle" role="group" aria-label="Período">
       <button data-p="annual" class="active">Ano fiscal · FY2025</button>
       <button data-p="quarter">Trimestre · Q2 2026</button>
     </div>
@@ -127,7 +129,7 @@
       <div class="card"><h3>Valor de mercado</h3><p class="ch">US$ bilhões · 27 ago 2026</p><canvas id="cCap"></canvas></div>
       <div class="card full">
         <h3>Motor de nuvem/IA — receita do trimestre (2T 2026)</h3><p class="ch">segmentos de nuvem/data center · US$ bilhões · crescimento a/a no tooltip</p>
-        <canvas id="cSeg" style="max-height:340px"></canvas>
+        <canvas id="cSeg" style="max-height:340px" role="img" aria-label="Receita dos segmentos de nuvem e IA no 2T 2026"></canvas>
         <ul class="notes" id="segNotes"></ul>
       </div>
       <div class="card full">
@@ -154,6 +156,11 @@
       <div class="card"><h3>EV / EBITDA</h3><p class="ch">aprox. · escala log</p><canvas id="cEv"></canvas></div>
       <div class="card"><h3>FCF yield</h3><p class="ch">%</p><canvas id="cFcf"></canvas></div>
       <div class="card"><h3>Dividend yield</h3><p class="ch">%</p><canvas id="cDiv"></canvas></div>
+      <div class="card full">
+        <h3>Qualidade do lucro — operacional vs líquido (GAAP)</h3><p class="ch">2T 2026 · lucro operacional (o negócio) vs lucro líquido GAAP · US$ bilhões · quando o líquido supera muito o operacional, o excesso é item NÃO operacional (mark-to-market)</p>
+        <canvas id="cQoE" style="max-height:380px" role="img" aria-label="Lucro operacional vs lucro líquido GAAP do 2T 2026 por empresa"></canvas>
+        <ul class="notes" id="qoeNotes"></ul>
+      </div>
       <div class="card full">
         <h3>Crescimento × Valuation</h3><p class="ch">crescimento de receita a/a (FY2025) × EV/EBITDA · bolha = market cap · escala log Y</p>
         <canvas id="cScatter" style="max-height:430px"></canvas>
@@ -200,7 +207,7 @@
 
   <!-- TAB HISTÓRICO -->
   <section id="tab-hist" class="hidden">
-    <div class="seg" id="histToggle">
+    <div class="seg" id="histToggle" role="group" aria-label="Métrica do histórico">
       <button data-m="rev" class="active">Receita</button>
       <button data-m="ni">Lucro líquido</button>
       <button data-m="margin">Margem</button>
@@ -371,6 +378,17 @@ function renderVal(){
   bar('cEv',l,cs.map(c=>c.valuation.evEbitda),co,v=>fmt(v,1)+'x',true);
   bar('cFcf',l,cs.map(c=>c.valuation.fcfYield),cs.map(c=>c.valuation.fcfYield<0?'#fb7185':c.color),v=>fmt(v,1)+'%');
   bar('cDiv',l,cs.map(c=>c.valuation.divYield),co,v=>fmt(v,2)+'%');
+
+  // Qualidade do lucro: operacional vs líquido (GAAP), trimestre atual
+  const qoe=cs.filter(c=>c.quarter&&c.quarter.operatingIncomeB!=null&&c.quarter.netIncomeB!=null);
+  groupedBar('cQoE',qoe.map(c=>c.ticker),[
+    {label:'Lucro operacional (negócio)',data:qoe.map(c=>c.quarter.operatingIncomeB),backgroundColor:'#57c0b6'},
+    {label:'Lucro líquido (GAAP)',data:qoe.map(c=>c.quarter.netIncomeB),backgroundColor:'#a89cf3'}
+  ]);
+  document.getElementById('qoeNotes').innerHTML="<li><b>A leitura decisiva de qualidade do lucro.</b> Quando as duas barras são próximas, o lucro líquido reflete a operação. Quando o <b>líquido</b> (roxo) supera muito o <b>operacional</b> (verde), o excesso é NÃO operacional — tipicamente ganhos não realizados (mark-to-market) com participações, sem caixa.</li>"+
+    "<li><b>As armadilhas do 2T'26:</b> <b>Alphabet</b> reportou US$ 112,1 bi de lucro líquido sobre apenas US$ 40,8 bi operacional (~2,7x) — ~US$ 77 bi vêm de ganho não realizado com participações; <b>Amazon</b>, US$ 62,6 bi líquido vs US$ 27,5 bi operacional, com ~US$ 53 bi de ganho com a Anthropic. Nesses dois, o P/E e a margem GAAP do trimestre são enganosos — use o operacional.</li>"+
+    "<li><b>O outro lado:</b> em <b>Apple</b> (op 35,7 → líq 29,8), <b>Microsoft</b> (40,6 → 35,8) e <b>Nvidia</b> (63,7 → 59,7) o líquido é MENOR que o operacional (impostos) — lucro de alta qualidade. Ressalvas: o líquido da Nvidia ainda embute ~US$ 7,8 bi de ganhos com participações (em ‘outras receitas’) e o da Microsoft ~US$ 3,2 bi (Anthropic). <b>Meta</b> (op 18,8 → líq 15,9): impostos e encargos jurídicos/rescisões. <b>Tesla</b> é o caso extremo inverso: líq 1,11 &gt; op 0,40 — quase todo o lucro veio de ~US$ 1 bi de ganho com a SpaceX, não da operação.</li>";
+
   const rows=[...cs].sort((a,b)=>{const g=x=>sortV==='name'?x.name:(sortV==='marketCapB'?x.marketCapB:x.valuation[sortV]);
     const av=g(a),bv=g(b);return sortV==='name'?(av<bv?-sortVDir:sortVDir):((av||0)-(bv||0))*sortVDir;});
   document.querySelector('#tblVal tbody').innerHTML=rows.map(c=>{const v=c.valuation;
@@ -548,47 +566,53 @@ function exportCSV(){
 }
 document.getElementById('csvBtn').addEventListener('click',exportCSV);
 
-// Balanço 2T 2026 (fontes: 10-Q/8-K SEC): [caixa + títulos negociáveis, dívida financiada] em US$ bi. TSLA aprox.
-const BAL={AAPL:[146.5,84.3],MSFT:[76.8,40.3],NVDA:[56.6,33.4],GOOGL:[242.5,98.2],AMZN:[123.0,128.9],META:[90.3,83.7],TSLA:[37.0,7.0]};
-// Segmentos de nuvem/IA — receita 2T 2026 (US$ bi) e crescimento a/a (%) — fonte: releases oficiais
-const SEG=[{n:'Nvidia Data Center',v:89.0,g:117,c:'#93cf72'},{n:'AWS (Amazon)',v:42.2,g:37,c:'#f4b062'},{n:'MSFT Intelligent Cloud',v:39.3,g:32,c:'#57c0b6'},{n:'Google Cloud',v:24.8,g:82,c:'#7ba6f2'}];
-// FCF TTM (US$ bi) para DCF reverso (fonte: 10-Q/8-K). Amazon FCF TTM negativo (−7,6) e Tesla ~0 -> n/s.
-const FCF0={AAPL:108,MSFT:67,NVDA:127,GOOGL:53,META:40};
-// P/E forward de consenso (NTM/2027, aprox. ago 2026) — fonte: agregadores (GuruFocus, valueinvesting, S&P). Definição varia entre fontes.
-const FWDPE={AAPL:34,MSFT:20,NVDA:18,GOOGL:23,AMZN:31,META:14,TSLA:188};
-// DCF reverso: crescimento de FCF nos próximos 10 anos implícito no EV atual (WACC 9%, terminal 3%)
-function impliedGrowth(ev,f){
-  if(!(f>0)||!(ev>0))return null;
-  const W=0.09,GT=0.03,N=10;
+// DCF reverso: crescimento de FCF nos próximos N anos implícito no EV atual (premissas em data.json > derived.dcfAssumptions)
+function impliedGrowth(ev,f,A){
+  A=A||{};
+  const W=(A.waccPct!=null?A.waccPct:9)/100, GT=(A.terminalGrowthPct!=null?A.terminalGrowthPct:3)/100, N=A.years||10;
+  if(!(f>0)||!(ev>0)||!(W>GT))return null;
   const dcf=g=>{let pv=0;for(let t=1;t<=N;t++)pv+=f*Math.pow((1+g)/(1+W),t);
     const fN=f*Math.pow(1+g,N),tv=fN*(1+GT)/(W-GT);return pv+tv/Math.pow(1+W,N);};
   let lo=-0.3,hi=0.9;
   for(let i=0;i<80;i++){const m=(lo+hi)/2;if(dcf(m)<ev)lo=m;else hi=m;}
   return Math.round((lo+hi)/2*1000)/10;
 }
+// Segmentos de nuvem/IA (preenchido a partir de DATA.derived em computeDerived)
+let SEG=[];
+// Deriva no cliente: P/E TTM/core, caixa líquido, EV, EV/Vendas, crescimento implícito e P/E forward.
+// TODAS as entradas numéricas vêm de DATA.derived (fonte única e auditável no data.json).
 function computeDerived(){
-  const oneOff={MSFT:3.2,GOOGL:77.1,AMZN:60,META:-15.9};
+  const D=DATA.derived||{};
+  const oneOff=D.oneOffTTM||{}, BAL=D.balanceQ2_2026||{}, FCF0=D.fcfTTM||{}, FWDPE=D.fwdPE||{}, A=D.dcfAssumptions||{};
+  SEG=D.cloudSegmentsQ2_2026||[];
   DATA.companies.forEach(c=>{
     const ttmNI=c.niHistory.slice(-4).reduce((a,b)=>a+b,0);
     c.valuation.pe=Math.round(c.marketCapB/ttmNI*10)/10;
     c.valuation.peCore=(c.ticker in oneOff)?Math.round(c.marketCapB/(ttmNI-oneOff[c.ticker])*10)/10:null;
     const b=BAL[c.ticker];
     if(b){
-      const cash=b[0], debt=b[1], net=Math.round((cash-debt)*10)/10;
+      const cash=b.cash, debt=b.debt, net=Math.round((cash-debt)*10)/10;
       const ttmRev=c.revHistory.slice(-4).reduce((a,x)=>a+x,0);
       const ev=c.marketCapB-net;
       c.balance={cash,debt,net};
       c.valuation.net=net;
       c.valuation.ev=Math.round(ev);
       c.valuation.evSales=Math.round(ev/ttmRev*10)/10;
-      c.valuation.impliedG=impliedGrowth(ev,FCF0[c.ticker]);
+      c.valuation.impliedG=impliedGrowth(ev,FCF0[c.ticker],A);
     }
     c.valuation.peFwd=FWDPE[c.ticker]!=null?FWDPE[c.ticker]:null;
   });
-  DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de 27/08/2026 ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA e FCF yield permanecem aproximados de jun–jul/2026. Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E.";
+  DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de 27/08/2026 ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA e FCF yield permanecem aproximados de jun–jul/2026. Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E, e a view de qualidade do lucro.";
 }
-fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{DATA=d;computeDerived();renderMeta();showTab('ind');})
-  .catch(()=>{document.getElementById('kpis').innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v">Falha ao carregar data.json</div></div>';});
+function fatal(msg){
+  const k=document.getElementById('kpis');
+  if(k)k.innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v" style="font-size:15px">'+msg+'</div></div>';
+}
+fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>{
+  if(typeof Chart==='undefined'){fatal('Não foi possível carregar a biblioteca de gráficos (CDN). Verifique sua conexão e recarregue.');return;}
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)Chart.defaults.animation=false;
+  DATA=d;computeDerived();renderMeta();showTab('ind');
+}).catch(()=>fatal('Falha ao carregar data.json.'));
 </script>
 </body>
 </html>
