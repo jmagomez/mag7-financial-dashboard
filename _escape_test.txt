@@ -1,3 +1,0 @@
-linha1 "aspas" çã—
-linha2 \b e /barra
-fim: {"pe": 39, "x": 1.5}
