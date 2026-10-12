@@ -34,11 +34,11 @@ As **entradas** dos cálculos do front-end ficam em `data.json` sob `derived`, n
 - `balanceQ2_2026` — caixa + títulos negociáveis e dívida financiada por empresa (para caixa líquido e EV);
 - `cloudSegmentsQ2_2026` — receita e crescimento dos segmentos de nuvem/IA;
 - `fcfTTM` — FCF TTM das 7 empresas, usado como ponto de partida do DCF reverso **e como base do FCF yield exibido**;
-- `fwdPE` — P/E forward de consenso;
+- `fwdPE` — P/E forward de consenso de ago/2026 (referência); `ebitdaImplB` e `fwdEPS` — denominadores implícitos usados para reescalar EV/EBITDA e P/E forward ao snapshot atual;
 - `oneOffTTM` — ajustes de itens não recorrentes para o P/E core;
 - `dcfAssumptions` — WACC, crescimento terminal e horizonte do DCF reverso.
 
-O front-end **recalcula** P/E TTM, P/E core, FCF yield, caixa líquido, EV, EV/Vendas, crescimento implícito, CapEx/OCF, PD implícita de CDS e P/E forward a cada carregamento; por isso o `data.json` guarda apenas dados reportados + entradas, sem múltiplos "congelados".
+O front-end **recalcula** P/E TTM, P/E core, FCF yield, caixa líquido, EV, EV/Vendas, EV/EBITDA, crescimento implícito, CapEx/OCF, PD implícita de CDS e P/E forward a cada carregamento; por isso o `data.json` guarda apenas dados reportados + entradas, sem múltiplos "congelados".
 
 ## Metodologia
 
@@ -67,13 +67,13 @@ O histórico de checagens fica em `meta.cdsLog` (lista de `{date, text}`), exibi
 
 - Preços, pesos e market cap: **snapshot em `meta.marketSnapshot`** (09/10/2026). Preço de fechamento (StockAnalysis, conferido com outras fontes) × quantidade de ações implícita no market cap anterior (aproximação); pesos = market cap ÷ total. O chip do cabeçalho mostra a idade; atualize para manter P/E, EV e FCF yield coerentes.
 - Resultados trimestrais/anuais: releases oficiais e SEC (10-Q/8-K).
-- EV/EBITDA: aproximado de **jun–jul/2026** e P/E forward de **ago/2026** (não recalculados com o snapshot novo).
+- EV/EBITDA e P/E forward: **reescalados** ao snapshot de preços — `derived.ebitdaImplB` (EBITDA implícito no múltiplo de jun–jul/2026) e `derived.fwdEPS` (LPA forward implícito no consenso de ago/2026) ficam constantes; o painel divide o EV/preço atual por eles. Revisões de EBITDA/consenso posteriores a ago/2026 NÃO estão incorporadas (ver `derived.multiplesNote`).
 - CDS: cotações pontuais de imprensa, datadas nas notas de crédito.
 
 ## Automação
 
 - **E-mail (SMTP):** ao dar push em `data.json`, a Action executa `src/send_email.py`, que envia um resumo de crédito/CDS (com alerta se algum CDS das 7 passar de 100 bps). Commits de manutenção trazem `[skip-email]` na mensagem e **não** disparam e-mail. Secrets: `MAG7_SMTP_USER`, `MAG7_SMTP_APP_PASSWORD`, `MAG7_EMAIL_DEST`, `MAG7_EMAIL_BCC`.
-- **Verificação de CDS (seg/qui):** tarefa agendada revisa os níveis de CDS e atualiza as notas quando há cotação nova datada.
+- **Verificação de CDS (seg/qui):** tarefa agendada revisa os níveis de CDS, atualiza a nota de crédito e acrescenta um item em `meta.cdsLog` quando há cotação nova datada.
 - **Verificação de trimestre (mensal):** tarefa agendada checa quais das 7 já divulgaram o próximo trimestre-calendário e envia um status curto (o que saiu / o que falta). Quando as 7 estiverem disponíveis, os números reais são coletados dos filings e incorporados ao `data.json` (novo trimestre).
 
 ## Como atualizar
