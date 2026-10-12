@@ -153,7 +153,7 @@
       <div class="card"><h3>Receita</h3><p class="ch">US$ bilhões</p><canvas id="cRev"></canvas></div>
       <div class="card"><h3>Margem líquida</h3><p class="ch">%</p><canvas id="cMargin"></canvas></div>
       <div class="card"><h3>Crescimento de receita</h3><p class="ch">a/a, %</p><canvas id="cGrowth"></canvas></div>
-      <div class="card"><h3>Valor de mercado</h3><p class="ch">US$ bilhões · 27 ago 2026</p><canvas id="cCap"></canvas></div>
+      <div class="card"><h3>Valor de mercado</h3><p class="ch" id="capSub">US$ bilhões</p><canvas id="cCap"></canvas></div>
       <div class="card full">
         <h3>Motor de nuvem/IA — receita do trimestre (2T 2026)</h3><p class="ch">segmentos de nuvem/data center · US$ bilhões · crescimento a/a no tooltip</p>
         <canvas id="cSeg" style="max-height:340px" role="img" aria-label="Receita dos segmentos de nuvem e IA no 2T 2026"></canvas>
@@ -179,7 +179,7 @@
   <!-- TAB VALUATION -->
   <section id="tab-val" class="hidden" role="tabpanel" aria-labelledby="t-val">
     <div class="grid">
-      <div class="card"><h3>P/E — TTM (GAAP) vs core</h3><p class="ch">preço 27 ago ÷ LPA 4T · ◆ = P/E core (ex-itens não recorr.) · escala log</p><canvas id="cPe"></canvas></div>
+      <div class="card"><h3>P/E — TTM (GAAP) vs core</h3><p class="ch" id="peSub">preço ÷ LPA 4T · ◆ = P/E core (ex-itens não recorr.) · escala log</p><canvas id="cPe"></canvas></div>
       <div class="card"><h3>EV / EBITDA</h3><p class="ch">aprox. · escala log</p><canvas id="cEv"></canvas></div>
       <div class="card"><h3>FCF yield</h3><p class="ch">FCF TTM ÷ market cap · % · AMZN/TSLA: valor declarado (sem FCF TTM auditado)</p><canvas id="cFcf"></canvas></div>
       <div class="card"><h3>Dividend yield</h3><p class="ch">%</p><canvas id="cDiv"></canvas></div>
@@ -224,10 +224,7 @@
             </tr></thead><tbody></tbody>
           </table>
         </div>
-        <ul class="notes">
-          <li><b>P/E recalculado (TTM GAAP)</b> = market cap (27/08/2026) ÷ lucro líquido GAAP dos últimos 4 trimestres (3T'25–2T'26). Cuidado com a leitura ingênua: Alphabet aparece a 16,9x e Amazon a 20,5x, mas é uma ARMADILHA — o lucro TTM de ambas está inflado por ganhos NÃO operacionais/não realizados com participações (Alphabet +US$ 77 bi líquidos no 2T'26; Amazon ~US$ 70 bi pré-imposto com a Anthropic no 1T+2T'26). Excluindo esses itens, o <b>P/E core (◆)</b> é ~24,7x na Alphabet (e ainda é um piso: 4T'25/1T'26 também tiveram ganhos não estornados) e ~37x na Amazon.</li>
-          <li><b>Distorção inversa na Meta:</b> o P/E GAAP (21,8x) está SUPERestimado porque o lucro TTM carrega o encargo tributário não recorrente de ~US$ 15,9 bi do 3T'25; normalizado, o P/E core cai para ~17,7x. Microsoft ~28x (ex-ganho de US$ 3,2 bi com Anthropic). Apple (35,2x) e Nvidia (28,2x) têm lucro TTM limpo. <b>Tesla (>360x) não é significativo</b> — lucro quase nulo; avalie por EV/EBITDA, P/S ou múltiplos forward. *P/E core é aproximado (líq. de impostos estimado). EV/EBITDA e FCF yield permanecem de jun–jul/2026.</li>
-        </ul>
+        <ul class="notes" id="valNotes"></ul>
       </div>
     </div>
   </section>
@@ -282,6 +279,7 @@
     <div class="card full" style="margin-top:16px">
       <h3>Análise de crédito / CDS — leitura crítica</h3>
       <ul class="notes" id="credNotes"></ul>
+      <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;font-size:12px">Histórico de verificações de CDS</summary><ul class="notes" id="cdsLog"></ul></details>
     </div>
   </section>
 
@@ -368,6 +366,7 @@ function renderCharts(){
   bar('cRev',l,cs.map(c=>pdata(c).revenueB),co,v=>'$'+fmt(v,1)+' bi');
   bar('cMargin',l,cs.map(c=>pdata(c).netMargin),co,v=>fmt(v,1)+'%');
   bar('cGrowth',l,cs.map(c=>pdata(c).revGrowth),cs.map(c=>pdata(c).revGrowth<0?'#fb7185':c.color),v=>fmt(v,1)+'%');
+  document.getElementById('capSub').textContent='US$ bilhões · '+(DATA.meta.marketSnapshot?brDate(DATA.meta.marketSnapshot):'');
   doughnut('cCap',cs.map(c=>c.name),cs.map(c=>c.marketCapB),co);
   if(charts.cSeg)charts.cSeg.destroy();
   charts.cSeg=new Chart(document.getElementById('cSeg'),{type:'bar',
@@ -403,6 +402,11 @@ function renderInd(){
 let sortV='marketCapB',sortVDir=-1;
 function renderVal(){
   const cs=DATA.companies,l=cs.map(c=>c.ticker),co=cs.map(c=>c.color);
+  const snap=DATA.meta.marketSnapshot?brDate(DATA.meta.marketSnapshot):'';
+  const V=t=>cs.find(z=>z.ticker===t).valuation, pe=t=>fmt(V(t).pe,1)+'x', pc=t=>'~'+fmt(V(t).peCore,1)+'x';
+  document.getElementById('peSub').textContent='preço de '+snap+' ÷ LPA 4T · ◆ = P/E core (ex-itens não recorr.) · escala log';
+  document.getElementById('valNotes').innerHTML="<li><b>P/E recalculado (TTM GAAP)</b> = market cap ("+snap+") ÷ lucro líquido GAAP dos últimos 4 trimestres (3T'25–2T'26). Cuidado com a leitura ingênua: Alphabet aparece a "+pe('GOOGL')+" e Amazon a "+pe('AMZN')+", mas é uma ARMADILHA — o lucro TTM de ambas está inflado por ganhos NÃO operacionais/não realizados com participações (Alphabet +US$ 77 bi líquidos no 2T'26; Amazon ~US$ 70 bi pré-imposto com a Anthropic no 1T+2T'26). Excluindo esses itens, o <b>P/E core (◆)</b> é "+pc('GOOGL')+" na Alphabet (e ainda é um piso: 4T'25/1T'26 também tiveram ganhos não estornados) e "+pc('AMZN')+" na Amazon.</li>"+
+    "<li><b>Distorção inversa na Meta:</b> o P/E GAAP ("+pe('META')+") está SUPERestimado porque o lucro TTM carrega o encargo tributário não recorrente de ~US$ 15,9 bi do 3T'25; normalizado, o P/E core cai para "+pc('META')+". Microsoft "+pe('MSFT')+" (core "+pc('MSFT')+", ex-ganho de US$ 3,2 bi com Anthropic). Apple ("+pe('AAPL')+") e Nvidia ("+pe('NVDA')+") têm lucro TTM limpo. <b>Tesla (>"+fmt(Math.floor(V('TSLA').pe/10)*10,0)+"x) não é significativo</b> — lucro quase nulo; avalie por EV/EBITDA, P/S ou múltiplos forward. *P/E core é aproximado (líq. de impostos estimado). EV/EBITDA aproximado de jun–jul/2026 e P/E forward de ago/2026 — defasados frente ao preço de "+snap+".</li>";
   if(charts.cPe)charts.cPe.destroy();
   charts.cPe=new Chart(document.getElementById('cPe'),{
     data:{labels:l,datasets:[
@@ -479,8 +483,12 @@ function renderVal(){
     options:{responsive:true,animation:{duration:600},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{label:c=>' crescimento de FCF implícito: '+fmt(c.parsed.y,1)+'% a.a. por 10 anos'}}},
       scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
         y:{grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>v+'%'}}}}});
+  const gI=t=>{const c=cs.find(z=>z.ticker===t);return c&&c.valuation.impliedG!=null?c.valuation.impliedG:null;};
+  const evFcf=t=>{const c=cs.find(z=>z.ticker===t),f=((DATA.derived||{}).fcfTTM||{})[t];return c&&c.valuation.ev&&f>0?Math.round(c.valuation.ev/f):null;};
+  const topG=ig.slice().sort((a,b)=>b.v-a.v)[0];
   document.getElementById('impliedNotes').innerHTML="<li>DCF reverso: resolve o <b>CAGR de FCF nos próximos 10 anos</b> que iguala o valor presente ao EV atual, com <b>WACC 9%</b>, <b>crescimento terminal 3%</b> e FCF inicial = FCF TTM (10-Q/8-K). Quanto maior a barra, mais crescimento o preço já embute.</li>"+
-    "<li>Leitura: <b>Alphabet exige ~22%/ano</b> — o mais alto — não por estar “cara” no lucro, mas porque seu FCF está temporariamente deprimido pelo CapEx de IA (EV/FCF ~75x), então o mercado precifica forte recuperação. Microsoft ~18%, Nvidia ~15%, Apple ~15%, Meta ~13%. <b>Amazon e Tesla ficam n/s</b> — FCF TTM negativo/quase nulo (Amazon −US$ 7,6 bi por CapEx), o que torna o DCF reverso sem significado; para elas use EV/Vendas ou múltiplos forward.</li>"+
+    "<li>Leitura: "+(gI('GOOGL')!=null?"<b>Alphabet exige ~"+fmt(gI('GOOGL'),0)+"%/ano</b>"+(topG&&topG.t==='GOOGL'?" — o mais alto —":"")+" não por estar “cara” no lucro, mas porque seu FCF está temporariamente deprimido pelo CapEx de IA (EV/FCF ~"+evFcf('GOOGL')+"x), então o mercado precifica forte recuperação. ":"")+
+    ['MSFT:Microsoft','NVDA:Nvidia','AAPL:Apple','META:Meta'].filter(x=>gI(x.split(':')[0])!=null).map(x=>x.split(':')[1]+' ~'+fmt(gI(x.split(':')[0]),0)+'%').join(', ')+". <b>Amazon e Tesla ficam n/s</b> — FCF TTM negativo (Amazon −US$ 7,6 bi por CapEx) ou baixo demais frente ao EV (Tesla ~US$ 5,8 bi), o que torna o DCF reverso sem significado; para elas use EV/Vendas ou múltiplos forward.</li>"+
     "<li>Sensibilidade: a premissa de WACC/terminal move os números — WACC menor ou terminal maior reduz o crescimento implícito exigido, e vice-versa. É uma “barra de expectativa”, não uma previsão.</li>";
 
   if(charts.cFwd)charts.cFwd.destroy();
@@ -492,7 +500,7 @@ function renderVal(){
     options:{responsive:true,animation:{duration:600},plugins:{legend:LEG,tooltip:{...TIP,callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.parsed.y,1)+'x'}}},
       scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
         y:{type:'logarithmic',min:10,grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>([10,20,30,50,100,200,400].indexOf(v)>=0?v+'x':'')}}}}});
-  document.getElementById('fwdNotes').innerHTML="<li><b>O forward vira o jogo.</b> P/E TTM (azul) vs P/E de consenso forward (verde): <b>Nvidia</b> parece cara no TTM (28x) mas é <b>barata no forward (~18x)</b> — o lucro cresce rápido demais para o múltiplo trailing; <b>Meta é a mais barata (~14x)</b>; Microsoft ~20x e Alphabet ~23x. Na ponta oposta, <b>Apple ~34x</b> é a “qualidade cara” (cresce pouco e paga o múltiplo mais alto entre as sólidas), e <b>Tesla ~188x forward</b> (vs >360x TTM) segue extrema.</li>"+
+  document.getElementById('fwdNotes').innerHTML="<li><b>O forward vira o jogo.</b> P/E TTM (azul) vs P/E de consenso forward (verde): <b>Nvidia</b> parece cara no TTM ("+fmt(cs.find(z=>z.ticker==='NVDA').valuation.pe,0)+"x) mas é <b>barata no forward (~18x)</b> — o lucro cresce rápido demais para o múltiplo trailing; <b>Meta é a mais barata (~14x)</b>; Microsoft ~20x e Alphabet ~23x. Na ponta oposta, <b>Apple ~34x</b> é a “qualidade cara” (cresce pouco e paga o múltiplo mais alto entre as sólidas), e <b>Tesla ~188x forward</b> (vs >"+fmt(Math.floor(cs.find(z=>z.ticker==='TSLA').valuation.pe/10)*10,0)+"x TTM) segue extrema.</li>"+
     "<li>Fonte: consenso de agregadores (GuruFocus, valueinvesting.io, S&P Global) por volta de ago/2026. A <b>definição varia</b> (NTM vs ano fiscal 2027) e o número é sensível a revisões de estimativa — use como ordem de grandeza, não como valor exato.</li>";
 }
 
@@ -579,6 +587,7 @@ function renderCred(){
         y:{min:0,grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>v+'%'}}}}});
   document.getElementById('capexOcfNotes').innerHTML="<li>Fluxo de caixa operacional aproximado como <b>FCF + CapEx</b> (FY2025). Acima de ~80% (vermelho) o CapEx absorve quase todo o caixa operacional: o crescimento passa a depender de dívida, caixa acumulado ou queda do investimento — a ponte entre a tese de IA e o risco de crédito/CDS. Arrendamentos financeiros ficam fora do CapEx (ver nota acima).</li>";
   document.getElementById('credNotes').innerHTML=DATA.meta.creditNotes.map(n=>`<li>${n}</li>`).join('');
+  document.getElementById('cdsLog').innerHTML=(DATA.meta.cdsLog||[]).slice().reverse().map(x=>`<li><b>${brDate(x.date)}</b> — ${x.text}</li>`).join('')||'<li>Sem registros.</li>';
 }
 
 function renderMeta(){
@@ -596,7 +605,7 @@ function renderFresh(){
   const chips=[];
   if(age!=null)chips.push(`<span class="chip ${age>14?'warn':'ok'}" title="Preços, pesos e market cap usados nos múltiplos">${age>14?'⚠ ':''}Preços e market cap: <b>${brDate(m.marketSnapshot)}</b> · há ${age} dias${age>14?' — múltiplos podem estar defasados':''}</span>`);
   chips.push(`<span class="chip">Resultados: <b>${m.quarterLabel||''}</b> (SEC / releases)</span>`);
-  chips.push(`<span class="chip">EV/EBITDA aprox.: <b>jun–jul/2026</b></span>`);
+  chips.push(`<span class="chip">EV/EBITDA aprox.: <b>jun–jul/2026</b> · P/E fwd: <b>ago/2026</b></span>`);
   document.getElementById('fresh').innerHTML=chips.join('');
 }
 function renderSignals(){
@@ -690,6 +699,7 @@ function impliedGrowth(ev,f,A){
   const dcf=g=>{let pv=0;for(let t=1;t<=N;t++)pv+=f*Math.pow((1+g)/(1+W),t);
     const fN=f*Math.pow(1+g,N),tv=fN*(1+GT)/(W-GT);return pv+tv/Math.pow(1+W,N);};
   let lo=-0.3,hi=0.9;
+  if(dcf(0.3)<ev)return null; // exigiria >30% a.a. por 10 anos: DCF reverso sem significado (n/s)
   for(let i=0;i<80;i++){const m=(lo+hi)/2;if(dcf(m)<ev)lo=m;else hi=m;}
   return Math.round((lo+hi)/2*1000)/10;
 }
@@ -731,7 +741,7 @@ function computeDerived(){
     c.pd5=pd5(c.cds);
   });
   (DATA.meta.cdsRef||[]).forEach(r=>{r.pd5=pd5(r.cds);});
-  DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de 27/08/2026 ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA e FCF yield permanecem aproximados de jun–jul/2026. Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E, e a view de qualidade do lucro.";
+  DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de "+brDate(DATA.meta.marketSnapshot)+" ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA aproximado de jun–jul/2026 e P/E forward de ago/2026 (não recalculados). Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E, e a view de qualidade do lucro.";
 }
 function fatal(msg){
   const k=document.getElementById('kpis');
