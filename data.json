@@ -58,6 +58,9 @@
     "fcfTTMNote": "FCF TTM (US$ bi) usado como FCF inicial do DCF reverso. Amazon (FCF TTM −US$ 7,6 bi, release 2T'26) e Tesla (+US$ 5,8 bi = fluxo operacional 18,7 − CapEx 12,9, Tesla Q2 2026 Update) entram só no FCF yield: o DCF reverso é n/s para ambas (FCF negativo ou baixo demais frente ao EV). Fonte: 10-Q/8-K e releases.",
     "fwdPE": {"AAPL": 34, "MSFT": 20, "NVDA": 18, "GOOGL": 23, "AMZN": 31, "META": 14, "TSLA": 188},
     "fwdPENote": "P/E forward de consenso (NTM/2027, aprox. ago 2026) — fonte: agregadores (GuruFocus, valueinvesting.io, S&P Global). A definição varia entre fontes (NTM vs ano fiscal 2027); usar como ordem de grandeza.",
+    "ebitdaImplB": {"AAPL": 157.4, "MSFT": 241.5, "NVDA": 183.3, "GOOGL": 161.9, "AMZN": 161.9, "META": 98.6, "TSLA": 9.3},
+    "fwdEPS": {"AAPL": 9.16, "MSFT": 24.97, "NVDA": 12.46, "GOOGL": 14.67, "AMZN": 8.31, "META": 41.62, "TSLA": 1.86},
+    "multiplesNote": "EV/EBITDA e P/E forward são REESCALADOS ao snapshot de preços (meta.marketSnapshot): ebitdaImplB = EBITDA implícito no EV/EBITDA de jun–jul/2026 (EV de 27/08 ÷ múltiplo); fwdEPS = LPA forward implícito no P/E de consenso de ago/2026 (preço de 27/08 ÷ P/E). Mantidos constantes: NÃO incorporam revisões de consenso ou de EBITDA posteriores a ago/2026. Novo múltiplo = EV (ou preço) atual ÷ esse denominador.",
     "oneOffTTM": {"MSFT": 3.2, "GOOGL": 77.1, "AMZN": 60, "META": -15.9},
     "oneOffTTMNote": "Ajustes de itens não recorrentes (US$ bi) subtraídos do lucro líquido TTM para o P/E core. GOOGL 77,1 é apenas o ganho não realizado do 2T'26 (piso: 4T'25/1T'26 também tiveram ganhos não estornados). AMZN ~60 (Anthropic, líq. estimado). META -15,9 (o lucro TTM CARREGA o encargo tributário do 3T'25, então o ajuste é negativo e REDUZ o P/E core). MSFT 3,2 (Anthropic). Aproximado, líq. de impostos estimado.",
     "dcfAssumptions": {"waccPct": 9, "terminalGrowthPct": 3, "years": 10}
