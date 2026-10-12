@@ -180,7 +180,7 @@
   <section id="tab-val" class="hidden" role="tabpanel" aria-labelledby="t-val">
     <div class="grid">
       <div class="card"><h3>P/E — TTM (GAAP) vs core</h3><p class="ch" id="peSub">preço ÷ LPA 4T · ◆ = P/E core (ex-itens não recorr.) · escala log</p><canvas id="cPe"></canvas></div>
-      <div class="card"><h3>EV / EBITDA</h3><p class="ch">aprox. · escala log</p><canvas id="cEv"></canvas></div>
+      <div class="card"><h3>EV / EBITDA</h3><p class="ch">EV atual ÷ EBITDA implícito de jun–jul/2026 · escala log</p><canvas id="cEv"></canvas></div>
       <div class="card"><h3>FCF yield</h3><p class="ch">FCF TTM ÷ market cap · % · AMZN/TSLA: valor declarado (sem FCF TTM auditado)</p><canvas id="cFcf"></canvas></div>
       <div class="card"><h3>Dividend yield</h3><p class="ch">%</p><canvas id="cDiv"></canvas></div>
       <div class="card full">
@@ -209,7 +209,7 @@
         <ul class="notes" id="impliedNotes"></ul>
       </div>
       <div class="card full">
-        <h3>P/E: atual (TTM) vs forward (consenso)</h3><p class="ch">P/E TTM recalculado × P/E forward de consenso (NTM/2027, aprox. ago 2026) · escala log</p>
+        <h3>P/E: atual (TTM) vs forward (consenso)</h3><p class="ch">P/E TTM recalculado × P/E forward de consenso (NTM/2027, estimativas de ago/2026 reescaladas ao preço atual) · escala log</p>
         <canvas id="cFwd" style="max-height:360px"></canvas>
         <ul class="notes" id="fwdNotes"></ul>
       </div>
@@ -406,7 +406,7 @@ function renderVal(){
   const V=t=>cs.find(z=>z.ticker===t).valuation, pe=t=>fmt(V(t).pe,1)+'x', pc=t=>'~'+fmt(V(t).peCore,1)+'x';
   document.getElementById('peSub').textContent='preço de '+snap+' ÷ LPA 4T · ◆ = P/E core (ex-itens não recorr.) · escala log';
   document.getElementById('valNotes').innerHTML="<li><b>P/E recalculado (TTM GAAP)</b> = market cap ("+snap+") ÷ lucro líquido GAAP dos últimos 4 trimestres (3T'25–2T'26). Cuidado com a leitura ingênua: Alphabet aparece a "+pe('GOOGL')+" e Amazon a "+pe('AMZN')+", mas é uma ARMADILHA — o lucro TTM de ambas está inflado por ganhos NÃO operacionais/não realizados com participações (Alphabet +US$ 77 bi líquidos no 2T'26; Amazon ~US$ 70 bi pré-imposto com a Anthropic no 1T+2T'26). Excluindo esses itens, o <b>P/E core (◆)</b> é "+pc('GOOGL')+" na Alphabet (e ainda é um piso: 4T'25/1T'26 também tiveram ganhos não estornados) e "+pc('AMZN')+" na Amazon.</li>"+
-    "<li><b>Distorção inversa na Meta:</b> o P/E GAAP ("+pe('META')+") está SUPERestimado porque o lucro TTM carrega o encargo tributário não recorrente de ~US$ 15,9 bi do 3T'25; normalizado, o P/E core cai para "+pc('META')+". Microsoft "+pe('MSFT')+" (core "+pc('MSFT')+", ex-ganho de US$ 3,2 bi com Anthropic). Apple ("+pe('AAPL')+") e Nvidia ("+pe('NVDA')+") têm lucro TTM limpo. <b>Tesla (>"+fmt(Math.floor(V('TSLA').pe/10)*10,0)+"x) não é significativo</b> — lucro quase nulo; avalie por EV/EBITDA, P/S ou múltiplos forward. *P/E core é aproximado (líq. de impostos estimado). EV/EBITDA aproximado de jun–jul/2026 e P/E forward de ago/2026 — defasados frente ao preço de "+snap+".</li>";
+    "<li><b>Distorção inversa na Meta:</b> o P/E GAAP ("+pe('META')+") está SUPERestimado porque o lucro TTM carrega o encargo tributário não recorrente de ~US$ 15,9 bi do 3T'25; normalizado, o P/E core cai para "+pc('META')+". Microsoft "+pe('MSFT')+" (core "+pc('MSFT')+", ex-ganho de US$ 3,2 bi com Anthropic). Apple ("+pe('AAPL')+") e Nvidia ("+pe('NVDA')+") têm lucro TTM limpo. <b>Tesla (>"+fmt(Math.floor(V('TSLA').pe/10)*10,0)+"x) não é significativo</b> — lucro quase nulo; avalie por EV/EBITDA, P/S ou múltiplos forward. *P/E core é aproximado (líq. de impostos estimado). EV/EBITDA e P/E forward são reescalados ao preço de "+snap+" sobre EBITDA e LPA forward implícitos nos múltiplos de jun–ago/2026 (sem revisões posteriores de estimativas).</li>";
   if(charts.cPe)charts.cPe.destroy();
   charts.cPe=new Chart(document.getElementById('cPe'),{
     data:{labels:l,datasets:[
@@ -448,7 +448,7 @@ function renderVal(){
       tooltip:{...TIP,callbacks:{label:c=>' '+c.dataset.label+': cresc. '+fmt(c.raw.x,1)+'% · EV/EBITDA '+fmt(c.raw.y,1)+'x · cap $'+fmt(c.dataset.data[0]&&cs.find(z=>z.ticker===c.dataset.label).marketCapB,0)+' bi'}}},
       scales:{x:{title:{display:true,text:'Crescimento de receita a/a (%)',color:AXIS,font:{family:'Inter',size:11}},grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
         y:{type:'logarithmic',min:10,title:{display:true,text:'EV/EBITDA (x)',color:AXIS,font:{family:'Inter',size:11}},grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>([10,20,30,50,100,150].indexOf(v)>=0?v+'x':'')}}}}});
-  document.getElementById('scatterNotes').innerHTML="<li>Cada bolha é uma empresa; o tamanho é proporcional ao market cap. Quadrante mais atraente: crescimento alto (à direita) com múltiplo baixo (embaixo). EV ≈ market cap (caixa líquido aprox. compensado); EV/EBITDA aprox. de jul/2026 e crescimento do FY2025 — Tesla sai da escala (EV/EBITDA ~146x).</li>";
+  document.getElementById('scatterNotes').innerHTML="<li>Cada bolha é uma empresa; o tamanho é proporcional ao market cap. Quadrante mais atraente: crescimento alto (à direita) com múltiplo baixo (embaixo). EV ≈ market cap (caixa líquido aprox. compensado); EV/EBITDA reescalado ao snapshot de "+snap+" (EBITDA de jun–jul/2026 mantido) e crescimento do FY2025 — Tesla sai da escala (EV/EBITDA ~"+fmt(V('TSLA').evEbitda,0)+"x).</li>";
 
   // Regra dos 40 = crescimento + margem de FCF (FY2025)
   const r40=cs.map(c=>({t:c.ticker,v:Math.round((c.annual.revGrowth+c.fcfAnnual[c.fcfAnnual.length-1]/c.annual.revenueB*100)*10)/10,col:c.color}));
@@ -500,8 +500,9 @@ function renderVal(){
     options:{responsive:true,animation:{duration:600},plugins:{legend:LEG,tooltip:{...TIP,callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.parsed.y,1)+'x'}}},
       scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
         y:{type:'logarithmic',min:10,grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>([10,20,30,50,100,200,400].indexOf(v)>=0?v+'x':'')}}}}});
-  document.getElementById('fwdNotes').innerHTML="<li><b>O forward vira o jogo.</b> P/E TTM (azul) vs P/E de consenso forward (verde): <b>Nvidia</b> parece cara no TTM ("+fmt(cs.find(z=>z.ticker==='NVDA').valuation.pe,0)+"x) mas é <b>barata no forward (~18x)</b> — o lucro cresce rápido demais para o múltiplo trailing; <b>Meta é a mais barata (~14x)</b>; Microsoft ~20x e Alphabet ~23x. Na ponta oposta, <b>Apple ~34x</b> é a “qualidade cara” (cresce pouco e paga o múltiplo mais alto entre as sólidas), e <b>Tesla ~188x forward</b> (vs >"+fmt(Math.floor(cs.find(z=>z.ticker==='TSLA').valuation.pe/10)*10,0)+"x TTM) segue extrema.</li>"+
-    "<li>Fonte: consenso de agregadores (GuruFocus, valueinvesting.io, S&P Global) por volta de ago/2026. A <b>definição varia</b> (NTM vs ano fiscal 2027) e o número é sensível a revisões de estimativa — use como ordem de grandeza, não como valor exato.</li>";
+  const F=t=>fmt(V(t).peFwd,0);
+  document.getElementById('fwdNotes').innerHTML="<li><b>O forward vira o jogo.</b> P/E TTM (azul) vs P/E de consenso forward (verde): <b>Nvidia</b> parece cara no TTM ("+fmt(cs.find(z=>z.ticker==='NVDA').valuation.pe,0)+"x) mas é <b>barata no forward (~"+F('NVDA')+"x)</b> — o lucro cresce rápido demais para o múltiplo trailing; <b>Meta "+(cs.slice().sort((a,b)=>a.valuation.peFwd-b.valuation.peFwd)[0].ticker==='META'?'é a mais barata ':'')+"(~"+F('META')+"x)</b>; Microsoft ~"+F('MSFT')+"x e Alphabet ~"+F('GOOGL')+"x. Na ponta oposta, <b>Apple ~"+F('AAPL')+"x</b> é a “qualidade cara” (cresce pouco e paga o múltiplo mais alto entre as sólidas), e <b>Tesla ~"+F('TSLA')+"x forward</b> (vs >"+fmt(Math.floor(cs.find(z=>z.ticker==='TSLA').valuation.pe/10)*10,0)+"x TTM) segue extrema.</li>"+
+    "<li>Fonte: consenso de agregadores (GuruFocus, valueinvesting.io, S&P Global) por volta de ago/2026, reescalado ao preço de "+snap+" (LPA forward implícito mantido; revisões posteriores de consenso não incorporadas). A <b>definição varia</b> (NTM vs ano fiscal 2027) e o número é sensível a revisões de estimativa — use como ordem de grandeza, não como valor exato.</li>";
 }
 
 /* ---- HISTÓRICO ---- */
@@ -605,7 +606,7 @@ function renderFresh(){
   const chips=[];
   if(age!=null)chips.push(`<span class="chip ${age>14?'warn':'ok'}" title="Preços, pesos e market cap usados nos múltiplos">${age>14?'⚠ ':''}Preços e market cap: <b>${brDate(m.marketSnapshot)}</b> · há ${age} dias${age>14?' — múltiplos podem estar defasados':''}</span>`);
   chips.push(`<span class="chip">Resultados: <b>${m.quarterLabel||''}</b> (SEC / releases)</span>`);
-  chips.push(`<span class="chip">EV/EBITDA aprox.: <b>jun–jul/2026</b> · P/E fwd: <b>ago/2026</b></span>`);
+  chips.push(`<span class="chip" title="Denominadores (EBITDA, LPA forward) de jun–ago/2026 mantidos; preço/EV atualizados">EV/EBITDA e P/E fwd: <b>reescalados</b> · estimativas de <b>jun–ago/2026</b></span>`);
   document.getElementById('fresh').innerHTML=chips.join('');
 }
 function renderSignals(){
@@ -730,6 +731,10 @@ function computeDerived(){
       c.valuation.impliedG=impliedGrowth(ev,FCF0[c.ticker],A);
     }
     c.valuation.peFwd=FWDPE[c.ticker]!=null?FWDPE[c.ticker]:null;
+    // Múltiplos reescalados ao snapshot atual: EV ÷ EBITDA implícito; preço ÷ LPA forward implícito (derived.ebitdaImplB / fwdEPS)
+    const eb=(D.ebitdaImplB||{})[c.ticker], fe=(D.fwdEPS||{})[c.ticker];
+    if(eb>0&&c.valuation.ev!=null)c.valuation.evEbitda=Math.round(c.valuation.ev/eb*10)/10;
+    if(fe>0)c.valuation.peFwd=Math.round(c.price/fe*10)/10;
     // FCF yield recalculado a partir do FCF TTM auditado (derived.fcfTTM); sem FCF TTM, mantém o valor declarado
     c.valuation.fcfYieldSrc=c.valuation.fcfYield; c.valuation.fcfBSrc=c.valuation.fcfB;
     c.valuation.fcfRecalc=FCF0[c.ticker]!=null;
@@ -741,7 +746,7 @@ function computeDerived(){
     c.pd5=pd5(c.cds);
   });
   (DATA.meta.cdsRef||[]).forEach(r=>{r.pd5=pd5(r.cds);});
-  DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de "+brDate(DATA.meta.marketSnapshot)+" ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA aproximado de jun–jul/2026 e P/E forward de ago/2026 (não recalculados). Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E, e a view de qualidade do lucro.";
+  DATA.meta.notes[2]="Valuation: o P/E foi RECALCULADO como preço de "+brDate(DATA.meta.marketSnapshot)+" ÷ LPA TTM (market cap ÷ lucro líquido GAAP dos últimos 4 trimestres, 3T'25–2T'26). EV/EBITDA e P/E forward REESCALADOS ao snapshot (EBITDA de jun–jul/2026 e LPA forward de ago/2026 mantidos; sem revisões posteriores — ver derived.multiplesNote). Vários P/Es GAAP estão distorcidos por itens não recorrentes — ver a leitura crítica e o P/E core no card de P/E, e a view de qualidade do lucro.";
 }
 function fatal(msg){
   const k=document.getElementById('kpis');
