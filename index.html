@@ -145,6 +145,10 @@
     </div>
     <div class="caption" id="periodlabel"></div>
 
+    <div class="card full" id="briefCard" style="margin-bottom:14px;display:none">
+      <h3 id="briefTitle">Briefing do dia</h3><p class="ch" id="briefHead" style="margin-bottom:8px"></p>
+      <ul class="notes" id="briefList"></ul><p class="ch" id="briefSrc" style="margin:8px 0 0"></p>
+    </div>
     <div class="kpis" id="kpis"></div>
     <div class="signals" id="signals" aria-label="Sinais calculados a partir dos dados"></div>
     <div class="caption">Sinais calculados automaticamente a partir do <code>data.json</code> — sem texto editorial; mudam quando os dados mudam.</div>
@@ -277,6 +281,11 @@
       </div>
     </div>
     <div class="card full" style="margin-top:16px">
+      <h3>Tendência de CDS — snapshots diários</h3><p class="ch" id="trendSub"></p>
+      <canvas id="cCdsTrend" style="max-height:340px"></canvas>
+      <ul class="notes" id="trendNotes"></ul>
+    </div>
+    <div class="card full" style="margin-top:16px">
       <h3>Análise de crédito / CDS — leitura crítica</h3>
       <ul class="notes" id="credNotes"></ul>
       <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;font-size:12px">Histórico de verificações de CDS</summary><ul class="notes" id="cdsLog"></ul></details>
@@ -287,6 +296,11 @@
     <h3>Notas metodológicas</h3>
     <ul class="notes" id="metaNotes"></ul>
   </div>
+  <details class="card full" style="margin-top:16px" id="auditBox">
+    <summary>Auditoria crítica dos dados <span class="muted" id="auditSum"></span></summary>
+    <p class="ch" style="margin-top:10px">Limitações conhecidas da metodologia e dos dados, por severidade, com a ação em curso. Mantida em <code>meta.audit</code>.</p>
+    <div style="overflow-x:auto"><table id="tblAudit"><thead><tr><th>Sev.</th><th>Área</th><th>Achado</th><th>Ação</th></tr></thead><tbody></tbody></table></div>
+  </details>
   <details class="card full" style="margin-top:16px" id="integrity">
     <summary>Checagem de consistência dos dados <span class="muted" id="intSum"></span></summary>
     <p class="ch" style="margin-top:10px">Testes automáticos executados a cada carregamento sobre o <code>data.json</code>: reconciliam campos redundantes e sinalizam dado velho ou ausente.</p>
@@ -298,9 +312,8 @@
   <div class="srcgrid" id="sources"></div>
   <p style="margin-top:16px">Dashboard informativo, sem recomendação de investimento. Valores em US$. Margens calculadas; market caps estimados por peso no grupo.</p>
 </footer>
-
 <script>
-let DATA=null, period='annual', curTab='ind', histMetric='rev';
+let DATA=null, SNAPS=[], period='annual', curTab='ind', histMetric='rev';
 const charts={};
 const AXIS='#8b93a7', GRID='rgba(255,255,255,.05)';
 const fmt=(n,d=1)=> n==null?'—':n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -561,11 +574,11 @@ function renderCred(){
     "<li><b>Nvidia é fabless</b>: não possui fábricas — quem carrega o CapEx pesado de manufatura são a TSMC (wafers e empacotamento CoWoS) e SK Hynix/Samsung/Micron (memória HBM). Esse custo entra no CMV/estoque, não no CapEx. Por isso o CapEx próprio da Nvidia (escritórios, laboratórios de P&D, servidores internos/DGX Cloud) é minúsculo: FY2025 US$ 3,2 bi e FY2026 (enc. jan/2026) US$ 6,0 bi — quase o dobro, mas ~3% da receita, contra 15–25% nos hyperscalers.</li>"+
     "<li><b>O investimento econômico real da Nvidia é bem maior</b> do que a linha de CapEx sugere: prépagamentos e compromissos de compra à TSMC (dezenas de bilhões, contabilizados como estoque/compromissos), arrendamentos de capacidade (DGX Cloud, ~US$ 2,9 bi em ativos de lease) e participações estratégicas (ex.: ~US$ 13 bi ligados à Groq, além de CoreWeave) — nenhum entra no CapEx. Obs.: o ano fiscal da Nvidia é ~11 meses adiantado; a coluna FY2025 do gráfico é o exercício encerrado em jan/2025.</li>"+
     "<li><b>Do outro lado:</b> o CapEx dos hyperscalers é, em boa parte, a receita da Nvidia. Amazon US$ 132 bi (FY2025), Alphabet US$ 91 bi, Meta US$ 70 bi, Microsoft US$ 55 bi (caixa). Guidance de 2026 é ainda maior: Amazon ~US$ 200 bi, Alphabet US$ 175–185 bi, Microsoft ~US$ 190 bi, Meta US$ 115–135 bi.</li>";
-  document.querySelector('#tblRating thead').innerHTML='<tr><th>Empresa</th><th>S&P</th><th>Moody’s</th><th>CDS 5a (bps)</th><th title="Probabilidade de default em 5 anos implícita no CDS (R=40%)">PD 5a impl.</th></tr>';
+  document.querySelector('#tblRating thead').innerHTML='<tr><th>Empresa</th><th>S&P</th><th>Moody’s</th><th>CDS 5a (bps)</th><th title="Data da cotação de CDS (meta.cdsAsOf)">Cotação</th><th title="Probabilidade de default em 5 anos implícita no CDS (R=40%)">PD 5a impl.</th></tr>';
   const ref=DATA.meta.cdsRef||[];
   document.querySelector('#tblRating tbody').innerHTML=cs.map(c=>`<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.ticker}</td>`+
-    `<td>${c.rating.sp}</td><td>${c.rating.moody}</td><td>${c.cds!=null?fmt(c.cds,0):'n/d'}</td><td>${c.pd5!=null?'~'+fmt(c.pd5,1)+'%':'n/d'}</td></tr>`).join('')+
-    ref.map(r=>`<tr><td class="tick"><span class="dot" style="background:${r.color}"></span>${r.ticker} <span class="muted">ref.</span></td><td>${r.rating.sp}</td><td>${r.rating.moody}</td><td>${fmt(r.cds,0)}</td><td>~${fmt(r.pd5,1)}%</td></tr>`).join('');
+    `<td>${c.rating.sp}</td><td>${c.rating.moody}</td><td>${c.cds!=null?fmt(c.cds,0):'n/d'}</td><td>${cdsAge(c.ticker)}</td><td>${c.pd5!=null?'~'+fmt(c.pd5,1)+'%':'n/d'}</td></tr>`).join('')+
+    ref.map(r=>`<tr><td class="tick"><span class="dot" style="background:${r.color}"></span>${r.ticker} <span class="muted">ref.</span></td><td>${r.rating.sp}</td><td>${r.rating.moody}</td><td>${fmt(r.cds,0)}</td><td>${cdsAge(r.ticker)}</td><td>~${fmt(r.pd5,1)}%</td></tr>`).join('');
   document.getElementById('pdNotes').innerHTML=`<li><b>PD 5a implícita</b> ≈ 1 − exp(−5·s/(1−R)), com recuperação R = ${CDS_R*100}% e taxa de risco constante. É uma leitura <b>neutra ao risco</b>: inclui prêmio de risco e liquidez, então tende a <b>superestimar</b> a probabilidade real de default. Use para comparar empresas, não como previsão.</li>`;
   document.getElementById('cdsSub').textContent='bps · escala log · linha tracejada = limiar de alerta de '+CDS_ALERT+' bps · cotações pontuais de imprensa (datas nas notas) · Oracle e CoreWeave como referência';
   const cdsAll=cs.filter(c=>c.cds!=null).map(c=>({t:c.ticker,v:c.cds,col:c.color})).concat(ref.map(r=>({t:r.ticker,v:r.cds,col:r.color})));
@@ -588,6 +601,7 @@ function renderCred(){
         y:{min:0,grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>v+'%'}}}}});
   document.getElementById('capexOcfNotes').innerHTML="<li>Fluxo de caixa operacional aproximado como <b>FCF + CapEx</b> (FY2025). Acima de ~80% (vermelho) o CapEx absorve quase todo o caixa operacional: o crescimento passa a depender de dívida, caixa acumulado ou queda do investimento — a ponte entre a tese de IA e o risco de crédito/CDS. Arrendamentos financeiros ficam fora do CapEx (ver nota acima).</li>";
   document.getElementById('credNotes').innerHTML=DATA.meta.creditNotes.map(n=>`<li>${n}</li>`).join('');
+  renderTrend();
   document.getElementById('cdsLog').innerHTML=(DATA.meta.cdsLog||[]).slice().reverse().map(x=>`<li><b>${brDate(x.date)}</b> — ${x.text}</li>`).join('')||'<li>Sem registros.</li>';
 }
 
@@ -609,6 +623,40 @@ function renderFresh(){
   chips.push(`<span class="chip" title="Denominadores (EBITDA, LPA forward) de jun–ago/2026 mantidos; preço/EV atualizados">EV/EBITDA e P/E fwd: <b>reescalados</b> · estimativas de <b>jun–ago/2026</b></span>`);
   document.getElementById('fresh').innerHTML=chips.join('');
 }
+const cdsAsOf=()=>(DATA.meta.cdsAsOf||{});
+function cdsAge(t){const dt=cdsAsOf()[t];if(!dt)return '<span class="muted">s/ data</span>';const a=daysSince(dt);
+  return `<span class="${a>30?'warn-t':''}" title="${a} dias">${brDate(dt).slice(0,5)}${a>30?' ⚠':''}</span>`;}
+function renderBrief(){
+  const b=DATA.meta.dailyBrief, el=document.getElementById('briefCard');
+  if(!b){el.style.display='none';return;}
+  el.style.display='';
+  document.getElementById('briefTitle').textContent='Briefing de '+brDate(b.date);
+  document.getElementById('briefHead').innerHTML='<b style="color:var(--txt)">'+b.headline+'</b>';
+  document.getElementById('briefList').innerHTML=(b.bullets||[]).map(x=>`<li>${x}</li>`).join('');
+  document.getElementById('briefSrc').innerHTML='Fontes: '+(b.sources||[]).map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(' · ');
+}
+function renderAudit(){
+  const A=DATA.meta.audit||[], ord={alta:0,'média':1,baixa:2};
+  A.sort((a,b)=>ord[a.sev]-ord[b.sev]);
+  document.getElementById('auditSum').textContent='· '+A.filter(x=>x.sev==='alta').length+' alta(s) de '+A.length;
+  document.querySelector('#tblAudit tbody').innerHTML=A.map(x=>`<tr><td class="${x.sev==='alta'?'warn-t':''}">${x.sev}</td><td style="text-align:left;white-space:normal">${x.area}</td><td style="text-align:left;white-space:normal">${x.finding}</td><td style="text-align:left;white-space:normal;color:var(--muted)">${x.action}</td></tr>`).join('');
+}
+function renderTrend(){
+  const S=SNAPS.filter(s=>s.cds), tk=['MSFT','NVDA','GOOGL','AMZN','META'], ref=['ORCL','CRWV'];
+  const sub=document.getElementById('trendSub'), notes=document.getElementById('trendNotes');
+  if(charts.cCdsTrend)charts.cCdsTrend.destroy();
+  if(S.length<2){sub.textContent='Aguardando acúmulo de snapshots (a rotina diária grava um por dia útil em history/snapshots.json).';notes.innerHTML='';return;}
+  const col={};DATA.companies.forEach(c=>col[c.ticker]=c.color);(DATA.meta.cdsRef||[]).forEach(r=>col[r.ticker]=r.color);
+  const ds=tk.concat(ref).map(t=>({label:t,data:S.map(s=>s.cds[t]!=null?s.cds[t]:null),borderColor:col[t]||'#999',backgroundColor:col[t]||'#999',
+    borderWidth:2,pointRadius:3,tension:.25,spanGaps:true,borderDash:ref.includes(t)?[5,4]:[]}));
+  sub.textContent='bps · escala log · '+S.length+' snapshots ('+brDate(S[0].date)+' a '+brDate(S[S.length-1].date)+') · pontilhado = referências fora das Mag 7';
+  charts.cCdsTrend=new Chart(document.getElementById('cCdsTrend'),{type:'line',data:{labels:S.map(s=>brDate(s.date).slice(0,5)),datasets:ds},
+    options:{responsive:true,animation:{duration:600},plugins:{legend:LEG,tooltip:{...TIP,callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.parsed.y,0)+' bps'}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11}}},
+        y:{type:'logarithmic',min:40,grid:{color:GRID},border:{display:false},ticks:{color:AXIS,font:{family:'Inter',size:11},callback:v=>([50,100,200,500,1000].indexOf(v)>=0?v:'')}}}}});
+  const a=S[S.length-2],b=S[S.length-1],mv=tk.concat(ref).filter(t=>a.cds[t]!=null&&b.cds[t]!=null&&a.cds[t]!==b.cds[t]).map(t=>t+' '+a.cds[t]+' → '+b.cds[t]+' bps');
+  notes.innerHTML='<li>Cada ponto é a cotação vigente naquele dia; um ponto que não muda indica <b>ausência de cotação nova</b>, não estabilidade do crédito (ver data da cotação na tabela de ratings).</li>'+(mv.length?'<li>Última variação ('+brDate(a.date)+' → '+brDate(b.date)+'): '+mv.join(' · ')+'.</li>':'');
+}
 function renderSignals(){
   const cs=DATA.companies, out=[];
   const withCds=cs.filter(c=>c.cds!=null).sort((a,b)=>b.cds-a.cds), over=withCds.filter(c=>c.cds>CDS_ALERT);
@@ -623,6 +671,9 @@ function renderSignals(){
   const neg=cs.filter(c=>c.valuation.net!=null&&c.valuation.net<0);
   out.push({cls:neg.length?'alert':'okc',l:'Balanço (caixa líquido)',v:neg.length?neg.map(c=>c.ticker+' '+fmt(c.valuation.net,1)+' bi').join(' · '):'Todas com caixa líquido positivo',
     d:neg.length?'Dívida financiada > caixa + títulos (2T 2026).':'Caixa + títulos > dívida financiada.'});
+  const ev=(DATA.meta.catalysts||[]).filter(e=>!e.done&&e.date>=new Date().toISOString().slice(0,10)).sort((a,b)=>a.date.localeCompare(b.date));
+  if(ev.length){const n=ev[0],dd=Math.ceil((new Date(n.date+'T00:00:00')-new Date().setHours(0,0,0,0))/864e5);
+    out.push({cls:dd<=7?'alert':'',l:'Próximo resultado',v:n.ticker+' · '+brDate(n.date).slice(0,5)+(dd>=0?' (em '+dd+' d)':''),d:n.event+(n.confirmed?'':' — data não confirmada')+'. Cada divulgação invalida TTM, balanço e múltiplos.'});}
   document.getElementById('signals').innerHTML=out.map(x=>`<div class="sig ${x.cls}"><div class="l">${x.l}</div><div class="v">${x.v}</div><div class="d">${x.d}</div></div>`).join('');
 }
 function renderIntegrity(){
@@ -640,6 +691,9 @@ function renderIntegrity(){
   add('FCF TTM auditado disponível',!noF.length,noF.length?noF.join(', ')+': sem FCF TTM em derived.fcfTTM — FCF yield mostra o valor declarado, não auditado.':'Todas');
   const age=m.marketSnapshot?daysSince(m.marketSnapshot):null;
   add('Frescor de preços/market cap (≤ 14 dias)',age!=null&&age<=14,age==null?'marketSnapshot ausente':`Snapshot de ${brDate(m.marketSnapshot)} (${age} dias)`);
+  const asof=m.cdsAsOf||{}, old=Object.keys(asof).filter(t=>daysSince(asof[t])>30), semData=cs.filter(c=>c.cds!=null&&!asof[c.ticker]).map(c=>c.ticker);
+  add('Cotações de CDS com ≤ 30 dias e datadas',!old.length&&!semData.length,(old.length?'Defasadas: '+old.map(t=>t+' ('+brDate(asof[t])+')').join(', ')+'. ':'')+(semData.length?'Sem data: '+semData.join(', ')+'.':'')||'Todas datadas e recentes');
+  add('Snapshots diários acumulados (history/snapshots.json)',SNAPS.length>=2,SNAPS.length+' snapshot(s)'+(SNAPS.length?' · último '+brDate(SNAPS[SNAPS.length-1].date):''));
   const nOk=rows.filter(r=>r[1]).length;
   document.getElementById('intSum').textContent='· '+nOk+'/'+rows.length+' testes ok';
   document.querySelector('#tblInt tbody').innerHTML=rows.map(r=>`<tr><td style="text-align:left;white-space:normal">${r[0]}</td><td class="${r[1]?'okc-t':'warn-t'}">${r[1]?'✓ ok':'⚠ atenção'}</td><td style="text-align:left;white-space:normal;color:var(--muted)">${r[2]}</td></tr>`).join('');
@@ -752,10 +806,11 @@ function fatal(msg){
   const k=document.getElementById('kpis');
   if(k)k.innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v" style="font-size:15px">'+msg+'</div></div>';
 }
-fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>{
+const snapP=fetch('history/snapshots.json?t='+Date.now()).then(r=>r.ok?r.json():{snapshots:[]}).then(j=>j.snapshots||[]).catch(()=>[]);
+fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>snapP.then(S=>{SNAPS=S;return d;})).then(d=>{
   if(typeof Chart==='undefined'){fatal('Não foi possível carregar a biblioteca de gráficos (CDN). Verifique sua conexão e recarregue.');return;}
   if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)Chart.defaults.animation=false;
-  DATA=d;computeDerived();renderMeta();renderFresh();renderIntegrity();
+  DATA=d;computeDerived();renderMeta();renderFresh();renderBrief();renderAudit();renderIntegrity();
   document.querySelectorAll('canvas').forEach(cv=>{if(!cv.getAttribute('aria-label')){const h=cv.closest('.card')&&cv.closest('.card').querySelector('h3');cv.setAttribute('role','img');cv.setAttribute('aria-label',h?h.textContent.trim():'Gráfico');}});
   showTab(location.hash.slice(1),true);
 }).catch(()=>fatal('Falha ao carregar data.json.'));
