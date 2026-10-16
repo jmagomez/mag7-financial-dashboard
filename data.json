@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Magnificent 7 — Dashboard de Indicadores Financeiros",
-    "generated": "2026-10-15",
+    "generated": "2026-10-16",
     "currency": "USD",
     "marketSnapshot": "2026-10-09",
     "totalMarketCapT": 24.917,
@@ -18,6 +18,137 @@
       {"date": "2026-10-08", "text": "9ª checagem: nova busca na imprensa financeira não localizou cotações de CDS por empresa mais recentes (em bps) para Nvidia, Meta, Alphabet, Amazon, Microsoft, Apple, Tesla, Oracle ou CoreWeave além das já registradas. Níveis mantidos; Apple e Tesla n/d."},
       {"date": "2026-10-12", "text": "10ª checagem: nova busca na imprensa financeira não localizou cotações de CDS por empresa mais recentes (em bps) para Nvidia, Meta, Alphabet, Amazon, Microsoft, Apple, Tesla, Oracle ou CoreWeave além das já registradas. Todos os níveis foram mantidos (Nvidia ~81, Meta ~93, Amazon ~68, Alphabet ~67, Microsoft ~53, Oracle ~227, CoreWeave ~855 bps), nada foi estimado, e Apple e Tesla seguem como n/d."},
       {"date": "2026-10-15", "text": "11ª checagem: Oracle atualizada de ~227 para ~288 bps (novo recorde, +26 bps em um dia; Reuters/S&P Global Market Intelligence, 15/10/2026, confirmado em duas fontes). CoreWeave: imprensa cita CDS acima de 1.000 bps (LSEG) sem valor exato — mantido 855 bps. Nvidia, Meta, Alphabet, Amazon e Microsoft: citados em máximas históricas, mas sem novos níveis em bps — mantidos (81, 93, 67, 68, 53). Apple e Tesla n/d. Sem alerta: nenhuma Mag 7 acima de 100 bps (Meta ~93 é a mais próxima)."}
+    ],
+    "cdsAsOf": {
+      "MSFT": "2026-07-29",
+      "AMZN": "2026-07-29",
+      "GOOGL": "2026-07-29",
+      "META": "2026-08-05",
+      "NVDA": "2026-08-18",
+      "ORCL": "2026-10-15"
+    },
+    "catalysts": [
+      {
+        "ticker": "TSLA",
+        "date": "2026-10-21",
+        "event": "Resultado 3T 2026 (após o fechamento)",
+        "confirmed": false
+      },
+      {
+        "ticker": "META",
+        "date": "2026-10-21",
+        "event": "Resultado 3T 2026 (após o fechamento)",
+        "confirmed": false
+      },
+      {
+        "ticker": "GOOGL",
+        "date": "2026-10-27",
+        "event": "Resultado 3T 2026 (após o fechamento)",
+        "confirmed": false
+      },
+      {
+        "ticker": "MSFT",
+        "date": "2026-10-28",
+        "event": "Resultado 1T FY27 (após o fechamento)",
+        "confirmed": false
+      },
+      {
+        "ticker": "AMZN",
+        "date": "2026-10-29",
+        "event": "Resultado 3T 2026 (após o fechamento)",
+        "confirmed": false
+      },
+      {
+        "ticker": "AAPL",
+        "date": "2026-11-02",
+        "event": "Resultado 4T FY26 (após o fechamento)",
+        "confirmed": false
+      },
+      {
+        "ticker": "NVDA",
+        "date": "2026-11-17",
+        "event": "Resultado 3T FY27 (após o fechamento)",
+        "confirmed": false
+      }
+    ],
+    "catalystsSource": "Agregador tickzen.app (15/10/2026); datas NÃO confirmadas nos sites de RI — a rotina diária deve confirmar e marcar confirmed=true.",
+    "dailyBrief": {
+      "date": "2026-10-16",
+      "headline": "Auditoria inicial: crédito segue como foco (Oracle em recorde); preços do painel têm 7 dias e a temporada de resultados do 3T começa em 21/10.",
+      "bullets": [
+        "Oracle: CDS 5a em ~288 bps (recorde, +26 bps em um dia; Reuters/S&P Global MI, 15/10) vs ~227 bps na checagem anterior. CoreWeave citada acima de 1.000 bps (LSEG), sem cotação exata — o painel mantém 855 bps como último valor exato.",
+        "Mag 7: nenhuma acima de 100 bps; Meta (~93 bps) é a mais próxima, mas a cotação é de 05/08 — as cotações de CDS do grupo têm datas diferentes (29/07 a 18/08) e não são comparáveis com a da Oracle (15/10).",
+        "Preços/market cap são do fechamento de 09/10; a imprensa de 15/10 aponta a Apple em ~US$ 5 tri (painel: US$ 4,91 tri). Atualização de preços pendente para a primeira rotina diária.",
+        "Agenda (não confirmada): Tesla e Meta 21/10; Alphabet 27/10; Microsoft 28/10; Amazon 29/10; Apple 02/11; Nvidia 17/11. Cada divulgação invalida TTM de lucro, balanço, segmentos e ajustes de itens não recorrentes."
+      ],
+      "sources": [
+        {
+          "label": "Oracle CDS 288 bps / CoreWeave >1.000 bps (Reuters via TradingView/Seeking Alpha)",
+          "url": "https://www.tradingview.com/news/seekingalpha:542e5efb2094b:0-credit-stress-in-ai-trade-deepens-as-oracle-coreweave-cds-spreads-hit-record-levels/"
+        },
+        {
+          "label": "AI Debt Risk Soars as CoreWeave CDS Tops 1,000 (15/10/2026)",
+          "url": "https://www.profilenews.com/en/ai-debt-risk/"
+        },
+        {
+          "label": "Calendário de resultados Big Tech (tickzen, 15/10/2026)",
+          "url": "https://tickzen.app/stock-analysis/earnings-calendar/big-tech"
+        },
+        {
+          "label": "Mag 7 Weekly: Apple Hits $5 Trillion (Money Morning, 15/10/2026)",
+          "url": "https://moneymorning.com/2026/10/15/magnificent-7-weekly-report-october-15-2026"
+        }
+      ]
+    },
+    "audit": [
+      {
+        "sev": "alta",
+        "area": "CDS",
+        "finding": "As cotações de CDS do grupo têm datas diferentes (29/07 a 18/08; Oracle 15/10) e são comparadas lado a lado. Parte do 'recorde' e do gap Oracle × Mag 7 mistura vintages.",
+        "action": "Data por empresa em meta.cdsAsOf, exibida na tabela de ratings; validador avisa cotações com mais de 30 dias. Rotina diária busca cotação nova por empresa."
+      },
+      {
+        "sev": "alta",
+        "area": "Preços / market cap",
+        "finding": "Market cap = preço × quantidade de ações implícita no snapshot de 27/08 (não é a contagem reportada). Recompras/emissões e o preço defasado (09/10) deslocam P/E, EV e FCF yield.",
+        "action": "Rotina diária atualiza preços; substituir ações implícitas por contagem do 10-Q após cada resultado."
+      },
+      {
+        "sev": "alta",
+        "area": "EV/EBITDA",
+        "finding": "EBITDA é implícito no múltiplo de agregadores de jun–jul/2026 (EV ÷ múltiplo): dado circular e defasado, e não incorpora o 2T 2026 de forma auditável.",
+        "action": "Após os resultados do 3T, trocar por EBITDA TTM (lucro operacional + D&A dos 4 trimestres, filings). Até lá, tratar como ordem de grandeza."
+      },
+      {
+        "sev": "média",
+        "area": "P/E core",
+        "finding": "Ajuste de Alphabet (US$ 77,1 bi) cobre só o ganho não realizado do 2T'26; 4T'25 e 1T'26 também tiveram ganhos, então o lucro 'core' de GOOGL fica alto demais e o P/E core, SUBestimado (parece mais barato do que é). Ajuste da Amazon (~US$ 60 bi) é estimado e líquido de impostos aproximado.",
+        "action": "Levantar ganhos/perdas com participações dos 4 trimestres nos 10-Q e usar valores reportados."
+      },
+      {
+        "sev": "média",
+        "area": "DCF reverso",
+        "finding": "WACC 9% e g 3% únicos para todas; FCF TTM está deprimido pelo CapEx de IA (Amazon negativo, Tesla baixo). O resultado é 'o que está no preço', não valuation intrínseco; sensível a WACC.",
+        "action": "Ler junto com CapEx ÷ OCF; considerar WACC por empresa e grade de sensibilidade (8–10%)."
+      },
+      {
+        "sev": "média",
+        "area": "EV",
+        "finding": "EV exclui arrendamentos operacionais e participações não negociáveis (ex.: Anthropic em Amazon/Alphabet), o que infla ou distorce o EV relativo entre empresas.",
+        "action": "Documentado; avaliar versão ajustada com leases e participações a valor justo."
+      },
+      {
+        "sev": "média",
+        "area": "Calendário",
+        "finding": "Temporada do 3T (21/10–17/11) vai desatualizar TTM de lucro, balanço, segmentos de nuvem, FCF TTM e ajustes. Datas ainda não confirmadas.",
+        "action": "Rotina diária confirma datas e, quando cada empresa divulgar, incorpora o trimestre a partir dos filings."
+      },
+      {
+        "sev": "baixa",
+        "area": "PD implícita",
+        "finding": "PD 5a de CDS (R = 40%, risco constante) é neutra ao risco e inclui prêmio de liquidez; CDS de Nvidia só negocia ativamente desde nov/2025 (liquidez baixa).",
+        "action": "Mantido com aviso na metodologia; usar para comparação relativa."
+      }
     ],
     "creditNotes": [
       "CDS: não existe uma série pública e consistente de vários anos para as Magnificent 7 — dados de credit default swaps são proprietários (ICE Data Services, S&P Global/Markit, Bloomberg). Além disso, o CDS de 5 anos da Nvidia só começou a ser negociado ativamente em novembro de 2025, ou seja, não há histórico de anos para ela. Por isso este painel NÃO apresenta um gráfico histórico de CDS: seria inventar dados.",
