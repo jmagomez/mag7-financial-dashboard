@@ -1,0 +1,19 @@
+{
+ "_doc": "Um snapshot por dia útil (a rotina diária acrescenta ou substitui o do dia). prices/marketCapB: fechamento; cds: bps 5a com data da cotação em meta.cdsAsOf. Campos ausentes = sem dado confiável naquele dia.",
+ "snapshots": [
+  {
+   "date": "2026-10-09",
+   "prices": {"AAPL": 336.64, "MSFT": 535.07, "NVDA": 229.28, "GOOGL": 351.66, "AMZN": 262.43, "META": 718.67, "TSLA": 382.7},
+   "marketCapB": {"AAPL": 4913, "MSFT": 3973, "NVDA": 5554, "GOOGL": 4301, "AMZN": 2832, "META": 1832, "TSLA": 1512}
+  },
+  {
+   "date": "2026-10-12",
+   "cds": {"MSFT": 53, "NVDA": 81, "GOOGL": 67, "AMZN": 68, "META": 93, "ORCL": 227, "CRWV": 855}
+  },
+  {
+   "date": "2026-10-15",
+   "cds": {"MSFT": 53, "NVDA": 81, "GOOGL": 67, "AMZN": 68, "META": 93, "ORCL": 288, "CRWV": 855},
+   "note": "CRWV: imprensa cita >1.000 bps sem valor exato; 855 = último valor exato."
+  }
+ ]
+}
