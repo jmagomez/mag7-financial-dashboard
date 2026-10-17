@@ -2,11 +2,6 @@ name: Validar dados
 
 on:
   push:
-    paths:
-      - "data.json"
-      - "history/**"
-      - "src/**"
-      - "index.html"
   pull_request:
   workflow_dispatch:
 
