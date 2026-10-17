@@ -13,6 +13,7 @@ Conteúdo: alerta de CDS (>100 bps), briefing do dia, o que mudou desde o snapsh
 anterior (preço e CDS), tabela de indicadores-chave recalculados, CDS com data da
 cotação, próximos catalisadores e itens de auditoria de severidade alta.
 
+Antes de enviar, roda src/validate.py: erro de validação BLOQUEIA o envio (exit 1).
 Uso local: python src/send_email.py --dry-run   (gera preview.html, não envia)
 
 Secrets: MAG7_SMTP_USER, MAG7_SMTP_APP_PASSWORD, MAG7_EMAIL_DEST, MAG7_EMAIL_BCC (opcional).
@@ -244,6 +245,15 @@ def main():
     if not force and already_sent_today():
         print("Trava diária: já houve envio hoje (America/Sao_Paulo). E-mail NAO enviado.")
         return
+
+    # Portão de qualidade: dados inválidos bloqueiam o envio (mesmas regras do CI)
+    import subprocess
+    here = os.path.dirname(os.path.abspath(__file__))
+    v = subprocess.run([sys.executable, os.path.join(here, "validate.py")], capture_output=True, text=True)
+    print(v.stdout + v.stderr)
+    if v.returncode != 0:
+        print("VALIDAÇÃO FALHOU: e-mail NAO enviado. Corrija o data.json e faça novo commit.")
+        sys.exit(1)
 
     user = os.environ["MAG7_SMTP_USER"]
     pwd = os.environ["MAG7_SMTP_APP_PASSWORD"]
