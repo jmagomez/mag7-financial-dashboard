@@ -39,7 +39,10 @@ def main():
     if "--today" in sys.argv:
         today = datetime.strptime(sys.argv[sys.argv.index("--today") + 1], "%Y-%m-%d").date()
 
-    d = json.load(open("data.json", encoding="utf-8"))
+    def _bad(x):
+        raise ValueError(f"constante inválida no JSON: {x}")
+
+    d = json.load(open("data.json", encoding="utf-8"), parse_constant=_bad)
     m, comps = d["meta"], d["companies"]
     der = d.get("derived", {})
 
@@ -74,7 +77,7 @@ def main():
             err(f"{t}: fcfAnnual com tamanho != fcfLabels ({nf})")
         if len(c["capex"]) != nc:
             err(f"{t}: capex com tamanho != capexLabels ({nc})")
-        if c.get("cds") is not None and not (isnum(c["cds"]) and 0 < c["cds"] < 5000):
+        if c.get("cds") is not None and not (isnum(c["cds"]) and 5 <= c["cds"] <= 3000):
             err(f"{t}.cds fora do intervalo plausível: {c['cds']}")
         for r in ("sp", "moody"):
             if not c.get("rating", {}).get(r):
@@ -90,6 +93,18 @@ def main():
             err(f"derived.balanceQ2_2026 sem {t}")
         if t not in der.get("ebitdaImplB", {}) or t not in der.get("fwdEPS", {}):
             err(f"derived.ebitdaImplB/fwdEPS sem {t}")
+    wsum = sum(c["weight"] for c in comps)
+    if abs(wsum - 100) > 0.5:
+        err(f"soma dos pesos {wsum:.2f} != 100")
+    for c in comps:
+        t = c["ticker"]
+        if abs(c["niHistory"][-1] - c["quarter"]["netIncomeB"]) > 0.5:
+            err(f"{t}: niHistory[-1] ({c['niHistory'][-1]}) != quarter.netIncomeB ({c['quarter']['netIncomeB']})")
+        if abs(c["revHistory"][-1] - c["quarter"]["revenueB"]) > 0.5:
+            err(f"{t}: revHistory[-1] ({c['revHistory'][-1]}) != quarter.revenueB ({c['quarter']['revenueB']})")
+        for blk in ("fcfTTM", "ebitdaImplB", "fwdEPS"):
+            if not isnum(der.get(blk, {}).get(t)):
+                err(f"derived.{blk}.{t} não numérico")
     if abs(tot - m["totalMarketCapT"] * 1000) > 2:
         err(f"soma dos market caps {tot:.0f} != total {m['totalMarketCapT']*1000:.0f}")
     for c in comps:
@@ -99,8 +114,8 @@ def main():
     # --- CDS
     refs = {r["ticker"]: r for r in m["cdsRef"]}
     for t in ("ORCL", "CRWV"):
-        if t not in refs or not isnum(refs[t].get("cds")):
-            err(f"cdsRef sem {t} válido")
+        if t not in refs or not isnum(refs[t].get("cds")) or not (5 <= refs[t]["cds"] <= 5000):
+            err(f"cdsRef sem {t} válido (5–5000 bps)")
     log = m["cdsLog"]
     dates = [pdate(x["date"], "cdsLog") for x in log]
     if None not in dates and dates != sorted(dates):
@@ -113,9 +128,11 @@ def main():
         if lvl is not None:
             dt = asof.get(t)
             if not dt:
-                warn(f"CDS {t}: sem data da cotação em meta.cdsAsOf")
+                err(f"CDS {t}: sem data da cotação em meta.cdsAsOf")
             else:
                 dd = pdate(dt, f"cdsAsOf.{t}")
+                if dd and dd > today:
+                    err(f"cdsAsOf.{t} {dt} está no futuro")
                 if dd and (today - dd).days > 30:
                     warn(f"CDS {t} com cotação de {dt} ({(today-dd).days} dias) — defasado")
 
@@ -127,10 +144,33 @@ def main():
         if dd and dd < today and not ev.get("done"):
             warn(f"catalisador vencido sem 'done': {ev.get('ticker')} {ev['date']} — atualizar trimestre")
     brief = m.get("dailyBrief")
-    if brief:
+    if not brief:
+        err("meta.dailyBrief ausente")
+    else:
+        for k in ("date", "headline", "bullets", "sources"):
+            if not brief.get(k):
+                err(f"meta.dailyBrief.{k} ausente/vazio")
+        txt = (brief.get("headline", "") + " " + " ".join(brief.get("bullets", []))).upper()
+        names = {"AAPL": "APPLE", "MSFT": "MICROSOFT", "NVDA": "NVIDIA", "GOOGL": "ALPHABET", "AMZN": "AMAZON", "META": "META", "TSLA": "TESLA"}
+        for c in comps:
+            if c.get("cds") is not None and c["cds"] > 100 and c["ticker"] not in txt and names[c["ticker"]] not in txt:
+                err(f"{c['ticker']} com CDS {c['cds']} > 100 bps, mas o dailyBrief não menciona o alerta")
         bd = pdate(brief.get("date", ""), "dailyBrief.date")
         if bd and (today - bd).days > 1:
             warn(f"dailyBrief de {bd} não é de hoje/ontem")
+
+    aud = m.get("audit")
+    if not aud:
+        err("meta.audit ausente/vazio")
+    else:
+        for i, a in enumerate(aud):
+            if a.get("sev") not in ("alta", "média", "baixa") or not all(a.get(k) for k in ("area", "finding", "action")):
+                err(f"meta.audit[{i}] inválido (sev alta|média|baixa e area/finding/action)")
+    if len(m["creditNotes"]) >= 4:
+        n3 = m["creditNotes"][3]
+        for c in comps:
+            if c.get("cds") is not None and f"~{c['cds']}" not in n3:
+                err(f"creditNotes[3] não cita o nível atual de {c['ticker']} (~{c['cds']})")
 
     # --- snapshots
     try:
@@ -138,8 +178,39 @@ def main():
         sd = [pdate(s["date"], "snapshots") for s in hs]
         if None not in sd and sd != sorted(set(sd)):
             err("snapshots: datas duplicadas ou fora de ordem")
+        # saltos suspeitos (erro de digitação) vs. último snapshot anterior com o dado
+        def last(key):
+            for s_ in reversed(hs):
+                if s_.get(key):
+                    return s_
+        ls = last("prices")
+        if ls:
+            for c in comps:
+                p0 = ls["prices"].get(c["ticker"])
+                if p0 and abs(c["price"] / p0 - 1) > 0.25:
+                    err(f"{c['ticker']}: preço {c['price']} varia {(c['price']/p0-1)*100:+.0f}% vs snapshot {ls['date']} — erro de digitação?")
+        lc = last("cds")
+        if lc:
+            for t, v in lc["cds"].items():
+                cur = next((c["cds"] for c in comps if c["ticker"] == t), refs.get(t, {}).get("cds"))
+                if cur and v:
+                    ch = abs(cur / v - 1)
+                    if cur / v > 2 or cur / v < 0.5:
+                        err(f"CDS {t}: {v} → {cur} bps (dobrou ou caiu à metade vs snapshot {lc['date']}) — erro de digitação?")
+                    elif ch > 0.25:
+                        warn(f"CDS {t}: {v} → {cur} bps ({(cur/v-1)*100:+.0f}% vs snapshot {lc['date']}) — conferir fonte")
+        if gen and not any(s_["date"] >= m["generated"] for s_ in hs if s_.get("date")):
+            warn(f"sem snapshot em/depois de generated ({m['generated']})")
     except FileNotFoundError:
         warn("history/snapshots.json ausente")
+
+    try:
+        lg = json.load(open("history/email_log.json", encoding="utf-8")).get("lastSent")
+        ld = pdate(lg or "", "email_log.lastSent")
+        if ld and ld > today + __import__("datetime").timedelta(days=1):
+            err(f"email_log.lastSent {lg} está no futuro")
+    except FileNotFoundError:
+        warn("history/email_log.json ausente")
 
     for w in warnings:
         print(f"::warning::{w}")
