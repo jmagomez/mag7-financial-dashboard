@@ -14,6 +14,11 @@
    "date": "2026-10-15",
    "cds": {"MSFT": 53, "NVDA": 81, "GOOGL": 67, "AMZN": 68, "META": 93, "ORCL": 288, "CRWV": 855},
    "note": "CRWV: imprensa cita >1.000 bps sem valor exato; 855 = último valor exato."
+  },
+  {
+   "date": "2026-10-16",
+   "cds": {"MSFT": 53, "NVDA": 90, "GOOGL": 67, "AMZN": 68, "META": 104, "ORCL": 288, "CRWV": 1195},
+   "note": "Cotações de 15/10 (Bloomberg/BNN, Reuters/S&P). META/NVDA: tenor não explicitado pela fonte. MSFT/AMZN/GOOGL: nível de 29/07 mantido."
   }
  ]
 }
