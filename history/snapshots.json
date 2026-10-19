@@ -17,8 +17,10 @@
   },
   {
    "date": "2026-10-16",
+   "prices": {"AAPL": 343.46, "MSFT": 529.05, "NVDA": 214.13, "GOOGL": 340.59, "AMZN": 250.0, "META": 709.33, "TSLA": 354.72},
+   "marketCapB": {"AAPL": 5013, "MSFT": 3928, "NVDA": 5187, "GOOGL": 4166, "AMZN": 2698, "META": 1808, "TSLA": 1401},
    "cds": {"MSFT": 53, "NVDA": 90, "GOOGL": 67, "AMZN": 68, "META": 104, "ORCL": 288, "CRWV": 1195},
-   "note": "Cotações de 15/10 (Bloomberg/BNN, Reuters/S&P). META/NVDA: tenor não explicitado pela fonte. MSFT/AMZN/GOOGL: nível de 29/07 mantido."
+   "note": "Preços/market cap: fechamento de 16/10 (StockAnalysis/MarketCapLens, cruzado com variações do Closing Macro Recap). Cotações de CDS de 15/10 (Bloomberg/BNN, Reuters/S&P). META/NVDA: tenor não explicitado pela fonte. MSFT/AMZN/GOOGL: nível de 29/07 mantido."
   }
  ]
 }
