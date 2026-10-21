@@ -27,6 +27,12 @@
    "prices": {"AAPL": 342.94, "MSFT": 533.52, "NVDA": 217.09, "GOOGL": 344.18, "AMZN": 262.45, "META": 705.44, "TSLA": 368.06},
    "marketCapB": {"AAPL": 5005, "MSFT": 3961, "NVDA": 5259, "GOOGL": 4210, "AMZN": 2832, "META": 1798, "TSLA": 1454},
    "note": "Fechamento de 19/10: StockAnalysis (histórico por ação) cruzado com Heygotrade (Meta, Nvidia) e CappNotes (Nvidia, Amazon, Tesla). Market cap = preço × ações implícitas. CDS sem cotação nova verificável (último: 15/10)."
+  },
+  {
+   "date": "2026-10-20",
+   "prices": {"AAPL": 339.5, "MSFT": 531.87, "NVDA": 216.47, "GOOGL": 340.28, "AMZN": 262.63, "META": 694.25, "TSLA": 373.71},
+   "marketCapB": {"AAPL": 4955, "MSFT": 3949, "NVDA": 5244, "GOOGL": 4162, "AMZN": 2834, "META": 1769, "TSLA": 1476},
+   "note": "Fechamento de 20/10: MarketAlleys (cotação Last) cruzado com Heygotrade (Nvidia, Meta), Rajib (Meta, Tesla), CappNotes (variações de Apple, Meta, Amazon) e Defense World (Microsoft, Alphabet). Market cap = preço × ações implícitas. CDS sem cotação nova verificável (último: 15/10)."
   }
  ]
 }
