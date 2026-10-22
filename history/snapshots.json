@@ -33,6 +33,13 @@
    "prices": {"AAPL": 339.5, "MSFT": 531.87, "NVDA": 216.47, "GOOGL": 340.28, "AMZN": 262.63, "META": 694.25, "TSLA": 373.71},
    "marketCapB": {"AAPL": 4955, "MSFT": 3949, "NVDA": 5244, "GOOGL": 4162, "AMZN": 2834, "META": 1769, "TSLA": 1476},
    "note": "Fechamento de 20/10: MarketAlleys (cotação Last) cruzado com Heygotrade (Nvidia, Meta), Rajib (Meta, Tesla), CappNotes (variações de Apple, Meta, Amazon) e Defense World (Microsoft, Alphabet). Market cap = preço × ações implícitas. CDS sem cotação nova verificável (último: 15/10)."
+  },
+  {
+   "date": "2026-10-21",
+   "prices": {"AAPL": 343.99, "MSFT": 532.95, "NVDA": 221.97, "GOOGL": 334.76, "AMZN": 262.37, "META": 697.52, "TSLA": 386.47},
+   "marketCapB": {"AAPL": 5021, "MSFT": 3957, "NVDA": 5377, "GOOGL": 4094, "AMZN": 2831, "META": 1777, "TSLA": 1526},
+   "cds": {"MSFT": 53, "NVDA": 101, "GOOGL": 67, "AMZN": 68, "META": 108, "ORCL": 322, "CRWV": 1090},
+   "note": "Fechamento de 21/10: MarketAlleys (cotação Last), consistente com as variações % do dia sobre 20/10; CappNotes confirma Meta (+0,47%) e Tesla (+3,41%); Vista P Global confirma Nvidia (US$ 221,97). Market cap = preço × ações implícitas. CDS 5a: FT via Hedgeweek/Bloomingbit/BigGo (Oracle 322 em 19/10; Meta 108 e Nvidia 101 'este mês', dia exato não informado, datados 19/10 como limite superior) e Bloomberg via Yahoo Finance (CoreWeave ~1.090, fechamento de 19/10). MSFT/AMZN/GOOGL: nível de 29/07 mantido."
   }
  ]
 }
