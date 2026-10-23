@@ -40,6 +40,13 @@
    "marketCapB": {"AAPL": 5021, "MSFT": 3957, "NVDA": 5377, "GOOGL": 4094, "AMZN": 2831, "META": 1777, "TSLA": 1526},
    "cds": {"MSFT": 53, "NVDA": 101, "GOOGL": 67, "AMZN": 68, "META": 108, "ORCL": 322, "CRWV": 1090},
    "note": "Fechamento de 21/10: MarketAlleys (cotação Last), consistente com as variações % do dia sobre 20/10; CappNotes confirma Meta (+0,47%) e Tesla (+3,41%); Vista P Global confirma Nvidia (US$ 221,97). Market cap = preço × ações implícitas. CDS 5a: FT via Hedgeweek/Bloomingbit/BigGo (Oracle 322 em 19/10; Meta 108 e Nvidia 101 'este mês', dia exato não informado, datados 19/10 como limite superior) e Bloomberg via Yahoo Finance (CoreWeave ~1.090, fechamento de 19/10). MSFT/AMZN/GOOGL: nível de 29/07 mantido."
+  },
+  {
+   "date": "2026-10-22",
+   "prices": {"AAPL": 348.22, "MSFT": 521.08, "NVDA": 212.21, "GOOGL": 324.22, "AMZN": 250.38, "META": 648.85, "TSLA": 374.58},
+   "marketCapB": {"AAPL": 5083, "MSFT": 3869, "NVDA": 5141, "GOOGL": 3965, "AMZN": 2702, "META": 1653, "TSLA": 1479},
+   "cds": {"MSFT": 53, "NVDA": 101, "GOOGL": 67, "AMZN": 68, "META": 115, "ORCL": 322, "CRWV": 1090},
+   "note": "Fechamento de 22/10: StockAnalysis (histórico por ação) cruzado com Investing.com (Apple, Alphabet, Amazon, Nvidia), Yahoo Finance (Meta, Tesla) e CappNotes (variações de Nvidia, Meta, Tesla); Microsoft com variação -2,23% corroborada. Market cap = preço × ações implícitas. CDS 5a: Meta ~115 (Markit 114,79, fechamento de 22/10; ICE/Bloomberg pico intradia ~119,3; relato de segunda mão); demais sem cotação nova verificável (Nvidia 101 FT 'este mês' datado 19/10; Oracle 322 e CoreWeave ~1.090 de 19/10; MSFT/AMZN/GOOGL de 29/07)."
   }
  ]
 }
