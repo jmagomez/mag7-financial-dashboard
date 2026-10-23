@@ -1,1 +1,1 @@
-{"lastSent": "2026-10-22", "note": "Gravado pela rotina diária (commit [skip-email]) logo após o commit final de data.json que dispara o envio."}
+{"lastSent": "2026-10-23", "note": "Gravado pela rotina diária (commit [skip-email]) logo após o commit final de data.json que dispara o envio. Validação local das regras do validate.py sem erros; status da Action não pôde ser lido (página de Actions em cache)."}
