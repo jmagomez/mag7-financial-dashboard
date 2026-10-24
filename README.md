@@ -14,13 +14,13 @@ Painel voltado a análise financeira de empresas de tecnologia em nível profiss
 - **Histórico** — receita, lucro líquido, margem (10 trimestres, Q1'24–Q2'26) e FCF anual.
 - **Crédito & CapEx** — tendência de CDS (snapshots diários), data da cotação por emissor, CapEx anual, intensidade de CapEx, **pressão de CapEx sobre o caixa operacional (CapEx ÷ OCF)**, ratings, níveis recentes de CDS com linha de alerta de 100 bps, **PD de 5 anos implícita no CDS** (com Oracle e CoreWeave como referência), leitura crítica e histórico de verificações de CDS.
 
-Aba Indicadores abre com o **briefing do dia** e o sinal do **próximo resultado**; o rodapé tem o **glossário de siglas** e a **auditoria crítica**. Cabeçalho com **chips de frescor dos dados** (idade do snapshot de preços/market cap; fica amarelo acima de 14 dias) e, no rodapé, a seção **Checagem de consistência dos dados** (testes automáticos a cada carregamento). A aba ativa fica na URL (`#val`, `#hist`, `#cred`) e as abas respondem a setas do teclado.
+Aba Indicadores abre com o **briefing do dia** e o sinal do **próximo resultado**; a tabela comparativa traz a coluna **Δ dia** (variação do preço vs. o pregão anterior registrado em `history/snapshots.json`); o rodapé tem o **glossário de siglas** e a **auditoria crítica**. Cabeçalho com **chips de frescor dos dados** (idade do snapshot de preços/market cap; fica amarelo acima de 14 dias) e, no rodapé, a seção **Checagem de consistência dos dados** (testes automáticos a cada carregamento). A aba ativa fica na URL (`#val`, `#hist`, `#cred`) e as abas respondem a setas do teclado.
 
 ### Glossário de siglas (SOX, CDS, bps…)
 
 Siglas como **SOX** não são indicadores do painel: aparecem apenas no texto dos briefings diários. **SOX** = PHLX Semiconductor Sector Index (Índice de Semicondutores da Filadélfia), 30 empresas de chips listadas nos EUA (inclui a Nvidia), usado como termômetro do setor de semicondutores/IA.
 
-O front-end mostra uma **dica (sublinhado pontilhado)** na primeira ocorrência de cada sigla no briefing e uma seção **Glossário de siglas** no rodapé. As definições padrão (SOX, CDS, bps, PD, TTM, FCF, OCF, CapEx, EV, GAAP, neocloud) ficam em `DEFAULT_GLOSS` no `index.html`; para acrescentar ou sobrescrever termos sem mexer no HTML, defina `meta.glossary` (`{ "SIGLA": "definição" }`) no `data.json`. Boa prática para os briefings: **na primeira menção, escreva a sigla por extenso** (ex.: "SOX, o índice de semicondutores da Filadélfia"), pois o e-mail diário não usa as dicas do painel.
+O front-end mostra uma **dica (sublinhado pontilhado)** na primeira ocorrência de cada sigla no briefing e uma seção **Glossário de siglas** no rodapé. As definições ficam em **`glossary.json`** (fonte única: dashboard, rodapé do e-mail e `validate.py`, que avisa sobre sigla em maiúsculas no briefing que não esteja lá). Para acrescentar termos, edite apenas esse arquivo. Boa prática: **escrever a sigla por extenso na primeira menção**.
 
 Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusive as derivadas (P/E TTM/core/forward, EV, EV/Vendas, caixa líquido, crescimento implícito, CapEx/OCF, PD implícita de CDS, FCF yield declarado × recalculado).
 
@@ -28,14 +28,18 @@ Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusiv
 
 | Arquivo | Descrição |
 |---|---|
-| `index.html` | Dashboard completo (Chart.js via CDN). Só apresentação + cálculos derivados; lê `data.json`. |
+| `index.html` | Dashboard completo (Chart.js via CDN). Só apresentação + cálculos derivados; lê `data.json`, `history/snapshots.json` e `glossary.json`. |
 | `data.json` | **Fonte única de dados.** Todos os números reportados e as entradas dos cálculos. |
-| `history/snapshots.json` | Série própria: um snapshot por dia útil (preços, market cap, CDS). Alimenta o gráfico de tendência de CDS e as variações do e-mail. |
+| `glossary.json` | Glossário único de siglas (dashboard, e-mail, validação). |
+| `CLAUDE.md` | **Manual operacional completo** da rotina diária (procedimento, e-mail, invariantes, armadilhas). |
+| `history/snapshots.json` | Série própria: um snapshot por dia útil (preços, market cap, CDS). Alimenta o gráfico de tendência de CDS, a coluna Δ dia e as variações do e-mail. |
 | `history/email_log.json` | Último envio (trava de 1 e-mail/dia). Gravado pela rotina diária (commit `[skip-email]`) logo após o envio. |
-| `src/validate.py` | Validador de `data.json` e snapshots (erros de estrutura; avisos de dado velho). |
+| `src/common.py` | Constantes e utilitários compartilhados (tickers, limiar de CDS, PD implícita, glossário). |
+| `src/daily.py` | Atualização diária determinística de `data.json` + snapshot a partir de um `delta.json`; roda a validação. |
+| `src/validate.py` | Validador de `data.json` e snapshots (erros de estrutura e de consistência com o snapshot; avisos de dado velho e de sigla fora do glossário). |
 | `src/send_email.py` | E-mail executivo diário (SMTP). Pula `[skip-email]` e aplica a trava diária. `--dry-run` gera `preview.html`. |
 | `.github/workflows/enviar-dashboard.yml` | Action existente: executa `src/send_email.py` em push que altere `data.json`. |
-| `.github/workflows/validate.yml` | **Opcional** (adição manual): validação + dry-run do e-mail em todo push/PR. Não instalado automaticamente. |
+| `.github/workflows/validate.yml` | CI: validação + dry-run do e-mail em todo push/PR. |
 
 ### `data.json` → bloco `derived` (fonte única auditável)
 
@@ -75,17 +79,14 @@ O histórico de checagens fica em `meta.cdsLog` (lista de `{date, text}`), exibi
 
 ### Vintages dos dados (datas diferentes por métrica)
 
-- Preços, pesos e market cap: **snapshot em `meta.marketSnapshot`** (09/10/2026 até a primeira execução da rotina diária). Preço de fechamento (StockAnalysis, conferido com outras fontes) × quantidade de ações implícita no market cap anterior (aproximação); pesos = market cap ÷ total. O chip do cabeçalho mostra a idade; atualize para manter P/E, EV e FCF yield coerentes.
+- Preços, pesos e market cap: **snapshot em `meta.marketSnapshot`** (atualizado a cada pregão pela rotina diária). Preço de fechamento (StockAnalysis, conferido com outras fontes) × quantidade de ações implícita no market cap anterior (aproximação); pesos = market cap ÷ total. O chip do cabeçalho mostra a idade; atualize para manter P/E, EV e FCF yield coerentes.
 - Resultados trimestrais/anuais: releases oficiais e SEC (10-Q/8-K).
 - EV/EBITDA e P/E forward: **reescalados** ao snapshot de preços — `derived.ebitdaImplB` (EBITDA implícito no múltiplo de jun–jul/2026) e `derived.fwdEPS` (LPA forward implícito no consenso de ago/2026) ficam constantes; o painel divide o EV/preço atual por eles. Revisões de EBITDA/consenso posteriores a ago/2026 NÃO estão incorporadas (ver `derived.multiplesNote`).
 - CDS: cotações pontuais de imprensa, datadas por emissor em `meta.cdsAsOf` e nas notas de crédito.
 
 ## Automação
 
-- **Rotina diária (dias úteis, ~07:30 BRT):** tarefa agendada pesquisa fechamento de preços, CDS 5a por empresa (com data da cotação), revisões de consenso/EBITDA, ratings, emissões de dívida e confirmação do calendário de resultados; revisa criticamente cada dado; grava um snapshot em `history/snapshots.json`; atualiza `data.json` (inclusive `meta.dailyBrief` e `meta.audit`) e `meta.generated`. Regra de ouro: **sem dado confiável, mantém o anterior ou deixa n/d — nunca inventa.**
-- **E-mail — no máximo 1 por dia:** os commits intermediários da rotina levam `[skip-email]`; só o commit final de `data.json` dispara a Action `Enviar Dashboard Mag7`, que executa `src/send_email.py`. A rotina roda `src/validate.py` antes desse commit. Além da tag, há uma **trava diária** (`history/email_log.json`, fuso America/Sao_Paulo), gravada pela rotina logo após o commit final: se `lastSent` já for a data de hoje, o envio é pulado. Envio manual (`workflow_dispatch`) ignora a trava. O e-mail traz: alerta de CDS (>100 bps), briefing do dia, o que mudou desde o snapshot anterior (preço e CDS), indicadores-chave recalculados (P/E TTM e core, FCF yield, caixa líquido), CDS com data da cotação e PD implícita, próximos catalisadores e as ressalvas de auditoria de severidade alta. Secrets: `MAG7_SMTP_USER`, `MAG7_SMTP_APP_PASSWORD`, `MAG7_EMAIL_DEST`, `MAG7_EMAIL_BCC`.
-- **Validação (CI, opcional):** se `validate.yml` for adicionado manualmente, a Action `Validar dados` roda em todo push/PR (`data.json`, `history/**`, `src/**`, `index.html`): estrutura, tamanhos de séries, reconciliações (soma de market caps, pesos, margens), ordem do `cdsLog`, snapshots, mais um *dry-run* do e-mail. Dado velho (preços > 3 dias, CDS > 30 dias, catalisador vencido) gera **aviso**, não falha. Localmente: `python src/validate.py`.
-- **Temporada de resultados:** a rotina confirma as datas em `meta.catalysts` e, quando cada empresa divulga o trimestre, incorpora os números dos filings (novo trimestre — ver "Como atualizar").
+Todo o procedimento da rotina diária (pesquisa, `daily.py`, ordem dos commits, regra de 1 e-mail/dia com `[skip-email]`, notificações e invariantes) está em **[`CLAUDE.md`](CLAUDE.md)** — única referência; não duplicar aqui. Resumo: a rotina grava o snapshot, atualiza `data.json` (inclusive `meta.dailyBrief` e `meta.audit`) e o commit final de `data.json` dispara a Action `Enviar Dashboard Mag7` (`src/send_email.py`, trava diária em `history/email_log.json`). Secrets: `MAG7_SMTP_USER`, `MAG7_SMTP_APP_PASSWORD`, `MAG7_EMAIL_DEST`, `MAG7_EMAIL_BCC`. Envio manual (`workflow_dispatch`) ignora a trava. A Action `Validar dados` roda em todo push/PR; localmente: `python3 src/validate.py`.
 
 ## Auditoria crítica (`meta.audit`)
 
@@ -93,10 +94,9 @@ Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica
 
 ## Como atualizar
 
-1. Edite `data.json` (dados reportados e/ou o bloco `derived`).
-2. Para um **novo trimestre**, acrescente o período em `revHistory`/`niHistory`, atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived` (balanço, segmentos, FCF TTM, forward, ajustes).
-3. Para **atualizar preços/market cap**, ajuste `price`, `weight`, `marketCapB`, `meta.totalMarketCapT` e `meta.marketSnapshot` (a checagem de consistência valida soma e pesos).
-4. Commit sem `[skip-email]` para notificar (respeitando a trava de 1 e-mail/dia); com `[skip-email]` para manutenção silenciosa. Novos campos de metadados: `meta.cdsAsOf` (data da cotação de CDS por emissor), `meta.catalysts`, `meta.dailyBrief`, `meta.audit`, `meta.glossary` (opcional).
+- **Diário**: `python3 src/daily.py delta.json` (ver `CLAUDE.md`) — nunca editar preços/market cap/pesos à mão.
+- **Novo trimestre** (manual): acrescente o período em `revHistory`/`niHistory`, atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived`.
+- Novos campos de metadados: `meta.cdsAsOf`, `meta.catalysts`, `meta.dailyBrief`, `meta.audit`. Siglas novas vão em `glossary.json`.
 
 ## Aviso
 
