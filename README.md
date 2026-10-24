@@ -14,7 +14,13 @@ Painel voltado a análise financeira de empresas de tecnologia em nível profiss
 - **Histórico** — receita, lucro líquido, margem (10 trimestres, Q1'24–Q2'26) e FCF anual.
 - **Crédito & CapEx** — tendência de CDS (snapshots diários), data da cotação por emissor, CapEx anual, intensidade de CapEx, **pressão de CapEx sobre o caixa operacional (CapEx ÷ OCF)**, ratings, níveis recentes de CDS com linha de alerta de 100 bps, **PD de 5 anos implícita no CDS** (com Oracle e CoreWeave como referência), leitura crítica e histórico de verificações de CDS.
 
-Aba Indicadores abre com o **briefing do dia** e o sinal do **próximo resultado**; o rodapé tem a **auditoria crítica**. Cabeçalho com **chips de frescor dos dados** (idade do snapshot de preços/market cap; fica amarelo acima de 14 dias) e, no rodapé, a seção **Checagem de consistência dos dados** (testes automáticos a cada carregamento). A aba ativa fica na URL (`#val`, `#hist`, `#cred`) e as abas respondem a setas do teclado.
+Aba Indicadores abre com o **briefing do dia** e o sinal do **próximo resultado**; o rodapé tem o **glossário de siglas** e a **auditoria crítica**. Cabeçalho com **chips de frescor dos dados** (idade do snapshot de preços/market cap; fica amarelo acima de 14 dias) e, no rodapé, a seção **Checagem de consistência dos dados** (testes automáticos a cada carregamento). A aba ativa fica na URL (`#val`, `#hist`, `#cred`) e as abas respondem a setas do teclado.
+
+### Glossário de siglas (SOX, CDS, bps…)
+
+Siglas como **SOX** não são indicadores do painel: aparecem apenas no texto dos briefings diários. **SOX** = PHLX Semiconductor Sector Index (Índice de Semicondutores da Filadélfia), 30 empresas de chips listadas nos EUA (inclui a Nvidia), usado como termômetro do setor de semicondutores/IA.
+
+O front-end mostra uma **dica (sublinhado pontilhado)** na primeira ocorrência de cada sigla no briefing e uma seção **Glossário de siglas** no rodapé. As definições padrão (SOX, CDS, bps, PD, TTM, FCF, OCF, CapEx, EV, GAAP, neocloud) ficam em `DEFAULT_GLOSS` no `index.html`; para acrescentar ou sobrescrever termos sem mexer no HTML, defina `meta.glossary` (`{ "SIGLA": "definição" }`) no `data.json`. Boa prática para os briefings: **na primeira menção, escreva a sigla por extenso** (ex.: "SOX, o índice de semicondutores da Filadélfia"), pois o e-mail diário não usa as dicas do painel.
 
 Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusive as derivadas (P/E TTM/core/forward, EV, EV/Vendas, caixa líquido, crescimento implícito, CapEx/OCF, PD implícita de CDS, FCF yield declarado × recalculado).
 
@@ -90,7 +96,7 @@ Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica
 1. Edite `data.json` (dados reportados e/ou o bloco `derived`).
 2. Para um **novo trimestre**, acrescente o período em `revHistory`/`niHistory`, atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived` (balanço, segmentos, FCF TTM, forward, ajustes).
 3. Para **atualizar preços/market cap**, ajuste `price`, `weight`, `marketCapB`, `meta.totalMarketCapT` e `meta.marketSnapshot` (a checagem de consistência valida soma e pesos).
-4. Commit sem `[skip-email]` para notificar (respeitando a trava de 1 e-mail/dia); com `[skip-email]` para manutenção silenciosa. Novos campos de metadados: `meta.cdsAsOf` (data da cotação de CDS por emissor), `meta.catalysts`, `meta.dailyBrief`, `meta.audit`.
+4. Commit sem `[skip-email]` para notificar (respeitando a trava de 1 e-mail/dia); com `[skip-email]` para manutenção silenciosa. Novos campos de metadados: `meta.cdsAsOf` (data da cotação de CDS por emissor), `meta.catalysts`, `meta.dailyBrief`, `meta.audit`, `meta.glossary` (opcional).
 
 ## Aviso
 
