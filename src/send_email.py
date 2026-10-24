@@ -29,7 +29,7 @@ from email.mime.text import MIMEText
 from html import escape as esc
 from zoneinfo import ZoneInfo
 
-from common import CDS_ALERT, glossary, pd5
+from common import CDS_ALERT, glossary, load_data, pd5
 
 URL = "https://jmagomez.github.io/mag7-financial-dashboard/"
 REPO = "https://github.com/jmagomez/mag7-financial-dashboard"
@@ -241,7 +241,7 @@ def build(d, snaps):
 def main():
     force = os.environ.get("MAG7_FORCE_SEND") == "1" or os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
     if "--dry-run" in sys.argv:
-        d = json.load(open("data.json", encoding="utf-8"))
+        d = load_data()
         subj, text, html, al = build(d, load_snapshots())
         print(subj + "\n\n" + text)
         open(os.environ.get("MAG7_PREVIEW", "preview.html"), "w", encoding="utf-8").write(html)
@@ -267,7 +267,7 @@ def main():
     dest = [x.strip() for x in os.environ.get("MAG7_EMAIL_DEST", user).split(",") if x.strip()]
     bcc = [x.strip() for x in os.environ.get("MAG7_EMAIL_BCC", "").split(",") if x.strip()]
 
-    d = json.load(open("data.json", encoding="utf-8"))
+    d = load_data()
     subject, text, html, alerted = build(d, load_snapshots())
 
     msg = MIMEMultipart("alternative")
