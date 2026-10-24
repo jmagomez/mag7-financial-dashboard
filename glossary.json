@@ -1,0 +1,19 @@
+{
+ "_doc": "Glossário único de siglas: lido pelo dashboard (dicas + seção Glossário), pelo e-mail diário e por validate.py (avisa sigla em maiúsculas no briefing que não está aqui nem é ticker).",
+ "SOX": "PHLX Semiconductor Sector Index (Índice de Semicondutores da Filadélfia): 30 empresas de semicondutores listadas nos EUA, incluindo a Nvidia; termômetro do setor de chips/IA. Não é um indicador do painel: aparece apenas nos briefings.",
+ "CDS": "Credit default swap: seguro contra calote. O spread (em bps ao ano) mede o custo de proteger a dívida da empresa; quanto maior, maior o risco de crédito percebido.",
+ "bps": "Pontos-base: 100 bps = 1 ponto percentual. No CDS, 100 bps = custo anual de 1% do valor protegido.",
+ "PD": "Probabilidade de default implícita no CDS (neutra ao risco, R = 40%); serve para comparar empresas, não como previsão.",
+ "TTM": "Trailing twelve months: soma dos últimos 4 trimestres.",
+ "FCF": "Free cash flow (fluxo de caixa livre): caixa operacional menos CapEx.",
+ "OCF": "Operating cash flow: fluxo de caixa operacional.",
+ "CapEx": "Capital expenditure: investimento em ativos de longo prazo (data centers, chips, equipamentos).",
+ "EV": "Enterprise value: market cap menos caixa líquido.",
+ "GAAP": "Princípios contábeis dos EUA; o lucro GAAP inclui itens não recorrentes e ganhos não realizados.",
+ "WACC": "Weighted average cost of capital: custo médio ponderado de capital, usado como taxa de desconto no DCF reverso.",
+ "DCF": "Discounted cash flow: valor presente dos fluxos de caixa futuros. O DCF reverso resolve o crescimento que o preço atual embute.",
+ "IG": "Investment grade: rating de grau de investimento (BBB-/Baa3 ou acima).",
+ "ICE": "Intercontinental Exchange / ICE Data Services: fornecedor de cotações de CDS.",
+ "FT": "Financial Times (fonte de imprensa).",
+ "neocloud": "Provedor de nuvem de GPUs especializado em IA, geralmente muito alavancado (ex.: CoreWeave)."
+}
