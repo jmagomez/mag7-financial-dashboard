@@ -111,6 +111,9 @@
   details.card summary::before{content:'▸';display:inline-block;margin-right:8px;color:var(--faint);transition:transform .2s}
   details.card[open] summary::before{transform:rotate(90deg)}
   .okc-t{color:var(--good)} .warn-t{color:#fbbf24}
+  abbr.g{text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
+  dl.gl{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;margin:10px 0 0;font-size:13px}
+  dl.gl dt{font-weight:600;color:var(--txt)} dl.gl dd{margin:0;color:var(--muted)}
   thead th[aria-sort="ascending"]::after{content:' ▲';font-size:8px}
   thead th[aria-sort="descending"]::after{content:' ▼';font-size:8px}
   thead th:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -296,6 +299,11 @@
     <h3>Notas metodológicas</h3>
     <ul class="notes" id="metaNotes"></ul>
   </div>
+  <details class="card full" style="margin-top:16px" id="glossBox">
+    <summary>Glossário de siglas <span class="muted" id="glossSum"></span></summary>
+    <p class="ch" style="margin-top:10px">Siglas usadas nos briefings e notas; também aparecem como dica (sublinhado pontilhado) na primeira ocorrência em cada bloco. Definições padrão no <code>index.html</code>; podem ser estendidas/sobrescritas em <code>meta.glossary</code> no <code>data.json</code>.</p>
+    <dl class="gl" id="glossList"></dl>
+  </details>
   <details class="card full" style="margin-top:16px" id="auditBox">
     <summary>Auditoria crítica dos dados <span class="muted" id="auditSum"></span></summary>
     <p class="ch" style="margin-top:10px">Limitações conhecidas da metodologia e dos dados, por severidade, com a ação em curso. Mantida em <code>meta.audit</code>.</p>
@@ -626,13 +634,30 @@ function renderFresh(){
 const cdsAsOf=()=>(DATA.meta.cdsAsOf||{});
 function cdsAge(t){const dt=cdsAsOf()[t];if(!dt)return '<span class="muted">s/ data</span>';const a=daysSince(dt);
   return `<span class="${a>30?'warn-t':''}" title="${a} dias">${brDate(dt).slice(0,5)}${a>30?' ⚠':''}</span>`;}
+const DEFAULT_GLOSS={"SOX": "PHLX Semiconductor Sector Index (Índice de Semicondutores da Filadélfia): índice de 30 empresas de semicondutores listadas nos EUA, incluindo a Nvidia. Serve de termômetro do setor de chips/IA; não é um indicador do painel, aparece apenas nos briefings diários.", "CDS": "Credit default swap: seguro contra calote. O spread (em bps ao ano) mede o custo de proteger a dívida da empresa; quanto maior, maior o risco de crédito percebido.", "bps": "Pontos-base: 100 bps = 1 ponto percentual. No CDS, 100 bps = custo anual de 1% do valor protegido.", "PD": "Probabilidade de default implícita no CDS (neutra ao risco, R = 40%); serve para comparar empresas, não como previsão.", "TTM": "Trailing twelve months: soma dos últimos 4 trimestres.", "FCF": "Free cash flow (fluxo de caixa livre): caixa operacional menos CapEx.", "OCF": "Operating cash flow: fluxo de caixa operacional.", "CapEx": "Capital expenditure: investimento em ativos de longo prazo (data centers, chips, equipamentos).", "EV": "Enterprise value: market cap menos caixa líquido.", "GAAP": "Princípios contábeis dos EUA; o lucro GAAP inclui itens não recorrentes e ganhos não realizados.", "neocloud": "Provedor de nuvem de GPUs especializado em IA, geralmente muito alavancado (ex.: CoreWeave)."};
+function GLOSS(){return Object.assign({},DEFAULT_GLOSS,(DATA&&DATA.meta&&DATA.meta.glossary)||{});}
+function glossify(html,seen){
+  const G=GLOSS(), keys=Object.keys(G).sort((a,b)=>b.length-a.length);
+  if(!keys.length)return html;
+  const re=new RegExp('(^|[^A-Za-z0-9_])('+keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')(?![A-Za-z0-9_])','g');
+  return String(html).split(/(<[^>]+>)/).map(p=>p.charAt(0)==='<'?p:p.replace(re,(s,pre,k)=>{
+    if(seen.has(k))return s; seen.add(k);
+    return pre+'<abbr class="g" tabindex="0" title="'+G[k].replace(/"/g,'&quot;')+'">'+k+'</abbr>';})).join('');
+}
+function renderGloss(){
+  const G=GLOSS(), ks=Object.keys(G), box=document.getElementById('glossBox');
+  if(!ks.length){box.style.display='none';return;}
+  document.getElementById('glossSum').textContent='· '+ks.length+' termos';
+  document.getElementById('glossList').innerHTML=ks.map(k=>`<dt>${k}</dt><dd>${G[k]}</dd>`).join('');
+}
 function renderBrief(){
   const b=DATA.meta.dailyBrief, el=document.getElementById('briefCard');
   if(!b){el.style.display='none';return;}
   el.style.display='';
   document.getElementById('briefTitle').textContent='Briefing de '+brDate(b.date);
-  document.getElementById('briefHead').innerHTML='<b style="color:var(--txt)">'+b.headline+'</b>';
-  document.getElementById('briefList').innerHTML=(b.bullets||[]).map(x=>`<li>${x}</li>`).join('');
+  const seen=new Set();
+  document.getElementById('briefHead').innerHTML='<b style="color:var(--txt)">'+glossify(b.headline,seen)+'</b>';
+  document.getElementById('briefList').innerHTML=(b.bullets||[]).map(x=>`<li>${glossify(x,seen)}</li>`).join('');
   document.getElementById('briefSrc').innerHTML='Fontes: '+(b.sources||[]).map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(' · ');
 }
 function renderAudit(){
@@ -810,7 +835,7 @@ const snapP=fetch('history/snapshots.json?t='+Date.now()).then(r=>r.ok?r.json():
 fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>snapP.then(S=>{SNAPS=S;return d;})).then(d=>{
   if(typeof Chart==='undefined'){fatal('Não foi possível carregar a biblioteca de gráficos (CDN). Verifique sua conexão e recarregue.');return;}
   if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)Chart.defaults.animation=false;
-  DATA=d;computeDerived();renderMeta();renderFresh();renderBrief();renderAudit();renderIntegrity();
+  DATA=d;computeDerived();renderMeta();renderFresh();renderBrief();renderGloss();renderAudit();renderIntegrity();
   document.querySelectorAll('canvas').forEach(cv=>{if(!cv.getAttribute('aria-label')){const h=cv.closest('.card')&&cv.closest('.card').querySelector('h3');cv.setAttribute('role','img');cv.setAttribute('aria-label',h?h.textContent.trim():'Gráfico');}});
   showTab(location.hash.slice(1),true);
 }).catch(()=>fatal('Falha ao carregar data.json.'));
