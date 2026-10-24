@@ -767,7 +767,7 @@ function exportCSV(){
   const rows=cs.map(c=>[c.ticker,c.name,c.price,c.marketCapB,c.weight,g(c.annual,'revenueB'),g(c.annual,'revGrowth'),g(c.annual,'netIncomeB'),g(c.annual,'netMargin'),g(c.annual,'epsDiluted'),g(c.quarter,'revenueB'),g(c.quarter,'revGrowth'),g(c.quarter,'operatingIncomeB'),g(c.quarter,'netIncomeB'),g(c.quarter,'netMargin'),ttm(c),c.valuation.pe,(c.valuation.peCore==null?'':c.valuation.peCore),(c.valuation.peFwd==null?'':c.valuation.peFwd),c.valuation.evEbitda,c.valuation.divYield,c.valuation.fcfYield,c.valuation.fcfB,c.valuation.grossMargin,(c.valuation.net==null?'':c.valuation.net),(c.valuation.ev==null?'':c.valuation.ev),(c.valuation.evSales==null?'':c.valuation.evSales),(c.valuation.impliedG==null?'':c.valuation.impliedG),c.capex[c.capex.length-1],Math.round(c.capex[c.capex.length-1]/c.annual.revenueB*1000)/10,(c.cds==null?'':c.cds),c.rating.sp,c.rating.moody,c.valuation.fcfYieldSrc,c.valuation.fcfRecalc?'sim':'nao',(c.valuation.netPct==null?'':c.valuation.netPct),(c.capexOcf==null?'':c.capexOcf),(c.pd5==null?'':c.pd5),DATA.meta.marketSnapshot||'']);
   const esc=x=>{const s=String(x);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   const csv=[hdr].concat(rows).map(r=>r.map(esc).join(',')).join('\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mag7_indicadores_'+DATA.meta.generated+'.csv';
   document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
 }
