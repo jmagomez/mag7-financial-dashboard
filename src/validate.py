@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida data.json e history/snapshots.json (roda localmente e na rotina diária).
+"""Valida data.json e history/snapshots.json (roda localmente, na rotina diária e no CI).
 
 ERROS (exit 1): estrutura, tipos, tamanhos de séries, reconciliações.
 AVISOS (::warning::, exit 0): dado velho (preços, CDS), calendário vencido.
@@ -7,11 +7,16 @@ AVISOS (::warning::, exit 0): dado velho (preços, CDS), calendário vencido.
 Uso: python src/validate.py [--today AAAA-MM-DD]
 """
 import json
+import re
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
-TICKERS = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]
+from common import NAMES, TICKERS, glossary
+
 errors, warnings = [], []
+# siglas de uso corrente (ou veículos de imprensa) que dispensam entrada no glossary.json
+ACRONYM_OK = {"US", "USD", "EUA", "IA", "AI", "ET", "EPS", "LPA", "SEC", "LSEG", "BNN", "CNBC", "KED", "EBITDA", "NTM",
+              "NYSE", "IPO", "ETF", "CEO", "CFO", "QE"}
 
 
 def err(m):
@@ -151,13 +156,18 @@ def main():
             if not brief.get(k):
                 err(f"meta.dailyBrief.{k} ausente/vazio")
         txt = (brief.get("headline", "") + " " + " ".join(brief.get("bullets", []))).upper()
-        names = {"AAPL": "APPLE", "MSFT": "MICROSOFT", "NVDA": "NVIDIA", "GOOGL": "ALPHABET", "AMZN": "AMAZON", "META": "META", "TSLA": "TESLA"}
         for c in comps:
-            if c.get("cds") is not None and c["cds"] > 100 and c["ticker"] not in txt and names[c["ticker"]] not in txt:
+            if c.get("cds") is not None and c["cds"] > 100 and c["ticker"] not in txt and NAMES[c["ticker"]].upper() not in txt:
                 err(f"{c['ticker']} com CDS {c['cds']} > 100 bps, mas o dailyBrief não menciona o alerta")
         bd = pdate(brief.get("date", ""), "dailyBrief.date")
         if bd and (today - bd).days > 1:
             warn(f"dailyBrief de {bd} não é de hoje/ontem")
+        # sigla em maiúsculas no briefing que o leitor não tem como decifrar (nem ticker, nem glossário)
+        known = set(glossary()) | set(TICKERS) | ACRONYM_OK
+        full = brief.get("headline", "") + " " + " ".join(brief.get("bullets", []))
+        unk = sorted({t for t in re.findall(r"(?<![A-Za-z0-9/&])[A-Z]{2,5}(?![A-Za-z0-9/&])", full)} - known)
+        if unk:
+            warn(f"dailyBrief usa sigla(s) fora do glossary.json: {', '.join(unk)} — escreva por extenso ou acrescente ao glossário")
 
     aud = m.get("audit")
     if not aud:
@@ -199,15 +209,27 @@ def main():
                         err(f"CDS {t}: {v} → {cur} bps (dobrou ou caiu à metade vs snapshot {lc['date']}) — erro de digitação?")
                     elif ch > 0.25:
                         warn(f"CDS {t}: {v} → {cur} bps ({(cur/v-1)*100:+.0f}% vs snapshot {lc['date']}) — conferir fonte")
-        if gen and not any(s_["date"] >= m["generated"] for s_ in hs if s_.get("date")):
-            warn(f"sem snapshot em/depois de generated ({m['generated']})")
+        # snapshot é por pregão: deve existir para marketSnapshot (gravado ANTES do commit final de data.json)
+        last_px = last("prices")
+        if snap and (not last_px or last_px["date"] < m["marketSnapshot"]):
+            err(f"data.json foi para o pregão {m['marketSnapshot']} sem snapshot correspondente em history/snapshots.json (grave o snapshot antes do commit final)")
+        for s_ in hs:
+            if snap and s_.get("date") == m["marketSnapshot"]:
+                for c in comps:
+                    t = c["ticker"]
+                    if s_.get("prices") and abs(s_["prices"].get(t, c["price"]) - c["price"]) > 0.005:
+                        err(f"{t}: preço {c['price']} em data.json != {s_['prices'][t]} no snapshot de {s_['date']}")
+                    if s_.get("marketCapB") and s_["marketCapB"].get(t, c["marketCapB"]) != c["marketCapB"]:
+                        err(f"{t}: market cap {c['marketCapB']} em data.json != {s_['marketCapB'][t]} no snapshot de {s_['date']}")
+                    if c.get("cds") is not None and s_.get("cds") and s_["cds"].get(t, c["cds"]) != c["cds"]:
+                        err(f"{t}: CDS {c['cds']} em data.json != {s_['cds'][t]} no snapshot de {s_['date']}")
     except FileNotFoundError:
         warn("history/snapshots.json ausente")
 
     try:
         lg = json.load(open("history/email_log.json", encoding="utf-8")).get("lastSent")
         ld = pdate(lg or "", "email_log.lastSent")
-        if ld and ld > today + __import__("datetime").timedelta(days=1):
+        if ld and ld > today + timedelta(days=1):
             err(f"email_log.lastSent {lg} está no futuro")
     except FileNotFoundError:
         warn("history/email_log.json ausente")
