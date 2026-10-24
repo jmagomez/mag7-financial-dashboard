@@ -174,7 +174,7 @@
               <th data-k="name">Empresa</th><th data-k="revenueB">Receita</th><th data-k="revGrowth">Cresc. a/a</th>
               <th data-k="operatingIncomeB">Lucro op.</th><th data-k="netIncomeB">Lucro líq.</th>
               <th data-k="netMargin">Margem</th><th data-k="epsDiluted">LPA</th>
-              <th data-k="marketCapB">Market cap</th><th data-k="price">Preço</th>
+              <th data-k="marketCapB">Market cap</th><th data-k="price">Preço</th><th title="Variação do preço vs. o pregão anterior registrado em history/snapshots.json">Δ dia</th>
             </tr></thead><tbody></tbody>
           </table>
         </div>
@@ -301,7 +301,7 @@
   </div>
   <details class="card full" style="margin-top:16px" id="glossBox">
     <summary>Glossário de siglas <span class="muted" id="glossSum"></span></summary>
-    <p class="ch" style="margin-top:10px">Siglas usadas nos briefings e notas; também aparecem como dica (sublinhado pontilhado) na primeira ocorrência em cada bloco. Definições padrão no <code>index.html</code>; podem ser estendidas/sobrescritas em <code>meta.glossary</code> no <code>data.json</code>.</p>
+    <p class="ch" style="margin-top:10px">Siglas usadas nos briefings e notas; também aparecem como dica (sublinhado pontilhado) na primeira ocorrência em cada bloco. Definições em <code>glossary.json</code> (fonte única, também usada pelo e-mail e pela validação).</p>
     <dl class="gl" id="glossList"></dl>
   </details>
   <details class="card full" style="margin-top:16px" id="auditBox">
@@ -402,12 +402,14 @@ let sortK='marketCapB',sortDir=-1;
 function renderTable(){
   const cs=[...DATA.companies].sort((a,b)=>{const g=x=>sortK==='name'?x.name:(sortK==='marketCapB'?x.marketCapB:(sortK==='price'?x.price:pdata(x)[sortK]));
     const av=g(a),bv=g(b);return sortK==='name'?(av<bv?-sortDir:sortDir):((av||0)-(bv||0))*sortDir;});
-  document.querySelector('#tbl tbody').innerHTML=cs.map(c=>{const p=pdata(c),g=p.revGrowth,
+  const SP=SNAPS.filter(x=>x.prices),LP=SP[SP.length-1],PP=SP.length>1?(LP.date>=DATA.meta.marketSnapshot?SP[SP.length-2]:LP):null;
+  const dday=c=>PP&&PP.prices[c.ticker]?(c.price/PP.prices[c.ticker]-1)*100:null;
+  document.querySelector('#tbl tbody').innerHTML=cs.map(c=>{const p=pdata(c),dd=dday(c),g=p.revGrowth,
     eps=p.epsDiluted!=null?p.epsDiluted:(p.epsNonGaap!=null?p.epsNonGaap+'*':null);
     return `<tr><td class="tick"><span class="dot" style="background:${c.color}"></span>${c.name} <span class="muted">${c.ticker}</span></td>
       <td>${fmt(p.revenueB,1)}</td><td class="${g<0?'neg':'pos'}">${g>0?'+':''}${fmt(g,1)}%</td>
       <td>${p.operatingIncomeB!=null?fmt(p.operatingIncomeB,1):'—'}</td><td>${fmt(p.netIncomeB,2)}</td>
-      <td>${fmt(p.netMargin,1)}%</td><td>${eps!=null?'$'+eps:'—'}</td><td>${fmt(c.marketCapB,0)}</td><td>$${fmt(c.price,2)}</td></tr>`;
+      <td>${fmt(p.netMargin,1)}%</td><td>${eps!=null?'$'+eps:'—'}</td><td>${fmt(c.marketCapB,0)}</td><td>$${fmt(c.price,2)}</td><td class="${dd==null?'muted':dd<0?'neg':'pos'}">${dd==null?'—':(dd>0?'+':'')+fmt(dd,2)+'%'}</td></tr>`;
   }).join('');
   document.getElementById('tblPeriod').textContent=period==='annual'?(DATA.meta.annualLabel||'FY2025'):(DATA.meta.quarterLabel||'Q2 2026');
   document.getElementById('rowNotes').innerHTML=cs.map(c=>`<li><b>${c.ticker}</b> · ${pdata(c).period}: ${pdata(c).note||''}</li>`).join('')+'<li>Valores GAAP salvo indicação. Tesla 2T 2026: LPA ajustado (non-GAAP) US$ 0,33.</li>';
@@ -634,8 +636,8 @@ function renderFresh(){
 const cdsAsOf=()=>(DATA.meta.cdsAsOf||{});
 function cdsAge(t){const dt=cdsAsOf()[t];if(!dt)return '<span class="muted">s/ data</span>';const a=daysSince(dt);
   return `<span class="${a>30?'warn-t':''}" title="${a} dias">${brDate(dt).slice(0,5)}${a>30?' ⚠':''}</span>`;}
-const DEFAULT_GLOSS={"SOX": "PHLX Semiconductor Sector Index (Índice de Semicondutores da Filadélfia): índice de 30 empresas de semicondutores listadas nos EUA, incluindo a Nvidia. Serve de termômetro do setor de chips/IA; não é um indicador do painel, aparece apenas nos briefings diários.", "CDS": "Credit default swap: seguro contra calote. O spread (em bps ao ano) mede o custo de proteger a dívida da empresa; quanto maior, maior o risco de crédito percebido.", "bps": "Pontos-base: 100 bps = 1 ponto percentual. No CDS, 100 bps = custo anual de 1% do valor protegido.", "PD": "Probabilidade de default implícita no CDS (neutra ao risco, R = 40%); serve para comparar empresas, não como previsão.", "TTM": "Trailing twelve months: soma dos últimos 4 trimestres.", "FCF": "Free cash flow (fluxo de caixa livre): caixa operacional menos CapEx.", "OCF": "Operating cash flow: fluxo de caixa operacional.", "CapEx": "Capital expenditure: investimento em ativos de longo prazo (data centers, chips, equipamentos).", "EV": "Enterprise value: market cap menos caixa líquido.", "GAAP": "Princípios contábeis dos EUA; o lucro GAAP inclui itens não recorrentes e ganhos não realizados.", "neocloud": "Provedor de nuvem de GPUs especializado em IA, geralmente muito alavancado (ex.: CoreWeave)."};
-function GLOSS(){return Object.assign({},DEFAULT_GLOSS,(DATA&&DATA.meta&&DATA.meta.glossary)||{});}
+let GLOSSJ={};
+function GLOSS(){return GLOSSJ;}
 function glossify(html,seen){
   const G=GLOSS(), keys=Object.keys(G).sort((a,b)=>b.length-a.length);
   if(!keys.length)return html;
@@ -831,8 +833,9 @@ function fatal(msg){
   const k=document.getElementById('kpis');
   if(k)k.innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v" style="font-size:15px">'+msg+'</div></div>';
 }
+const glossP=fetch('glossary.json?t='+Date.now()).then(r=>r.ok?r.json():{}).then(j=>{Object.keys(j).forEach(k=>{if(k[0]!=='_')GLOSSJ[k]=j[k];});}).catch(()=>{});
 const snapP=fetch('history/snapshots.json?t='+Date.now()).then(r=>r.ok?r.json():{snapshots:[]}).then(j=>j.snapshots||[]).catch(()=>[]);
-fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>snapP.then(S=>{SNAPS=S;return d;})).then(d=>{
+fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>Promise.all([snapP,glossP]).then(([S])=>{SNAPS=S;return d;})).then(d=>{
   if(typeof Chart==='undefined'){fatal('Não foi possível carregar a biblioteca de gráficos (CDN). Verifique sua conexão e recarregue.');return;}
   if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)Chart.defaults.animation=false;
   DATA=d;computeDerived();renderMeta();renderFresh();renderBrief();renderGloss();renderAudit();renderIntegrity();
