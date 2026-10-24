@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida data.json e history/snapshots.json (roda localmente, na rotina diária e no CI).
+"""Valida data.json + fundamentals.json (juntos) e history/snapshots.json (roda localmente, na rotina diária e no CI).
 
 ERROS (exit 1): estrutura, tipos, tamanhos de séries, reconciliações.
 AVISOS (::warning::, exit 0): dado velho (preços, CDS), calendário vencido.
@@ -11,7 +11,8 @@ import re
 import sys
 from datetime import date, datetime, timedelta
 
-from common import NAMES, TICKERS, glossary
+from common import path as C_path
+from common import CDS_LOG_KEEP, NAMES, TICKERS, glossary, load, merge
 
 errors, warnings = [], []
 # siglas de uso corrente (ou veículos de imprensa) que dispensam entrada no glossary.json
@@ -47,7 +48,16 @@ def main():
     def _bad(x):
         raise ValueError(f"constante inválida no JSON: {x}")
 
-    d = json.load(open("data.json", encoding="utf-8"), parse_constant=_bad)
+    for fn in ("data.json", "fundamentals.json"):  # rejeita NaN/Infinity em qualquer dos dois arquivos
+        try:
+            json.load(open(C_path(fn), encoding="utf-8"), parse_constant=_bad)
+        except FileNotFoundError:
+            if fn == "data.json":
+                raise
+    d = merge(load("data.json"), load("fundamentals.json"))  # formato único (diário + trimestral)
+    if not (d.get("companies") and d["companies"][0].get("annual")):
+        print("::error::fundamentals.json ausente ou sem correspondência com data.json (formato diário)")
+        sys.exit(1)
     m, comps = d["meta"], d["companies"]
     der = d.get("derived", {})
 
@@ -122,6 +132,8 @@ def main():
         if t not in refs or not isnum(refs[t].get("cds")) or not (5 <= refs[t]["cds"] <= 5000):
             err(f"cdsRef sem {t} válido (5–5000 bps)")
     log = m["cdsLog"]
+    if len(log) > CDS_LOG_KEEP + 2:
+        warn(f"meta.cdsLog tem {len(log)} itens (mantenha só os últimos {CDS_LOG_KEEP}; o resto fica no histórico do git)")
     dates = [pdate(x["date"], "cdsLog") for x in log]
     if None not in dates and dates != sorted(dates):
         err("cdsLog fora de ordem cronológica")
