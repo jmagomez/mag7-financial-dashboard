@@ -833,15 +833,29 @@ function fatal(msg){
   const k=document.getElementById('kpis');
   if(k)k.innerHTML='<div class="kpi"><div class="l">Erro</div><div class="v" style="font-size:15px">'+msg+'</div></div>';
 }
+// data.json (diário) + fundamentals.json (trimestral) -> formato único. Tolerante ao formato antigo (tudo em data.json).
+function mergeData(d,f){
+  const legacy=d.companies[0]&&d.companies[0].annual;
+  if(!f){if(!legacy)throw new Error('fundamentals.json');return d;}
+  if(legacy)return d;
+  const dm=d.meta,fm=f.meta,m=Object.assign({},fm,dm),ps=d.priceSource;
+  const notes=fm.notes.slice();notes.splice(1,0,dm.priceNote);
+  const cn=fm.creditNotes.slice();cn.splice(3,0,dm.cdsNote);
+  m.notes=notes;m.creditNotes=cn;delete m.priceNote;delete m.cdsNote;
+  const dc={};d.companies.forEach(c=>{dc[c.ticker]=c;});
+  return {meta:m,companies:f.companies.map(c=>Object.assign({},c,dc[c.ticker]||{})),derived:f.derived||{},
+    sources:f.sources.filter(s=>ps||!s['$priceSource']).map(s=>(s['$priceSource']&&ps)?ps:s)};
+}
+const fundP=fetch('fundamentals.json?t='+Date.now()).then(r=>r.ok?r.json():null).catch(()=>null);
 const glossP=fetch('glossary.json?t='+Date.now()).then(r=>r.ok?r.json():{}).then(j=>{Object.keys(j).forEach(k=>{if(k[0]!=='_')GLOSSJ[k]=j[k];});}).catch(()=>{});
 const snapP=fetch('history/snapshots.json?t='+Date.now()).then(r=>r.ok?r.json():{snapshots:[]}).then(j=>j.snapshots||[]).catch(()=>[]);
-fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>Promise.all([snapP,glossP]).then(([S])=>{SNAPS=S;return d;})).then(d=>{
+fetch('data.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>Promise.all([snapP,glossP,fundP]).then(([S,,F])=>{SNAPS=S;return mergeData(d,F);})).then(d=>{
   if(typeof Chart==='undefined'){fatal('Não foi possível carregar a biblioteca de gráficos (CDN). Verifique sua conexão e recarregue.');return;}
   if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)Chart.defaults.animation=false;
   DATA=d;computeDerived();renderMeta();renderFresh();renderBrief();renderGloss();renderAudit();renderIntegrity();
   document.querySelectorAll('canvas').forEach(cv=>{if(!cv.getAttribute('aria-label')){const h=cv.closest('.card')&&cv.closest('.card').querySelector('h3');cv.setAttribute('role','img');cv.setAttribute('aria-label',h?h.textContent.trim():'Gráfico');}});
   showTab(location.hash.slice(1),true);
-}).catch(()=>fatal('Falha ao carregar data.json.'));
+}).catch(()=>fatal('Falha ao carregar os dados (data.json / fundamentals.json).'));
 </script>
 </body>
 </html>
