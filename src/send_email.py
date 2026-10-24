@@ -29,11 +29,11 @@ from email.mime.text import MIMEText
 from html import escape as esc
 from zoneinfo import ZoneInfo
 
+from common import CDS_ALERT, glossary, pd5
+
 URL = "https://jmagomez.github.io/mag7-financial-dashboard/"
 REPO = "https://github.com/jmagomez/mag7-financial-dashboard"
 LOG = "history/email_log.json"
-CDS_ALERT = 100
-CDS_R = 0.40
 
 
 def today_br():
@@ -45,11 +45,6 @@ def fmt(v, d=0, suf=""):
         return "n/d"
     s = f"{v:,.{d}f}".replace(",", "X").replace(".", ",").replace("X", ".")
     return s + suf
-
-
-def pd5(bps):
-    import math
-    return None if bps is None else (1 - math.exp(-5 * (bps / 1e4) / (1 - CDS_R))) * 100
 
 
 def commit_message():
@@ -201,6 +196,18 @@ def build(d, snaps):
         aud_html = ("<h3 style='margin:18px 0 6px'>Ressalvas de dados (auditoria)</h3><ul style='margin:0;padding-left:20px;font-size:12.5px;color:#444'>"
                     + "".join(f"<li><b>{esc(a['area'])}:</b> {esc(a['finding'])}</li>" for a in high) + "</ul>")
 
+    # siglas usadas no briefing (glossary.json é a fonte única, a mesma do dashboard)
+    gl_html, gl_txt = "", ""
+    if brief:
+        import re
+        blob = brief.get("headline", "") + " " + " ".join(brief.get("bullets", []))
+        gl = glossary()
+        used = [k for k in gl if re.search(r"(?<![A-Za-z0-9])" + re.escape(k) + r"(?![A-Za-z0-9])", blob)]
+        if used:
+            gl_html = ("<p style='font-size:11.5px;color:#666;margin:10px 0 0'><b>Siglas neste briefing:</b> "
+                       + " · ".join(f"<b>{esc(k)}</b> — {esc(gl[k])}" for k in used) + "</p>")
+            gl_txt = "\nSiglas neste briefing:\n" + "\n".join(f"- {k}: {gl[k]}" for k in used)
+
     html = (
         '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1a1a1a;max-width:760px">'
         '<h2 style="margin:0 0 4px">Magnificent 7 — Briefing diário</h2>'
@@ -208,7 +215,7 @@ def build(d, snaps):
         + alert_html
         + f'<p style="margin:0 0 6px"><a href="{URL}" style="background:#6c7cff;color:#fff;padding:10px 18px;border-radius:10px;'
           'text-decoration:none;font-weight:600;display:inline-block">Abrir dashboard</a></p>'
-        + brief_html + moves_html
+        + brief_html + gl_html + moves_html
         + '<h3 style="margin:18px 0 6px">Indicadores-chave</h3>' + tbl
         + '<h3 style="margin:18px 0 6px">CDS 5 anos</h3>' + ctbl
         + cat_html + aud_html
@@ -223,7 +230,7 @@ def build(d, snaps):
         lines += ["", brief.get("headline", "")] + ["- " + b for b in brief.get("bullets", [])]
     for t, a, b in cds_moves:
         lines.append(f"CDS {t}: {a:g} -> {b:g} bps")
-    text = "\n".join(lines) + "\n"
+    text = "\n".join(lines) + "\n" + gl_txt + ("\n" if gl_txt else "")
 
     prefix = "⚠️ ALERTA — " if breaches else ""
     head = brief.get("headline") if brief else ""
