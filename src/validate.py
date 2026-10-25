@@ -126,6 +126,26 @@ def main():
         if abs(c["weight"] / 100 * m["totalMarketCapT"] * 1000 - c["marketCapB"]) > 2:
             err(f"{c['ticker']}: peso × total != market cap")
 
+    # --- consistência trimestral: rótulos x séries x index.html (pega o que a tarefa mensal pode esquecer)
+    mq = re.match(r"Q([1-4]) (\d{4})$", m.get("quarterLabel", ""))
+    if not mq:
+        err(f"meta.quarterLabel inválido: {m.get('quarterLabel')!r} (esperado 'Qn AAAA')")
+    else:
+        qn, qy = int(mq.group(1)), int(mq.group(2))
+        want = f"Q{qn}'{qy % 100:02d}"
+        if m["historyLabels"][-1] != want:
+            err(f"historyLabels termina em {m['historyLabels'][-1]!r}, mas quarterLabel={m['quarterLabel']!r} (esperado {want!r})")
+        try:
+            html = open(C_path("index.html"), encoding="utf-8").read()
+            if chr(0xFEFF) in html:
+                err("index.html contém caractere BOM literal (use o escape no exportador de CSV)")
+            seen = [(int(y), int(q)) for q, y in re.findall(r"\b([1-4])T ?(20\d\d)\b", html)]
+            seen += [(int(y), int(q)) for q, y in re.findall(r"\bQ([1-4]) (20\d\d)\b", html)]
+            if seen and max(seen) < (qy, qn):
+                warn(f"index.html cita no máximo {max(seen)[1]}T {max(seen)[0]}, mas o painel está em {m['quarterLabel']}: revisar rótulos/textos editoriais fixos no HTML")
+        except FileNotFoundError:
+            warn("index.html ausente")
+
     # --- CDS
     refs = {r["ticker"]: r for r in m["cdsRef"]}
     for t in ("ORCL", "CRWV"):
