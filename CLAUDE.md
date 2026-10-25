@@ -38,9 +38,18 @@ Público: analistas CFA / setor de tecnologia. Postura: especialista em finança
 Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, abaixo).
 
 ## Novo trimestre (tarefa mensal/manual) — só `fundamentals.json`
-- Só incorpore quando as 7 empresas tiverem divulgado (releases/SEC). Em `fundamentals.json`: acrescente o período em `revHistory`/`niHistory` de cada empresa (e o rótulo em `meta.historyLabels`), substitua o objeto `quarter`, atualize `meta.quarterLabel` e o bloco `derived` (balanço, segmentos de nuvem, `fcfTTM`, `fwdPE`, `oneOffTTM`) **só com dado confirmado**; o que não for confirmado fica com o valor anterior e vai para revisão manual.
-- Commit de `fundamentals.json` com `[skip-email]`; depois um commit de `data.json` (por exemplo, `meta.generated` = hoje) **sem** a tag para disparar o e-mail, respeitando a trava de 1 e-mail/dia e a validação.
-- Mudanças só em `fundamentals.json` não disparam a Action de e-mail (o gatilho é `data.json`).
+**Gatilho**: as 7 empresas divulgaram o trimestre-alvo (releases/SEC). Antes disso, só o status mensal; nada é alterado.
+
+**Em `fundamentals.json`** (mantenha os **nomes das chaves** como estão — `balanceQ2_2026` e `cloudSegmentsQ2_2026` são lidos assim pelo painel e pelo validador; renomear quebra a rotina):
+1. `revHistory`/`niHistory` de cada empresa: acrescente o novo trimestre e remova o mais antigo (janela fixa de 10); em `meta.historyLabels` faça o mesmo (formato `Qn'AA`, ex.: `Q3'26`). O último ponto deve igualar `quarter.revenueB`/`quarter.netIncomeB` (±0,5).
+2. Substitua o objeto `quarter` (period, revenueB, revGrowth, operatingIncomeB, netIncomeB, netMargin, epsDiluted, grossMargin, note) e atualize `meta.quarterLabel` (`Qn AAAA`, trimestre-calendário). Apple, Microsoft e Nvidia têm ano fiscal deslocado: alinhe pelo calendário.
+3. `derived`: balanço (caixa+títulos e dívida financiada), `cloudSegmentsQ2_2026`, `fcfTTM`, `fwdPE`/`ebitdaImplB`/`fwdEPS`, `oneOffTTM` — **só com dado confirmado**; o que não for confirmado fica com o valor anterior e vai para o relatório como revisão manual. Itens não recorrentes (ganho/perda com participações, encargo jurídico/tributário) entram em `oneOffTTM`.
+4. Quando um **ano fiscal** fecha: `annual`, `fcfAnnual`/`fcfLabels` e `capex`/`capexLabels`.
+5. `data.json` (não é desta tarefa, mas conferir): marcar `done` nos `catalysts` já divulgados e revisar `meta.audit` (remover item resolvido, ex.: "Calendário"/"Itens não recorrentes").
+
+**Textos fixos no `index.html`** (narrativa de trimestre, ex.: segNotes, qoeNotes, valNotes, rótulos "2T 2026"/"Q2 2026", "jun–jul/2026"): não são gerados dos dados. `validate.py` **avisa** quando o HTML cita no máximo um trimestre anterior ao `quarterLabel`. A tarefa automática **não** reescreve o HTML: liste esses textos no relatório para revisão manual (o dashboard continua correto nos números, mas a narrativa fica defasada).
+
+**Validar e publicar**: rode `python3 src/validate.py` num clone (sem `-I`) com 0 erros — o validador cobra `quarterLabel` × `historyLabels`, últimos pontos × `quarter` e tamanhos das séries. Commit de `fundamentals.json` com `[skip-email]`; depois **um** commit de `data.json` (`meta.generated` = hoje) **sem** a tag para disparar o e-mail, respeitando a trava de 1 por dia e a validação. Mudanças só em `fundamentals.json` não disparam a Action de e-mail (o gatilho é `data.json`).
 
 ## E-mail: exatamente um por dia
 - Todo commit intermediário leva `[skip-email]` na mensagem. Só o **commit final de `data.json`** não leva a tag.
@@ -54,15 +63,18 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 - CDS: bps a 5 anos, data em `meta.cdsAsOf` (aviso se > 30 dias); salto > 2× ou < 0,5× vs. último snapshot é **erro**, > 25% é aviso; `cdsNote` contém "~<cds>" de cada CDS das Mag 7.
 - Preço com salto > 25% vs. snapshot anterior é erro (provável digitação).
 - `cdsLog` em ordem e sem data posterior a `generated`; snapshots ordenados e únicos por data.
+- `quarterLabel` no formato `Qn AAAA` e igual ao último rótulo de `historyLabels`; `index.html` sem BOM literal.
 - PD 5a implícita: 1 − exp(−5·s/(1−R)), R = 0,40 (neutra ao risco; compara, não prevê).
 
 ## Armadilhas conhecidas
 - MCP escreve arquivo inteiro: nunca retipar conteúdo de saída truncada; use `daily.py` e copie o arquivo gerado.
+- O conteúdo enviado pelo MCP interpreta `\uXXXX` como o caractere: para gravar o texto literal `﻿` num arquivo, escreva `\uFEFF`.
 - `merge()` aceita também o formato antigo (tudo em `data.json`), mas `daily.py` recusa esse formato.
-- O CI `validate.yml` só dispara em `data.json`, `history/**`, `src/**` e `index.html`: mudanças só em `fundamentals.json`/`glossary.json` não o acionam (o dono pode acrescentar esses caminhos ao workflow).
+- O CI `validate.yml` roda em **todo** push/PR (sem filtro de caminho): `validate.py` + dry-run do e-mail. Só a Action de e-mail tem filtro (`data.json`).
 - `get_file_contents` de arquivos grandes salva em disco como JSON `[{type,text}]`.
 - Chart.js vem de CDN; em testes de navegador no sandbox é preciso simular (`page.route`).
 - O workflow dispara por push em `data.json`; qualquer mudança de caminho/trigger exige edição manual de `.github/workflows` pelo dono.
 
-## Prompt mínimo da tarefa agendada
-"Siga o `CLAUDE.md` na raiz do repositório `jmagomez/mag7-financial-dashboard` (branch main). Use `src/daily.py` para a parte numérica."
+## Prompts mínimos das tarefas agendadas
+- Diária: "Siga o `CLAUDE.md` na raiz do repositório `jmagomez/mag7-financial-dashboard` (branch main). Use `src/daily.py` para a parte numérica."
+- Mensal: "Siga a seção 'Novo trimestre' do `CLAUDE.md`; mexa só em `fundamentals.json`; sem as 7 divulgações, apenas o status mensal."
