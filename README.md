@@ -28,22 +28,23 @@ Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusiv
 
 | Arquivo | Descrição |
 |---|---|
-| `index.html` | Dashboard completo (Chart.js via CDN). Só apresentação + cálculos derivados; lê `data.json`, `history/snapshots.json` e `glossary.json`. |
-| `data.json` | **Fonte única de dados.** Todos os números reportados e as entradas dos cálculos. |
+| `index.html` | Dashboard completo (Chart.js via CDN). Só apresentação + cálculos derivados; lê `data.json`, `fundamentals.json`, `history/snapshots.json` e `glossary.json`. |
+| `data.json` | **Dados diários** (preço, market cap, peso, CDS, briefing, auditoria, nota de CDS). Também é o gatilho da Action de e-mail. |
+| `fundamentals.json` | **Dados trimestrais/estáticos**: resultados, históricos, ratings, bloco `derived`, notas metodológicas e fontes. Só muda ao incorporar um trimestre. |
 | `glossary.json` | Glossário único de siglas (dashboard, e-mail, validação). |
 | `CLAUDE.md` | **Manual operacional completo** da rotina diária (procedimento, e-mail, invariantes, armadilhas). |
 | `history/snapshots.json` | Série própria: um snapshot por dia útil (preços, market cap, CDS). Alimenta o gráfico de tendência de CDS, a coluna Δ dia e as variações do e-mail. |
 | `history/email_log.json` | Último envio (trava de 1 e-mail/dia). Gravado pela rotina diária (commit `[skip-email]`) logo após o envio. |
-| `src/common.py` | Constantes e utilitários compartilhados (tickers, limiar de CDS, PD implícita, glossário). |
+| `src/common.py` | Constantes e utilitários compartilhados (tickers, limiar de CDS, PD implícita, glossário) e `load_data()`, que junta `data.json` + `fundamentals.json`. |
 | `src/daily.py` | Atualização diária determinística de `data.json` + snapshot a partir de um `delta.json`; roda a validação. |
-| `src/validate.py` | Validador de `data.json` e snapshots (erros de estrutura e de consistência com o snapshot; avisos de dado velho e de sigla fora do glossário). |
+| `src/validate.py` | Validador de `data.json` + `fundamentals.json` e snapshots (erros de estrutura e de consistência com o snapshot; avisos de dado velho e de sigla fora do glossário). |
 | `src/send_email.py` | E-mail executivo diário (SMTP). Pula `[skip-email]` e aplica a trava diária. `--dry-run` gera `preview.html`. |
 | `.github/workflows/enviar-dashboard.yml` | Action existente: executa `src/send_email.py` em push que altere `data.json`. |
-| `.github/workflows/validate.yml` | CI: validação + dry-run do e-mail em todo push/PR. |
+| `.github/workflows/validate.yml` | CI: validação + dry-run do e-mail em push/PR (caminhos: `data.json`, `history/**`, `src/**`, `index.html`). |
 
-### `data.json` → bloco `derived` (fonte única auditável)
+### `fundamentals.json` → bloco `derived` (fonte única auditável)
 
-As **entradas** dos cálculos do front-end ficam em `data.json` sob `derived`, não embutidas no HTML — assim tudo é auditável em um só lugar e sai no CSV:
+As **entradas** dos cálculos do front-end ficam em `fundamentals.json` sob `derived`, não embutidas no HTML — assim tudo é auditável em um só lugar e sai no CSV:
 
 - `balanceQ2_2026` — caixa + títulos negociáveis e dívida financiada por empresa (para caixa líquido e EV);
 - `cloudSegmentsQ2_2026` — receita e crescimento dos segmentos de nuvem/IA;
@@ -52,7 +53,7 @@ As **entradas** dos cálculos do front-end ficam em `data.json` sob `derived`, n
 - `oneOffTTM` — ajustes de itens não recorrentes para o P/E core;
 - `dcfAssumptions` — WACC, crescimento terminal e horizonte do DCF reverso.
 
-O front-end **recalcula** P/E TTM, P/E core, FCF yield, caixa líquido, EV, EV/Vendas, EV/EBITDA, crescimento implícito, CapEx/OCF, PD implícita de CDS e P/E forward a cada carregamento; por isso o `data.json` guarda apenas dados reportados + entradas, sem múltiplos "congelados".
+O front-end **recalcula** P/E TTM, P/E core, FCF yield, caixa líquido, EV, EV/Vendas, EV/EBITDA, crescimento implícito, CapEx/OCF, PD implícita de CDS e P/E forward a cada carregamento; por isso os arquivos de dados guardam apenas dados reportados + entradas, sem múltiplos "congelados".
 
 ## Metodologia
 
@@ -75,7 +76,7 @@ A cada carregamento o painel verifica: soma dos market caps = total do grupo; pe
 
 ### Log de verificações de CDS
 
-O histórico de checagens fica em `meta.cdsLog` (lista de `{date, text}`), exibido em "Histórico de verificações de CDS" na aba Crédito & CapEx. `meta.creditNotes` contém apenas a análise de crédito, sem o log.
+O histórico recente de checagens fica em `meta.cdsLog` de `data.json` (lista de `{date, text}`, só os 6 últimos; os antigos ficam no histórico do git), exibido em "Histórico de verificações de CDS" na aba Crédito & CapEx. A nota de CDS vigente é `meta.cdsNote`; a análise de crédito estática fica em `meta.creditNotes` de `fundamentals.json`.
 
 ### Vintages dos dados (datas diferentes por métrica)
 
@@ -86,7 +87,7 @@ O histórico de checagens fica em `meta.cdsLog` (lista de `{date, text}`), exibi
 
 ## Automação
 
-Todo o procedimento da rotina diária (pesquisa, `daily.py`, ordem dos commits, regra de 1 e-mail/dia com `[skip-email]`, notificações e invariantes) está em **[`CLAUDE.md`](CLAUDE.md)** — única referência; não duplicar aqui. Resumo: a rotina grava o snapshot, atualiza `data.json` (inclusive `meta.dailyBrief` e `meta.audit`) e o commit final de `data.json` dispara a Action `Enviar Dashboard Mag7` (`src/send_email.py`, trava diária em `history/email_log.json`). Secrets: `MAG7_SMTP_USER`, `MAG7_SMTP_APP_PASSWORD`, `MAG7_EMAIL_DEST`, `MAG7_EMAIL_BCC`. Envio manual (`workflow_dispatch`) ignora a trava. A Action `Validar dados` roda em todo push/PR; localmente: `python3 src/validate.py`.
+Todo o procedimento da rotina diária (pesquisa, `daily.py`, ordem dos commits, regra de 1 e-mail/dia com `[skip-email]`, notificações e invariantes) está em **[`CLAUDE.md`](CLAUDE.md)** — única referência; não duplicar aqui. Resumo: a rotina grava o snapshot, atualiza `data.json` (inclusive `meta.dailyBrief` e `meta.audit`) e o commit final de `data.json` dispara a Action `Enviar Dashboard Mag7` (`src/send_email.py`, trava diária em `history/email_log.json`). Secrets: `MAG7_SMTP_USER`, `MAG7_SMTP_APP_PASSWORD`, `MAG7_EMAIL_DEST`, `MAG7_EMAIL_BCC`. Envio manual (`workflow_dispatch`) ignora a trava. A Action `Validar dados` roda em push/PR nos caminhos acima; localmente: `python3 src/validate.py`.
 
 ## Auditoria crítica (`meta.audit`)
 
@@ -95,8 +96,8 @@ Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica
 ## Como atualizar
 
 - **Diário**: `python3 src/daily.py delta.json` (ver `CLAUDE.md`) — nunca editar preços/market cap/pesos à mão.
-- **Novo trimestre** (manual): acrescente o período em `revHistory`/`niHistory`, atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived`.
-- Novos campos de metadados: `meta.cdsAsOf`, `meta.catalysts`, `meta.dailyBrief`, `meta.audit`. Siglas novas vão em `glossary.json`.
+- **Novo trimestre** (manual, só `fundamentals.json`): acrescente o período em `revHistory`/`niHistory`, atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived` (detalhes no `CLAUDE.md`).
+- Campos diários de `meta`: `cdsAsOf`, `catalysts`, `dailyBrief`, `audit`, `cdsNote`, `priceNote`. Siglas novas vão em `glossary.json`.
 
 ## Aviso
 
