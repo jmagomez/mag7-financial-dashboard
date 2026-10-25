@@ -37,10 +37,10 @@ Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusiv
 | `history/email_log.json` | Último envio (trava de 1 e-mail/dia). Gravado pela rotina diária (commit `[skip-email]`) logo após o envio. |
 | `src/common.py` | Constantes e utilitários compartilhados (tickers, limiar de CDS, PD implícita, glossário) e `load_data()`, que junta `data.json` + `fundamentals.json`. |
 | `src/daily.py` | Atualização diária determinística de `data.json` + snapshot a partir de um `delta.json`; roda a validação. |
-| `src/validate.py` | Validador de `data.json` + `fundamentals.json` e snapshots (erros de estrutura e de consistência com o snapshot; avisos de dado velho e de sigla fora do glossário). |
+| `src/validate.py` | Validador de `data.json` + `fundamentals.json` e snapshots (erros de estrutura e de consistência com o snapshot e entre rótulos trimestrais; avisos de dado velho, trimestre defasado no HTML e sigla fora do glossário). |
 | `src/send_email.py` | E-mail executivo diário (SMTP). Pula `[skip-email]` e aplica a trava diária. `--dry-run` gera `preview.html`. |
 | `.github/workflows/enviar-dashboard.yml` | Action existente: executa `src/send_email.py` em push que altere `data.json`. |
-| `.github/workflows/validate.yml` | CI: validação + dry-run do e-mail em push/PR (caminhos: `data.json`, `history/**`, `src/**`, `index.html`). |
+| `.github/workflows/validate.yml` | CI: validação + dry-run do e-mail em todo push/PR. |
 
 ### `fundamentals.json` → bloco `derived` (fonte única auditável)
 
@@ -87,7 +87,7 @@ O histórico recente de checagens fica em `meta.cdsLog` de `data.json` (lista de
 
 ## Automação
 
-Todo o procedimento da rotina diária (pesquisa, `daily.py`, ordem dos commits, regra de 1 e-mail/dia com `[skip-email]`, notificações e invariantes) está em **[`CLAUDE.md`](CLAUDE.md)** — única referência; não duplicar aqui. Resumo: a rotina grava o snapshot, atualiza `data.json` (inclusive `meta.dailyBrief` e `meta.audit`) e o commit final de `data.json` dispara a Action `Enviar Dashboard Mag7` (`src/send_email.py`, trava diária em `history/email_log.json`). Secrets: `MAG7_SMTP_USER`, `MAG7_SMTP_APP_PASSWORD`, `MAG7_EMAIL_DEST`, `MAG7_EMAIL_BCC`. Envio manual (`workflow_dispatch`) ignora a trava. A Action `Validar dados` roda em push/PR nos caminhos acima; localmente: `python3 src/validate.py`.
+Todo o procedimento da rotina diária (pesquisa, `daily.py`, ordem dos commits, regra de 1 e-mail/dia com `[skip-email]`, notificações e invariantes) está em **[`CLAUDE.md`](CLAUDE.md)** — única referência; não duplicar aqui. Resumo: a rotina grava o snapshot, atualiza `data.json` (inclusive `meta.dailyBrief` e `meta.audit`) e o commit final de `data.json` dispara a Action `Enviar Dashboard Mag7` (`src/send_email.py`, trava diária em `history/email_log.json`). Secrets: `MAG7_SMTP_USER`, `MAG7_SMTP_APP_PASSWORD`, `MAG7_EMAIL_DEST`, `MAG7_EMAIL_BCC`. Envio manual (`workflow_dispatch`) ignora a trava. A Action `Validar dados` roda em todo push/PR; localmente: `python3 src/validate.py`.
 
 ## Auditoria crítica (`meta.audit`)
 
@@ -96,7 +96,7 @@ Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica
 ## Como atualizar
 
 - **Diário**: `python3 src/daily.py delta.json` (ver `CLAUDE.md`) — nunca editar preços/market cap/pesos à mão.
-- **Novo trimestre** (manual, só `fundamentals.json`): acrescente o período em `revHistory`/`niHistory`, atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived` (detalhes no `CLAUDE.md`).
+- **Novo trimestre** (manual, só `fundamentals.json`): acrescente o período em `revHistory`/`niHistory` (mantendo a janela de 10), atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived`; os textos de narrativa fixos no `index.html` são revisados à mão (o validador avisa quando ficam defasados). Detalhes no `CLAUDE.md`.
 - Campos diários de `meta`: `cdsAsOf`, `catalysts`, `dailyBrief`, `audit`, `cdsNote`, `priceNote`. Siglas novas vão em `glossary.json`.
 
 ## Aviso
