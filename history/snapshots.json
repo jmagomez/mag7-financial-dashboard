@@ -47,6 +47,13 @@
    "marketCapB": {"AAPL": 5083, "MSFT": 3869, "NVDA": 5141, "GOOGL": 3965, "AMZN": 2702, "META": 1653, "TSLA": 1479},
    "cds": {"MSFT": 53, "NVDA": 101, "GOOGL": 67, "AMZN": 68, "META": 115, "ORCL": 322, "CRWV": 1090},
    "note": "Fechamento de 22/10: StockAnalysis (histórico por ação) cruzado com Investing.com (Apple, Alphabet, Amazon, Nvidia), Yahoo Finance (Meta, Tesla) e CappNotes (variações de Nvidia, Meta, Tesla); Microsoft com variação -2,23% corroborada. Market cap = preço × ações implícitas. CDS 5a: Meta ~115 (Markit 114,79, fechamento de 22/10; ICE/Bloomberg pico intradia ~119,3; relato de segunda mão); demais sem cotação nova verificável (Nvidia 101 FT 'este mês' datado 19/10; Oracle 322 e CoreWeave ~1.090 de 19/10; MSFT/AMZN/GOOGL de 29/07)."
+  },
+  {
+   "date": "2026-10-23",
+   "prices": {"AAPL": 347.73, "MSFT": 524.51, "NVDA": 210.96, "GOOGL": 320.21, "AMZN": 248.0, "META": 642.62, "TSLA": 372.22},
+   "marketCapB": {"AAPL": 5076, "MSFT": 3894, "NVDA": 5111, "GOOGL": 3916, "AMZN": 2676, "META": 1637, "TSLA": 1470},
+   "cds": {"MSFT": 53, "NVDA": 101, "GOOGL": 67, "AMZN": 68, "META": 115, "ORCL": 322, "CRWV": 1090},
+   "note": "Fechamento de 23/10: StockAnalysis (histórico por ação) para as sete; variações de Nvidia (-0,59%) e Meta (-0,96%) conferem com CappNotes. Market cap = preço × ações implícitas. CDS 5a sem cotação nova verificável: Meta ~115 (Markit 114,79, fechamento de 22/10), Nvidia 101 (FT 'este mês', datada 19/10), Oracle 322 e CoreWeave ~1.090 (19/10), MSFT/AMZN/GOOGL de 29/07."
   }
  ]
 }
