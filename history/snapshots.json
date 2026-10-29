@@ -61,6 +61,13 @@
    "marketCapB": {"AAPL": 5067, "MSFT": 3945, "NVDA": 5280, "GOOGL": 3921, "AMZN": 2731, "META": 1580, "TSLA": 1609},
    "cds": {"MSFT": 53, "NVDA": 101, "GOOGL": 67, "AMZN": 68, "META": 115, "ORCL": 322, "CRWV": 1090},
    "note": "Fechamento de 27/10: Nvidia 217,94 (+0,90%) e Meta 620,19 (-1,65%) conferidos em Gotrade/Motley Fool; Amazon 253,10 (+1,61%) em StockAnalysis (fechamento 16h ET); Tesla 407,46 (+4,0%) em Gotrade; Apple 347,10 (+0,93% sobre 343,91) e Alphabet 320,58 (+1,2% segundo MarketBeat) em Gotrade; Microsoft 531,33 (-0,24%) em IndMoney, consistente com a variação do BigGo. Não há snapshot de 26/10: a variação do painel (vs. 23/10) cobre dois pregões. Market cap = preço × ações implícitas. CDS 5a sem cotação nova verificável: Meta ~115 (Markit, 22/10), Nvidia 101 (FT, datada 19/10), Oracle 322 e CoreWeave ~1.090 (19/10), MSFT/AMZN/GOOGL de 29/07."
+  },
+  {
+   "date": "2026-10-28",
+   "prices": {"AAPL": 343.83, "MSFT": 531.01, "NVDA": 215.38, "GOOGL": 324.89, "AMZN": 254.6, "META": 612.49, "TSLA": 404.22},
+   "marketCapB": {"AAPL": 5019, "MSFT": 3943, "NVDA": 5218, "GOOGL": 3974, "AMZN": 2747, "META": 1560, "TSLA": 1596},
+   "cds": {"MSFT": 53, "NVDA": 101, "GOOGL": 67, "AMZN": 68, "META": 115, "ORCL": 322, "CRWV": 1090},
+   "note": "Fechamento de 28/10: Apple 343,83 e Tesla 404,22 (Gotrade, cruzado com cotações do Motley Fool); Meta 612,49 (Gotrade/Motley Fool); Alphabet (classe A) 324,89, +1,34% (IndMoney e FinanceFeeds); Nvidia 215,38 (Motley Fool; variação -1,17% conferida em CappNotes); Microsoft 531,01 e Amazon 254,60 (fonte única de valor: cotações do Motley Fool, coerentes com as variações de -0,1% e +0,6%). Market cap = preço × ações implícitas. CDS 5a sem cotação nova verificável: Meta ~115 (Markit, 22/10), Nvidia 101 (FT, datada 19/10), Oracle 322 e CoreWeave ~1.090 (19/10), MSFT/AMZN/GOOGL de 29/07."
   }
  ]
 }
