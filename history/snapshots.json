@@ -75,6 +75,13 @@
    "marketCapB": {"AAPL": 5093, "MSFT": 3937, "NVDA": 5176, "GOOGL": 3472, "AMZN": 2630, "META": 1591, "TSLA": 1592},
    "cds": {"MSFT": 53, "NVDA": 127, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 322, "CRWV": 1090},
    "note": "Fechamento de 29/10: Alphabet 283,82 (-12,64%), Amazon 243,79 (-4,25%), Microsoft 530,14, Nvidia 213,66, Apple 348,91, Meta 624,52 e Tesla 403,30 — MarketAlleys (Finnhub, cotações rotuladas como últimas, possivelmente não oficiais), cruzado com Gotrade (Nvidia, Tesla), MacDailyNews (Apple), Stock Titan (Alphabet) e IndMoney (Amazon); variações % coerentes com os fechamentos de 28/10. Market cap = preço × ações implícitas. CDS 5a: Nvidia 127 e Meta 119 (S&P Global Market Intelligence via Benzinga, 27/10; data da cotação 26/10 incerta; segunda mão); demais sem cotação nova (Oracle 322 e CoreWeave ~1.090 de 19/10; MSFT/AMZN/GOOGL de 29/07)."
+  },
+  {
+   "date": "2026-10-30",
+   "prices": {"AAPL": 344.63, "MSFT": 521.91, "NVDA": 204.64, "GOOGL": 279.84, "AMZN": 240.35, "META": 614.99, "TSLA": 399.81},
+   "marketCapB": {"AAPL": 5031, "MSFT": 3876, "NVDA": 4957, "GOOGL": 3423, "AMZN": 2593, "META": 1567, "TSLA": 1578},
+   "cds": {"MSFT": 53, "NVDA": 127, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 322, "CRWV": 1090},
+   "note": "Fechamento de 30/10: Portfolio Terminal (tabela de fechamento semanal; variações do dia: Apple -1,23%, Microsoft -1,55%, Nvidia -4,22%, Alphabet -1,40%, Amazon -1,41%, Meta -1,53%, Tesla -0,87%), coerente com as variações sobre os fechamentos de 29/10. Nvidia 204,64 (Gotrade), Amazon 240,35 (Gotrade; TradingKey), Tesla 399,81 (Gotrade), Meta 614,99 (FinanceFeeds) e Alphabet 279,84 (Opening Bell Daily News) conferidos em segunda fonte; Apple e Microsoft em fonte única de valor (BigGo confirma Apple -1,2%). Market cap = preço × ações implícitas. CDS 5a sem cotação nova verificável: Nvidia ~127 e Meta ~119 (S&P Global Market Intelligence via Benzinga, 26/10; segunda mão), Oracle 322 e CoreWeave ~1.090 (19/10), MSFT/AMZN/GOOGL de 29/07."
   }
  ]
 }
