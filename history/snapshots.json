@@ -82,6 +82,13 @@
    "marketCapB": {"AAPL": 5031, "MSFT": 3876, "NVDA": 4957, "GOOGL": 3423, "AMZN": 2593, "META": 1567, "TSLA": 1578},
    "cds": {"MSFT": 53, "NVDA": 127, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 322, "CRWV": 1090},
    "note": "Fechamento de 30/10: Portfolio Terminal (tabela de fechamento semanal; variações do dia: Apple -1,23%, Microsoft -1,55%, Nvidia -4,22%, Alphabet -1,40%, Amazon -1,41%, Meta -1,53%, Tesla -0,87%), coerente com as variações sobre os fechamentos de 29/10. Nvidia 204,64 (Gotrade), Amazon 240,35 (Gotrade; TradingKey), Tesla 399,81 (Gotrade), Meta 614,99 (FinanceFeeds) e Alphabet 279,84 (Opening Bell Daily News) conferidos em segunda fonte; Apple e Microsoft em fonte única de valor (BigGo confirma Apple -1,2%). Market cap = preço × ações implícitas. CDS 5a sem cotação nova verificável: Nvidia ~127 e Meta ~119 (S&P Global Market Intelligence via Benzinga, 26/10; segunda mão), Oracle 322 e CoreWeave ~1.090 (19/10), MSFT/AMZN/GOOGL de 29/07."
+  },
+  {
+   "date": "2026-11-03",
+   "prices": {"AAPL": 331.9, "MSFT": 520.99, "NVDA": 206.69, "GOOGL": 280.03, "AMZN": 250.69, "META": 621.03, "TSLA": 398.5},
+   "marketCapB": {"AAPL": 4845, "MSFT": 3869, "NVDA": 5007, "GOOGL": 3425, "AMZN": 2705, "META": 1582, "TSLA": 1573},
+   "cds": {"MSFT": 53, "NVDA": 127, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 322, "CRWV": 1090},
+   "note": "Fechamento de 03/11: Motley Fool (barra de cotações: Apple 331,90 -1,9%, Meta 621,03 +2,4%, Microsoft 520,99 +2,7%, Amazon 250,69 +2,1%, Nvidia 206,69 +2,3%, Tesla 398,50 -1,3%; não rotulada explicitamente como fechamento); Nvidia 206,69 e Alphabet 280,03 (+0,37%) também em Vista P Global; Tesla 398,50 em Gotrade; variações de Apple (-1,90%), Microsoft (+2,74%), Nvidia (+2,29%), Amazon (+2,06%) e Tesla (-1,32%) conferem com CappNotes/Portfolio Terminal. Alphabet: 280,03 de fonte única de valor (Fool mostra só a classe C, GOOG 278,27). Não há snapshot de 02/11 (fechamentos divergem entre fontes): a variação do painel (vs. 30/10) cobre dois pregões. Market cap = preço × ações implícitas. CDS 5a sem cotação nova verificável: Nvidia ~127 e Meta ~119 (S&P Global Market Intelligence via Benzinga, 26/10; segunda mão), Oracle 322 e CoreWeave ~1.090 (19/10), MSFT/AMZN/GOOGL de 29/07."
   }
  ]
 }
