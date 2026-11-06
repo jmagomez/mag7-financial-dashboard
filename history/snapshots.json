@@ -96,6 +96,13 @@
    "marketCapB": {"AAPL": 5102, "MSFT": 4128, "NVDA": 4848, "GOOGL": 3534, "AMZN": 2871, "META": 1605, "TSLA": 1520},
    "cds": {"MSFT": 53, "NVDA": 127, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 322, "CRWV": 1140},
    "note": "Fechamento de 04/11: Alphabet 288,93 (Motley Fool, 16h ET; MarketBeat confirma); Apple 349,51 (+5,3%), Amazon 266,03 (+6,1%), Meta 630,00 (+1,4%), Microsoft 555,80 (+6,7%), Nvidia 200,13 (-3,2%) e Tesla 385,19 (-3,3%) da barra de cotações do Motley Fool, coerentes com as variações de fechamento de Stock Titan/CNBC e Strategitz sobre os fechamentos de 03/11 (Meta e Microsoft: fonte única de valor). Market cap = preço × ações implícitas. CDS 5a: CoreWeave ~1.140 (CNBC via Stock Titan, 04/11; segunda mão); demais sem cotação nova verificável: Nvidia ~127 e Meta ~119 (S&P Global Market Intelligence via Benzinga, 26/10), Oracle 322 (19/10), MSFT/AMZN/GOOGL de 29/07."
+  },
+  {
+   "date": "2026-11-05",
+   "prices": {"AAPL": 344.17, "MSFT": 535.93, "NVDA": 181.6, "GOOGL": 282.57, "AMZN": 260.21, "META": 605.08, "TSLA": 343.69},
+   "marketCapB": {"AAPL": 5024, "MSFT": 3980, "NVDA": 4399, "GOOGL": 3456, "AMZN": 2808, "META": 1542, "TSLA": 1356},
+   "cds": {"MSFT": 53, "NVDA": 127, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 322, "CRWV": 1140},
+   "note": "Fechamento de 05/11: Fox Business (Nvidia, Alphabet, Amazon, Meta, Tesla) e Motley Fool (Apple, Microsoft; variações coerentes com os fechamentos de 04/11). GOOGL pela Fox (US$ 282,57; a Fool dá GOOG 281,74). Market cap = preço × ações implícitas. CDS sem cotação nova verificável."
   }
  ]
 }
