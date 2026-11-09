@@ -16,6 +16,11 @@ Princípios: **(1)** nenhuma fase pode mudar um número exibido sem teste que ex
 **Ações do dono após o merge**: (a) `cd web && npm install` e commitar `package-lock.json`; (b) copiar
 `docs/proposed/workflows/ci.yml` (e opcionalmente `enviar-dashboard.yml`) para `.github/workflows/`; (c) escolher uma licença.
 
+**Pendência conhecida (lint em `src/`)**: `ruff check src` acusa 3 itens antigos, que este PR não corrige para não tocar
+código de produção: `src/daily.py:71` (B023, falso positivo prático: a função é usada na hora dentro do loop) e a ordem dos
+imports em `src/send_email.py:21` e `src/validate.py:9` (corrigíveis com `ruff check --fix`). O CI proposto faz lint só de
+`tests` e `tools`; ao corrigir esses 3 pontos, estender para `src`.
+
 ## Fase 2 — UI v2 em `web/` (paridade funcional)
 Critério de aceite: 4 abas com os mesmos números do golden; zero `innerHTML` com dado externo e só URLs `https:` em `href`; axe sem violações sérias;
 Lighthouse ≥ 95 (desempenho e acessibilidade); bundle < 250 KB gz.
