@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jmagomez.github.io/mag7-financial-dashboard/schemas/data.schema.json",
+  "title": "data.json — dados diários do dashboard Mag 7",
+  "description": "Contrato do arquivo escrito por src/daily.py. Valores em US$ bilhões salvo indicação; CDS em bps (5 anos). `null` = sem dado confiável (nunca estimar).",
+  "type": "object",
+  "required": ["meta", "companies", "priceSource"],
+  "additionalProperties": true,
+  "$defs": {
+    "isoDate": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "ticker": {"enum": ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]},
+    "link": {
+      "type": "object",
+      "required": ["label", "url"],
+      "properties": {"label": {"type": "string", "minLength": 1}, "url": {"type": "string", "pattern": "^https?://"}}
+    }
+  },
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["generated", "marketSnapshot", "totalMarketCapT", "cdsRef", "cdsAsOf", "cdsLog", "cdsNote", "priceNote", "dailyBrief", "audit", "catalysts"],
+      "properties": {
+        "generated": {"$ref": "#/$defs/isoDate"},
+        "marketSnapshot": {"$ref": "#/$defs/isoDate"},
+        "totalMarketCapT": {"type": "number", "exclusiveMinimum": 0},
+        "cdsRef": {
+          "type": "array",
+          "description": "Emissores de referência fora das Mag 7 (Oracle, CoreWeave).",
+          "items": {
+            "type": "object",
+            "required": ["ticker", "name", "cds"],
+            "properties": {"ticker": {"type": "string"}, "name": {"type": "string"}, "cds": {"type": ["number", "null"], "minimum": 0}}
+          }
+        },
+        "cdsAsOf": {"type": "object", "additionalProperties": {"$ref": "#/$defs/isoDate"}},
+        "cdsLog": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "required": ["date", "text"],
+            "properties": {"date": {"$ref": "#/$defs/isoDate"}, "text": {"type": "string", "minLength": 1, "maxLength": 1500}}
+          }
+        },
+        "cdsNote": {"type": "string", "maxLength": 1800},
+        "priceNote": {"type": "string"},
+        "dailyBrief": {
+          "type": "object",
+          "required": ["headline", "bullets", "date"],
+          "properties": {
+            "headline": {"type": "string", "minLength": 1},
+            "bullets": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+            "sources": {"type": "array", "items": {"$ref": "#/$defs/link"}},
+            "date": {"$ref": "#/$defs/isoDate"}
+          }
+        },
+        "audit": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["sev", "area", "finding", "action"],
+            "properties": {"sev": {"enum": ["alta", "média", "baixa"]}, "area": {"type": "string"}, "finding": {"type": "string"}, "action": {"type": "string"}}
+          }
+        },
+        "catalysts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ticker", "date", "event"],
+            "properties": {"ticker": {"$ref": "#/$defs/ticker"}, "date": {"$ref": "#/$defs/isoDate"}, "event": {"type": "string"}, "confirmed": {"type": "boolean"}, "done": {"type": "boolean"}}
+          }
+        }
+      }
+    },
+    "companies": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "required": ["ticker", "price", "weight", "marketCapB", "cds"],
+        "additionalProperties": false,
+        "properties": {
+          "ticker": {"$ref": "#/$defs/ticker"},
+          "price": {"type": "number", "exclusiveMinimum": 0},
+          "weight": {"type": "number", "minimum": 0, "maximum": 100},
+          "marketCapB": {"type": "number", "exclusiveMinimum": 0},
+          "cds": {"type": ["number", "null"], "minimum": 0}
+        }
+      }
+    },
+    "priceSource": {"$ref": "#/$defs/link"}
+  }
+}
