@@ -103,6 +103,13 @@
    "marketCapB": {"AAPL": 5024, "MSFT": 3980, "NVDA": 4399, "GOOGL": 3456, "AMZN": 2808, "META": 1542, "TSLA": 1356},
    "cds": {"MSFT": 53, "NVDA": 127, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 322, "CRWV": 1140},
    "note": "Fechamento de 05/11: Fox Business (Nvidia, Alphabet, Amazon, Meta, Tesla) e Motley Fool (Apple, Microsoft; variações coerentes com os fechamentos de 04/11). GOOGL pela Fox (US$ 282,57; a Fool dá GOOG 281,74). Market cap = preço × ações implícitas. CDS sem cotação nova verificável."
+  },
+  {
+   "date": "2026-11-06",
+   "prices": {"AAPL": 342.38, "MSFT": 530.62, "NVDA": 186.65, "GOOGL": 284.77, "AMZN": 259.3, "META": 610.15, "TSLA": 358.23},
+   "marketCapB": {"AAPL": 4998, "MSFT": 3941, "NVDA": 4521, "GOOGL": 3483, "AMZN": 2798, "META": 1555, "TSLA": 1413},
+   "cds": {"MSFT": 53, "NVDA": 139, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
+   "note": "Fechamento de 06/11: preços DERIVADOS — variação % do dia (Swingfolio, base EODHD/Yahoo; Nvidia +2,78%, Microsoft -0,99% e Apple -0,52% confirmadas por CappNotes/Stock Titan) aplicada ao fechamento de 05/11 do painel, arredondado a centavos (erro ≤ ~US$ 0,02 mais o de 05/11); Meta 610,15 (+0,84%) cotação em cache do MarketAlleys. Preços não vieram de cotação de fechamento direta: pendente conferir. Market cap = preço × ações implícitas. CDS 5a: Nvidia ~139, Oracle ~298 e CoreWeave ~1.155 (06/11; CNBC/Deutsche Bank via FourWeekMBA; segunda mão, original CNBC não lido; tenor da Nvidia não explicitado); demais sem cotação nova."
   }
  ]
 }
