@@ -12,7 +12,7 @@ cd web && npm install      # Node >= 22.18
 
 ## Checagens (as mesmas do CI)
 ```bash
-ruff check src tests tools     # lint
+ruff check tests tools         # lint (src/ entra depois: ver "Pendência conhecida" em docs/ROADMAP.md)
 python src/validate.py         # dados (sem -I: o import de `common` falha com -I)
 python -m pytest               # schemas, invariantes, daily.py, paridade das âncoras
 cd web && npm run typecheck && npm test && npm run build
