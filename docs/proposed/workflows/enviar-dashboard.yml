@@ -1,0 +1,34 @@
+# PROPOSTA — endurece .github/workflows/enviar-dashboard.yml (mesmo gatilho: push em data.json).
+# Mudanças: permissões mínimas, fila única (nunca dois envios em paralelo) e o e-mail só sai depois
+# do commit de data.json estar no main. send_email.py já roda validate.py como portão.
+name: Enviar Dashboard Mag7
+
+on:
+  push:
+    branches: [main]
+    paths: ["data.json"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enviar-dashboard
+  cancel-in-progress: false   # enfileira em vez de cancelar: não perder o envio do dia
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Enviar e-mail (SMTP)
+        env:
+          MAG7_SMTP_USER: ${{ secrets.MAG7_SMTP_USER }}
+          MAG7_SMTP_APP_PASSWORD: ${{ secrets.MAG7_SMTP_APP_PASSWORD }}
+          MAG7_EMAIL_DEST: ${{ secrets.MAG7_EMAIL_DEST }}
+          MAG7_EMAIL_BCC: ${{ secrets.MAG7_EMAIL_BCC }}
+        run: python src/send_email.py
