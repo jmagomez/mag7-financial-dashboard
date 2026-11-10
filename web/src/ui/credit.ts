@@ -7,6 +7,7 @@ import { ageChip, CDS_STALE_AFTER_DAYS } from "../lib/freshness.ts";
 import { h, type VNode } from "../lib/vdom.ts";
 import type { LineSpec } from "./line-frame.ts";
 import type { ViewModel } from "./model.ts";
+import { glossaryBlock } from "./glossary.ts";
 import { auditBlock, integrityBlock } from "./signals.ts";
 import { TREND_NOTE, type Note } from "./notes.ts";
 
@@ -130,6 +131,7 @@ export function footerBlock(m: ViewModel): VNode {
           h("ul", { class: "srcs" }, ...m.sources.map((s) => h("li", {}, safeHttpsUrl(s.url) ? h("a", { href: s.url }, s.label) : s.label))),
         )
       : null,
+    glossaryBlock(m),
     integrityBlock(m),
     auditBlock(m),
     h("p", {}, "Informativo, sem recomendação de investimento. Dados de fontes públicas; veja as datas em cada indicador."),

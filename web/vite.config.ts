@@ -5,7 +5,7 @@ import { defineConfig, type Plugin } from "vite";
 // base = caminho do GitHub Pages do projeto. O deploy via Actions é um workflow
 // que só o dono pode criar (ver docs/proposed/workflows/pages.yml).
 const BASE = "/mag7-financial-dashboard/";
-const DATA = ["data.json", "fundamentals.json", "history/snapshots.json"];
+const DATA = ["data.json", "fundamentals.json", "history/snapshots.json", "glossary.json"];
 const repoFile = (n: string): Buffer => readFileSync(fileURLToPath(new URL(`../${n}`, import.meta.url)));
 
 /** Serve (dev) e copia para dist (build) os JSON da raiz do repositório: o front lê os dados em tempo de execução. */

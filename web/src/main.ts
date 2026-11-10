@@ -1,4 +1,5 @@
 import "./styles.css";
+import "./glossary.css";
 import { parseRoute, TABS, tabHash, type Tab } from "./lib/router.ts";
 import { toCsv } from "./lib/csv.ts";
 import { mount } from "./lib/vdom.ts";
@@ -54,9 +55,11 @@ document.addEventListener("keydown", (e) => {
 render();
 // Snapshots são opcionais: se falharem, só a tendência do CDS mostra aviso (buildModel recebe null).
 const snaps = getJson<unknown>("history/snapshots.json").catch(() => null);
-Promise.all([getJson<DailyFile>("data.json"), getJson<FundamentalsFile>("fundamentals.json"), snaps])
-  .then(([d, f, s]) => {
-    state = { status: "ready", model: buildModel(d, f, s) };
+// Glossário também é opcional: sem ele o painel só perde as dicas e a seção.
+const gloss = getJson<unknown>("glossary.json").catch(() => null);
+Promise.all([getJson<DailyFile>("data.json"), getJson<FundamentalsFile>("fundamentals.json"), snaps, gloss])
+  .then(([d, f, s, g]) => {
+    state = { status: "ready", model: buildModel(d, f, s, g) };
   })
   .catch((err: unknown) => {
     state = { status: "error", message: err instanceof Error ? err.message : String(err) };

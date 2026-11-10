@@ -3,6 +3,7 @@ import { deriveAll } from "../lib/finance.ts";
 import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts";
 import { type IndRow } from "../lib/indicators.ts";
 import { type AuditInput, type Finding } from "../lib/signals.ts";
+import { parseGlossary, type Glossary } from "../lib/glossary.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
 
@@ -30,6 +31,8 @@ export interface ViewModel {
   /** Rótulos dos trimestres (receita, lucro, margem) e dos anos fiscais (FCF). */
   periods: string[];
   fcfPeriods: string[];
+  /** Siglas e definições (`glossary.json`); vazio se o arquivo falhar (o painel segue sem dicas). */
+  glossary: Glossary;
   brief: Brief | null;
   capexLabels: string[];
   /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
@@ -58,7 +61,7 @@ function labelsFor(given: string[] | undefined, n: number): string[] {
   return given && given.length > 0 ? given : Array.from({ length: n }, (_, i) => `#${i + 1}`);
 }
 
-export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRaw?: unknown): ViewModel {
+export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRaw?: unknown, glossaryRaw?: unknown): ViewModel {
   const companies = mergeCompanies(daily, fund);
   const names: Record<string, string> = Object.fromEntries(fund.companies.map((c) => [c.ticker, c.name ?? c.ticker]));
   const asOf = daily.meta.cdsAsOf ?? {};
@@ -145,6 +148,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     cloudSegments: (fund.derived.cloudSegmentsQ2_2026 ?? []).map((s) => ({ n: s.n, v: s.v, g: s.g })),
     annualLabel: fund.meta?.annualLabel ?? "ano fiscal",
     quarterLabel: fund.meta?.quarterLabel ?? "trimestre",
+    glossary: parseGlossary(glossaryRaw),
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
   };
 }
