@@ -11,11 +11,20 @@ export function capexIntensity(capex: readonly number[], revenueB: number | unde
 export interface Snapshot {
   date: string;
   cds: Record<string, number | null>;
+  /** Preços de fechamento por ticker; ausente em snapshots antigos. */
+  prices: Record<string, number | null> | null;
 }
 
+const numRow = (o: unknown): Record<string, number | null> | null => {
+  if (typeof o !== "object" || o === null || Array.isArray(o)) return null;
+  const row: Record<string, number | null> = {};
+  for (const [k, v] of Object.entries(o)) row[k] = typeof v === "number" && Number.isFinite(v) ? v : null;
+  return row;
+};
+
 /**
- * Lê history/snapshots.json de forma tolerante: ignora entradas sem data válida ou sem `cds`, e valores não numéricos
- * viram null. Nunca lança — dado ruim aqui não pode derrubar o dashboard. Ordena por data.
+ * Lê history/snapshots.json de forma tolerante: ignora entradas sem data válida; `cds` e `prices` ausentes viram {} e
+ * null, e valores não numéricos viram null. Nunca lança — dado ruim aqui não pode derrubar o dashboard. Ordena por data.
  */
 export function parseSnapshots(raw: unknown): Snapshot[] {
   const list = (raw as { snapshots?: unknown } | null)?.snapshots;
@@ -23,12 +32,9 @@ export function parseSnapshots(raw: unknown): Snapshot[] {
   const out: Snapshot[] = [];
   for (const e of list) {
     if (typeof e !== "object" || e === null) continue;
-    const { date, cds } = e as { date?: unknown; cds?: unknown };
+    const { date, cds, prices } = e as { date?: unknown; cds?: unknown; prices?: unknown };
     if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-    if (typeof cds !== "object" || cds === null || Array.isArray(cds)) continue;
-    const row: Record<string, number | null> = {};
-    for (const [k, v] of Object.entries(cds)) row[k] = typeof v === "number" && Number.isFinite(v) ? v : null;
-    out.push({ date, cds: row });
+    out.push({ date, cds: numRow(cds) ?? {}, prices: numRow(prices) });
   }
   return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }

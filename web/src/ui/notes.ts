@@ -37,3 +37,11 @@ export const PD_NOTES: Note[] = [
 ];
 
 export const TREND_NOTE: Note = ["Cada ponto é a cotação vigente naquele dia; um ponto que não muda indica ", h("b", {}, "ausência de cotação nova"), ", não estabilidade do crédito (ver data da cotação na tabela de ratings)."];
+
+/** Legendas do período (texto editorial do painel atual; revisar quando o trimestre de referência mudar). */
+export const PERIOD_CAPTION = {
+  annual: "Último ano fiscal rotulado como 2025 por cada empresa.",
+  quarter: "Trimestre-calendário Abr–Jun 2026, alinhado entre as empresas.",
+} as const;
+
+export const TABLE_NOTE: Note = ["Valores GAAP salvo indicação. Tesla 2T 2026: LPA ajustado (non-GAAP) US$ 0,33."];

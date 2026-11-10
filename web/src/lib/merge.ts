@@ -13,14 +13,20 @@ interface DailyCompany {
   cds: number | null;
 }
 interface Period {
+  period?: string;
   revenueB?: number;
+  revGrowth?: number;
   netIncomeB?: number;
   operatingIncomeB?: number;
   netMargin?: number;
+  epsDiluted?: number;
+  epsNonGaap?: number;
+  note?: string;
 }
 interface FundCompany {
   ticker: Ticker;
   name?: string;
+  color?: string;
   rating?: { sp: string; moody: string };
   annual?: Period;
   quarter?: Period;
@@ -46,7 +52,7 @@ export interface DailyFile {
   companies: DailyCompany[];
 }
 export interface FundamentalsFile {
-  meta?: { historyLabels?: string[]; fcfLabels?: string[]; capexLabels?: string[]; notes?: string[]; creditNotes?: string[] };
+  meta?: { historyLabels?: string[]; fcfLabels?: string[]; capexLabels?: string[]; annualLabel?: string; quarterLabel?: string; notes?: string[]; creditNotes?: string[] };
   sources?: { label: string; url: string }[];
   companies: FundCompany[];
   derived: Derived;
