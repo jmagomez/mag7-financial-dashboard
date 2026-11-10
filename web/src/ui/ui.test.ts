@@ -108,3 +108,13 @@ for (const [name, block] of [["claro", lightBlock], ["escuro", darkBlock]] as co
     for (const lv of ["fresh", "aging", "stale"]) assert.ok(ratio(g(`${lv}-fg`), g(`${lv}-bg`)) >= 4.5, `chip ${lv}`);
   });
 }
+
+test("marcos de página: um <main> que contém abas e painel; o painel não é o <main> (axe: landmark-one-main, region, aria-allowed-role)", async () => {
+  const { appView } = await import("./app.ts");
+  const { parseRoute } = await import("../lib/router.ts");
+  const html = toHtml(appView({ status: "loading" }, parseRoute("#ind")));
+  assert.equal(html.split("<main").length - 1, 1);
+  assert.ok(/<main>.*role="tablist".*role="tabpanel".*<\/main>/s.test(html));
+  assert.ok(!/<main[^>]*role=/.test(html));
+  assert.ok(!html.includes("<nav")); // as abas são role=tablist, não um landmark de navegação
+});
