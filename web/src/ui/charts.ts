@@ -36,6 +36,15 @@ export function fcfYieldChart(m: ViewModel): ChartSpec {
   return { id: "c-fcfy", title: "FCF yield (fluxo de caixa livre ÷ valor de mercado)", unit: "%", data, summary: leader(data, "%", 1, "Maior rendimento") };
 }
 
+export function divYieldChart(m: ViewModel): ChartSpec {
+  // 0 ou ausente = não paga dividendo: aparece como n/d, não como barra de zero.
+  const data = byCompany(m, (c) => {
+    const v = m.valuationExtras[c.ticker]?.divYield ?? null;
+    return v !== null && v > 0 ? v : null;
+  });
+  return { id: "c-divy", title: "Dividend yield", unit: "%", digits: 2, data, summary: `${leader(data, "%", 2, "Maior rendimento")} Empresas sem dividendo aparecem como n/d.` };
+}
+
 export { CAPEX_OCF_WARN };
 
 export function capexIntensityChart(m: ViewModel): ChartSpec {
