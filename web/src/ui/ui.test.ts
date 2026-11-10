@@ -91,7 +91,7 @@ const ratio = (a: string, b: string): number => {
 
 test("tema escuro por mídia e por atributo têm os mesmos tokens", () => {
   assert.deepEqual(tokens(mediaBlock), tokens(darkBlock));
-  assert.ok(Object.keys(tokens(lightBlock)).length >= 13);
+  assert.ok(Object.keys(tokens(lightBlock)).length >= 20);
 });
 
 for (const [name, block] of [["claro", lightBlock], ["escuro", darkBlock]] as const) {
@@ -104,6 +104,7 @@ for (const [name, block] of [["claro", lightBlock], ["escuro", darkBlock]] as co
       assert.ok(ratio(g("accent"), g(bg)) >= 4.5, `accent/${bg}`);
     }
     assert.ok(ratio(g("dim"), g("surface")) >= 3, "dim/surface (gráfico)");
+    for (let i = 0; i < 7; i++) assert.ok(ratio(g(`s${i}`), g("surface")) >= 3, `série s${i} (linha)`);
     for (const lv of ["fresh", "aging", "stale"]) assert.ok(ratio(g(`${lv}-fg`), g(`${lv}-bg`)) >= 4.5, `chip ${lv}`);
   });
 }
