@@ -29,10 +29,12 @@ export interface DailyFile {
     /** Data de cada nível de CDS (inclui as referências ORCL/CRWV). */
     cdsAsOf?: Record<string, string>;
     cdsRef?: { ticker: string; name: string; cds: number | null }[];
+    dailyBrief?: { headline: string; bullets: string[]; sources: { label: string; url: string }[]; date: string };
   };
   companies: DailyCompany[];
 }
 export interface FundamentalsFile {
+  meta?: { historyLabels?: string[]; fcfLabels?: string[]; capexLabels?: string[] };
   companies: FundCompany[];
   derived: Derived;
 }
