@@ -1,5 +1,5 @@
 import "./styles.css";
-import { parseTab, TABS, tabHash, type Tab } from "./lib/router.ts";
+import { parseRoute, TABS, tabHash, type Tab } from "./lib/router.ts";
 import { mount } from "./lib/vdom.ts";
 import { appView, type State } from "./ui/app.ts";
 import { buildModel } from "./ui/model.ts";
@@ -16,8 +16,7 @@ async function getJson<T>(name: string): Promise<T> {
 
 function render(): void {
   if (!root) return;
-  const tab = parseTab(location.hash);
-  root.replaceChildren(mount(appView(state, tab)));
+  root.replaceChildren(mount(appView(state, parseRoute(location.hash))));
 }
 
 addEventListener("hashchange", render);
