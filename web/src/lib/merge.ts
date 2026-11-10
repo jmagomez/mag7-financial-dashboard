@@ -15,6 +15,8 @@ interface DailyCompany {
 interface FundCompany {
   ticker: Ticker;
   name?: string;
+  rating?: { sp: string; moody: string };
+  annual?: { revenueB?: number };
   revHistory: number[];
   niHistory: number[];
   fcfAnnual: number[];
@@ -28,13 +30,15 @@ export interface DailyFile {
     totalMarketCapT: number;
     /** Data de cada nível de CDS (inclui as referências ORCL/CRWV). */
     cdsAsOf?: Record<string, string>;
-    cdsRef?: { ticker: string; name: string; cds: number | null }[];
+    cdsRef?: { ticker: string; name: string; cds: number | null; rating?: { sp: string; moody: string } }[];
+    cdsLog?: { date: string; text: string }[];
     dailyBrief?: { headline: string; bullets: string[]; sources: { label: string; url: string }[]; date: string };
   };
   companies: DailyCompany[];
 }
 export interface FundamentalsFile {
-  meta?: { historyLabels?: string[]; fcfLabels?: string[]; capexLabels?: string[] };
+  meta?: { historyLabels?: string[]; fcfLabels?: string[]; capexLabels?: string[]; notes?: string[]; creditNotes?: string[] };
+  sources?: { label: string; url: string }[];
   companies: FundCompany[];
   derived: Derived;
 }
