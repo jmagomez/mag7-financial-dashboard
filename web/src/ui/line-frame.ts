@@ -42,7 +42,7 @@ export function lineFrame(spec: LineSpec): VNode {
     h(
       "g",
       {},
-      h("line", { x1: ML, x2: W - MR, y1: y(t), y2: y(t), class: t === 0 ? "axis0" : "grid" }),
+      h("line", { x1: ML, x2: W - MR, y1: y(t), y2: y(t), class: t === 0 ? "axis0" : "gl" }),
       h("text", { x: ML - 6, y: y(t) + 4, class: "tick end" }, fmtNum(t, 0)),
     ),
   );
