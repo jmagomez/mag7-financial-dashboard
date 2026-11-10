@@ -14,7 +14,7 @@ export interface VNode {
 
 const ATTR_NAME = /^[a-zA-Z][-a-zA-Z0-9]*$/;
 const VOID = new Set(["br", "hr", "img", "input", "meta", "link"]);
-const SVG_TAGS = new Set(["svg", "g", "rect", "line", "text", "title", "desc"]);
+const SVG_TAGS = new Set(["svg", "g", "rect", "line", "path", "circle", "text", "title", "desc"]);
 
 function cleanAttrs(tag: string, raw: Record<string, AttrValue>): Record<string, string> {
   const out: Record<string, string> = {};

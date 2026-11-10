@@ -16,3 +16,6 @@ export function fmtDate(iso: string): string {
   const [, m, d] = iso.split("-");
   return `${d}/${m}`;
 }
+
+/** "2026-11-09" → "09/11/2026". */
+export const fmtDateFull = (iso: string): string => iso.split("-").reverse().join("/");

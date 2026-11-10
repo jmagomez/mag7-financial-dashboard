@@ -27,10 +27,11 @@ Lighthouse ≥ 95 (desempenho e acessibilidade); bundle < 250 KB gz.
 1. ✅ (2a) `ChartFrame` (gráfico + resumo + tabela alternativa), tokens de tema claro/escuro com contraste AA testado, estilos de impressão.
 2. ✅ (2a) Abas como rotas por hash (setas do teclado), estados de carregando/erro. Pendente: estado "obsoleto" por falha de atualização.
 3. 🟡 (2a) Chip de idade nos preços e no CDS; CDS defasado (> 30 d) esmaecido e fora do ranking. Pendente: chip nas demais métricas e "Δ vs. DD/MM (N pregões)" (precisa de `history/snapshots.json`).
-4. 🟡 (2a) Teste de injeção (`<script>` em nomes/textos) e de `href` só `https:` em `node:test`, sem dependências novas. Pendente: e2e com Playwright.
+4. 🟡 (2a, 2b) Teste de injeção (`<script>` em nomes, resumos e no briefing) e de `href` só `https:` em `node:test`, sem dependências novas. Pendente: e2e com Playwright.
 5. Ativar `pages.yml` e aposentar o `index.html` da raiz. (Só depois da paridade das 4 abas.)
 
-**Estado da Fase 2a:** gráficos em SVG próprio (sem Chart.js, 5 KB gz de JS) para as abas Valuation e Crédito & CapEx e a capitalização na aba Indicadores. Falta portar a aba Histórico, os demais gráficos e o briefing diário (com `href` validado).
+**Estado (Fases 2a e 2b):** gráficos em SVG próprio (sem Chart.js; ~7,5 KB gz de JS). Portados: capitalização e briefing diário (Indicadores), P/E, EV/EBITDA e FCF yield (Valuation), Histórico completo (receita, lucro, margem e FCF anual, com tabela) e CDS e CapEx ÷ OCF (Crédito & CapEx). O briefing não passa por `innerHTML` e só gera link para fontes `https:`.
+**Falta para a paridade:** gráficos restantes do painel atual (CapEx por ano, intensidade de CapEx, tendência do CDS, tabela de ratings, sinais, qualidade do lucro, auditoria), glossário nos textos, "Δ vs. DD/MM", e2e (Playwright) e axe/Lighthouse.
 
 ## Fase 3 — Modelo de dados com proveniência
 1. `schemas/` v2: cada valor externo como `{value, asOf, source, tier}` (`primary|secondary|derived`).
