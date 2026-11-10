@@ -58,8 +58,10 @@ test("intensidade de CapEx: fórmula do painel atual e null sem receita válida"
 
 test("snapshots: ignora entradas inválidas, ordena por data, valor não numérico vira null", () => {
   const s = parseSnapshots(SNAPS);
-  assert.deepEqual(s.map((x) => x.date), ["2026-11-02", "2026-11-05", "2026-11-06"]);
-  assert.equal(s[2]?.cds.REF, null);
+  assert.deepEqual(s.map((x) => x.date), ["2026-11-01", "2026-11-02", "2026-11-05", "2026-11-06"]); // sem cds também entra (pode ter preços)
+  assert.deepEqual(s[0]?.cds, {});
+  assert.equal(s[0]?.prices, null);
+  assert.equal(s[3]?.cds.REF, null);
   assert.deepEqual(parseSnapshots(null), []);
   assert.deepEqual(parseSnapshots({ snapshots: "x" }), []);
 });
