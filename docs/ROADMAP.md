@@ -30,8 +30,8 @@ Lighthouse ≥ 95 (desempenho e acessibilidade); bundle < 250 KB gz.
 4. 🟡 (2a, 2b) Teste de injeção (`<script>` em nomes, resumos e no briefing) e de `href` só `https:` em `node:test`, sem dependências novas. Pendente: e2e com Playwright.
 5. Ativar `pages.yml` e aposentar o `index.html` da raiz. (Só depois da paridade das 4 abas.)
 
-**Estado (Fases 2a e 2b):** gráficos em SVG próprio (sem Chart.js; ~7,5 KB gz de JS). Portados: capitalização e briefing diário (Indicadores), P/E, EV/EBITDA e FCF yield (Valuation), Histórico completo (receita, lucro, margem e FCF anual, com tabela) e CDS e CapEx ÷ OCF (Crédito & CapEx). O briefing não passa por `innerHTML` e só gera link para fontes `https:`.
-**Falta para a paridade:** gráficos restantes do painel atual (CapEx por ano, intensidade de CapEx, tendência do CDS, tabela de ratings, sinais, qualidade do lucro, auditoria), glossário nos textos, "Δ vs. DD/MM", e2e (Playwright) e axe/Lighthouse.
+**Estado (Fases 2a, 2b e 2c):** gráficos em SVG próprio (sem Chart.js; ~7,5 KB gz de JS). Portados: capitalização e briefing diário (Indicadores), P/E, EV/EBITDA e FCF yield (Valuation), Histórico completo (receita, lucro, margem e FCF anual, com tabela) e Crédito & CapEx completo (CapEx por ano, intensidade, CapEx ÷ OCF, CDS, tabela de ratings, tendência do CDS em escala log a partir de `history/snapshots.json`, notas e histórico de verificações), mais rodapé com notas metodológicas e fontes. Snapshots são opcionais: se falharem, só a tendência mostra aviso. O briefing não passa por `innerHTML` e só gera link para fontes `https:`.
+**Falta para a paridade:** blocos restantes do painel atual (sinais, qualidade do lucro, auditoria), glossário nos textos, "Δ vs. DD/MM", e2e (Playwright) e axe/Lighthouse.
 
 ## Fase 3 — Modelo de dados com proveniência
 1. `schemas/` v2: cada valor externo como `{value, asOf, source, tier}` (`primary|secondary|derived`).
