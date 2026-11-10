@@ -1,6 +1,7 @@
 /** Modelo de visão: junta os dois JSON, calcula os derivados (núcleo da Fase 1) e resolve nomes e datas. */
 import { deriveAll } from "../lib/finance.ts";
 import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts";
+import { type AuditInput, type Finding } from "../lib/signals.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
 
@@ -38,6 +39,8 @@ export interface ViewModel {
   cdsLog: { date: string; text: string }[];
   /** null = snapshots indisponíveis (a tendência mostra aviso; o resto do painel segue). */
   snapshots: Snapshot[] | null;
+  audit: AuditInput;
+  findings: Finding[];
 }
 
 function labelsFor(given: string[] | undefined, n: number): string[] {
@@ -68,13 +71,43 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
       if (len !== want) throw new Error(`${c.ticker}: ${what} tem ${len} pontos, os rótulos têm ${want}`);
     }
   }
+  const derived = deriveAll(companies, fund.derived);
+  const dailyByTicker = new Map(daily.companies.map((c) => [c.ticker, c]));
+  const snaps = snapshotsRaw === undefined || snapshotsRaw === null ? null : parseSnapshots(snapshotsRaw);
+  const audit: AuditInput = {
+    generated: daily.meta.generated,
+    marketSnapshot: daily.meta.marketSnapshot,
+    totalMarketCapT: daily.meta.totalMarketCapT,
+    companies: fund.companies.map((f) => {
+      const d = dailyByTicker.get(f.ticker);
+      const r = derived[f.ticker];
+      return {
+        ticker: f.ticker,
+        marketCapB: d?.marketCapB ?? 0,
+        weight: d?.weight ?? 0,
+        cds: d?.cds ?? null,
+        pd5: r?.pd5 ?? null,
+        annual: f.annual,
+        quarter: f.quarter,
+        netCashB: r?.valuation.net ?? null,
+        capexOcf: r?.capexOcf ?? null,
+        fcfRecalc: fund.derived.fcfTTM[f.ticker] !== undefined,
+        fcfYield: r?.valuation.fcfYield ?? null,
+        fcfYieldSrc: f.valuation.fcfYield ?? null,
+      };
+    }),
+    catalysts: daily.meta.catalysts ?? [],
+    cdsAsOf: asOf,
+    snapshotCount: snaps === null ? null : snaps.length,
+    snapshotLast: snaps && snaps.length ? (snaps[snaps.length - 1] as Snapshot).date : null,
+  };
   const b = daily.meta.dailyBrief;
   return {
     generated: daily.meta.generated,
     marketSnapshot: daily.meta.marketSnapshot,
     names,
     companies,
-    derived: deriveAll(companies, fund.derived),
+    derived,
     cds,
     periods,
     fcfPeriods,
@@ -84,7 +117,9 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     methodNotes: fund.meta?.notes ?? [],
     sources: fund.sources ?? [],
     cdsLog: daily.meta.cdsLog ?? [],
-    snapshots: snapshotsRaw === undefined || snapshotsRaw === null ? null : parseSnapshots(snapshotsRaw),
+    snapshots: snaps,
+    audit,
+    findings: daily.meta.audit ?? [],
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
   };
 }
