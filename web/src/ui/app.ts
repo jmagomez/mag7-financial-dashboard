@@ -2,7 +2,7 @@ import { fmtDate } from "../lib/format.ts";
 import { tradingDays, type Chip } from "../lib/freshness.ts";
 import { HIST_METRICS, metricHash, TABS, tabHash, type Route } from "../lib/router.ts";
 import { h, type VNode } from "../lib/vdom.ts";
-import { capexIntensityChart, capexOcfChart, cdsChart, divYieldChart, earningsQualityChart, evEbitdaChart, fcfYieldChart, impliedGrowthChart, marketCapChart, netCashChart, peChart, peForwardChart, rule40Chart } from "./charts.ts";
+import { capexIntensityChart, capexOcfChart, cdsChart, cloudChart, divYieldChart, earningsQualityChart, evEbitdaChart, fcfYieldChart, impliedGrowthChart, marketCapChart, netCashChart, peChart, peForwardChart, rule40Chart } from "./charts.ts";
 import { briefCard } from "./brief.ts";
 import { capexSpec, cdsLogBlock, footerBlock, ratingsTable, trendBlock, trendNotes } from "./credit.ts";
 import { chartFrame } from "./chart-frame.ts";
@@ -10,6 +10,7 @@ import { signalsBlock } from "./signals.ts";
 import { comparisonTable, kpiBlock, periodCharts, periodNav } from "./indicators.ts";
 import { historySpec } from "./history.ts";
 import { valuationTable } from "./valuation.ts";
+import { scatterFrame } from "./scatter.ts";
 import { lineFrame } from "./line-frame.ts";
 import { CAPEX_INT_NOTES, CAPEX_NOTES, CAPEX_OCF_NOTES, FCF_NOTES, HIST_NOTES, PD_NOTES, VAL_NOTES, type Note } from "./notes.ts";
 import type { ViewModel } from "./model.ts";
@@ -64,6 +65,8 @@ function panel(route: Route, m: ViewModel): VNode {
         { class: "stack" },
         h("div", { class: "grid" }, chartFrame(peChart(m)), chartFrame(evEbitdaChart(m)), chartFrame(fcfYieldChart(m)), chartFrame(divYieldChart(m))),
         h("div", { class: "grid" }, chartFrame(peForwardChart(m)), chartFrame(earningsQualityChart(m)), chartFrame(rule40Chart(m)), chartFrame(netCashChart(m)), chartFrame(impliedGrowthChart(m))),
+        m.cloudSegments.length ? chartFrame(cloudChart(m)) : null,
+        scatterFrame(m),
         notes(VAL_NOTES),
         valuationTable(m),
       );

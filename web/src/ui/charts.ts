@@ -159,3 +159,18 @@ export function earningsQualityChart(m: ViewModel): ChartSpec {
     summary: `${where} Abaixo de 1x o líquido é menor que o operacional (impostos): lucro de alta qualidade. Trimestre de referência; sem operacional positivo, n/d.`,
   };
 }
+
+export function cloudChart(m: ViewModel): ChartSpec {
+  const data: BarDatum[] = m.cloudSegments.map((s) => ({ label: s.n, value: s.v, cells: [`${s.g > 0 ? "+" : ""}${fmtNum(s.g, 0)}%`] }));
+  const fastest = [...m.cloudSegments].sort((a, b) => b.g - a.g)[0];
+  const grow = fastest ? ` Maior crescimento a/a: ${fastest.n}, ${fastest.g > 0 ? "+" : ""}${fmtNum(fastest.g, 0)}%.` : "";
+  return {
+    id: "c-cloud",
+    title: "Motor de nuvem/IA: receita do trimestre por segmento",
+    unit: "US$ bi",
+    digits: 1,
+    data,
+    columns: ["Crescimento a/a"],
+    summary: `${leader(data, "US$ bi", 1, "Maior")}${grow} Meta, Apple e Tesla não têm segmento de nuvem.`,
+  };
+}
