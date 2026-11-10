@@ -1,6 +1,7 @@
 /** Modelo de visão: junta os dois JSON, calcula os derivados (núcleo da Fase 1) e resolve nomes e datas. */
 import { deriveAll } from "../lib/finance.ts";
 import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts";
+import { type IndRow } from "../lib/indicators.ts";
 import { type AuditInput, type Finding } from "../lib/signals.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
@@ -41,6 +42,10 @@ export interface ViewModel {
   snapshots: Snapshot[] | null;
   audit: AuditInput;
   findings: Finding[];
+  /** Linhas da aba Indicadores (dados do ano fiscal e do trimestre de cada empresa). */
+  rows: IndRow[];
+  annualLabel: string;
+  quarterLabel: string;
 }
 
 function labelsFor(given: string[] | undefined, n: number): string[] {
@@ -120,6 +125,17 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     snapshots: snaps,
     audit,
     findings: daily.meta.audit ?? [],
+    rows: fund.companies.map((f) => ({
+      ticker: f.ticker,
+      name: f.name ?? f.ticker,
+      color: f.color ?? null,
+      price: dailyByTicker.get(f.ticker)?.price ?? 0,
+      marketCapB: dailyByTicker.get(f.ticker)?.marketCapB ?? 0,
+      annual: f.annual ?? {},
+      quarter: f.quarter ?? {},
+    })),
+    annualLabel: fund.meta?.annualLabel ?? "ano fiscal",
+    quarterLabel: fund.meta?.quarterLabel ?? "trimestre",
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
   };
 }
