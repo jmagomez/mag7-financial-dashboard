@@ -1,7 +1,9 @@
 import "./styles.css";
 import { parseRoute, TABS, tabHash, type Tab } from "./lib/router.ts";
+import { toCsv } from "./lib/csv.ts";
 import { mount } from "./lib/vdom.ts";
 import { appView, type State } from "./ui/app.ts";
+import { csvFilename, csvTable } from "./ui/csv.ts";
 import { buildModel } from "./ui/model.ts";
 import type { DailyFile, FundamentalsFile } from "./lib/merge.ts";
 
@@ -20,6 +22,18 @@ function render(): void {
 }
 
 addEventListener("hashchange", render);
+// Exportação CSV: o vdom não aceita handlers (on*), então o clique é delegado aqui.
+document.addEventListener("click", (e) => {
+  if (!(e.target instanceof Element) || !e.target.closest("#csv-btn") || state.status !== "ready") return;
+  const url = URL.createObjectURL(new Blob([toCsv(csvTable(state.model))], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = csvFilename(state.model);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
 // Setas esquerda/direita entre as abas (padrão WAI-ARIA para tablist).
 document.addEventListener("keydown", (e) => {
   const t = e.target;

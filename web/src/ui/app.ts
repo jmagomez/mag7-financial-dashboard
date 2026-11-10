@@ -103,6 +103,7 @@ export function appView(state: State, route: Route): VNode {
       "header",
       {},
       h("h1", {}, "Magnificent 7 · indicadores financeiros"),
+      state.status === "ready" ? h("p", {}, h("button", { type: "button", class: "btn", id: "csv-btn", "aria-label": "Exportar todos os dados do painel em arquivo CSV" }, "⭳ Exportar dados (CSV)")) : null,
       chip ? h("p", {}, h("span", { class: `chip chip-${chip.level}` }, chip.text), " ", `Arquivo gerado em ${state.status === "ready" ? fmtDate(state.model.generated) : ""}.`) : null,
     ),
     h(
