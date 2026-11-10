@@ -12,11 +12,18 @@ interface DailyCompany {
   weight: number;
   cds: number | null;
 }
+interface Period {
+  revenueB?: number;
+  netIncomeB?: number;
+  operatingIncomeB?: number;
+  netMargin?: number;
+}
 interface FundCompany {
   ticker: Ticker;
   name?: string;
   rating?: { sp: string; moody: string };
-  annual?: { revenueB?: number };
+  annual?: Period;
+  quarter?: Period;
   revHistory: number[];
   niHistory: number[];
   fcfAnnual: number[];
@@ -32,6 +39,8 @@ export interface DailyFile {
     cdsAsOf?: Record<string, string>;
     cdsRef?: { ticker: string; name: string; cds: number | null; rating?: { sp: string; moody: string } }[];
     cdsLog?: { date: string; text: string }[];
+    audit?: { sev: "alta" | "média" | "baixa"; area: string; finding: string; action: string }[];
+    catalysts?: { ticker: string; date: string; event: string; confirmed?: boolean; done?: boolean }[];
     dailyBrief?: { headline: string; bullets: string[]; sources: { label: string; url: string }[]; date: string };
   };
   companies: DailyCompany[];

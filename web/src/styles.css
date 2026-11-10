@@ -145,3 +145,15 @@ svg .pt.l4 { fill: var(--s4); } svg .pt.l5 { fill: var(--s5); } svg .pt.l6 { fil
 footer .card { margin-bottom: 8px; }
 summary { cursor: pointer; font-weight: 600; }
 .muted { color: var(--muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.signals { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.sig { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.sig .l { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+.sig .v { font-weight: 700; margin-top: 4px; }
+.sig .d { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+.sig-alert { border-color: var(--stale-fg); background: var(--stale-bg); }
+.sig-alert .l, .sig-alert .d { color: var(--stale-fg); }
+.sig-ok { border-color: var(--fresh-fg); }
+.ok-t { color: var(--fresh-fg); font-weight: 600; }
+.warn-t { color: var(--stale-fg); font-weight: 600; }
+td.muted { color: var(--muted); }
