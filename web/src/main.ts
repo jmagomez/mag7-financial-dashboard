@@ -10,6 +10,8 @@ import type { DailyFile, FundamentalsFile } from "./lib/merge.ts";
 
 const root = document.getElementById("app");
 let state: State = { status: "loading" };
+/** Aba que deve receber o foco depois da próxima renderização (setas do teclado). */
+let focusAfterRender: string | null = null;
 
 async function getJson<T>(name: string): Promise<T> {
   const res = await fetch(`${import.meta.env.BASE_URL}${name}`, { cache: "no-cache" });
@@ -24,6 +26,11 @@ function render(): void {
   root.querySelectorAll<HTMLElement>(".tw").forEach((el) => {
     el.tabIndex = 0;
   });
+  // O hashchange dispara depois do handler de teclado e a renderização troca o DOM: o foco tem de ser dado aqui, no elemento novo.
+  if (focusAfterRender) {
+    document.getElementById(focusAfterRender)?.focus();
+    focusAfterRender = null;
+  }
 }
 
 addEventListener("hashchange", render);
@@ -47,8 +54,8 @@ document.addEventListener("keydown", (e) => {
   const next: Tab | undefined = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length]?.id : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length]?.id : undefined;
   if (next) {
     e.preventDefault();
+    focusAfterRender = `t-${next}`;
     location.hash = tabHash(next);
-    queueMicrotask(() => document.getElementById(`t-${next}`)?.focus());
   }
 });
 
