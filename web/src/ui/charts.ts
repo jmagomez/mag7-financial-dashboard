@@ -1,6 +1,6 @@
 /** Montagem dos gráficos a partir do modelo. Nenhum número é calculado aqui: tudo vem de `finance.ts` ou dos dados. */
 import { CDS_ALERT, pd5 } from "../lib/finance.ts";
-import { fmtNum } from "../lib/format.ts";
+import { fmtDateFull, fmtNum } from "../lib/format.ts";
 import { ageChip, CDS_STALE_AFTER_DAYS } from "../lib/freshness.ts";
 import type { BarDatum, ChartSpec } from "./chart-frame.ts";
 import { ranked } from "./chart-frame.ts";
@@ -17,7 +17,7 @@ function byCompany(m: ViewModel, pick: (t: ViewModel["companies"][number]) => nu
 
 export function marketCapChart(m: ViewModel): ChartSpec {
   const data = byCompany(m, (c) => c.marketCapB);
-  return { id: "c-mcap", title: "Capitalização de mercado", unit: "US$ bi", digits: 0, data, summary: `${leader(data, "US$ bi", 0, "Maior")} Preços de fechamento de ${m.marketSnapshot}.` };
+  return { id: "c-mcap", title: "Capitalização de mercado", unit: "US$ bi", digits: 0, data, summary: `${leader(data, "US$ bi", 0, "Maior")} Preços de fechamento de ${fmtDateFull(m.marketSnapshot)}.` };
 }
 
 export function peChart(m: ViewModel): ChartSpec {
