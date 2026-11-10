@@ -19,6 +19,10 @@ async function getJson<T>(name: string): Promise<T> {
 function render(): void {
   if (!root) return;
   root.replaceChildren(mount(appView(state, parseRoute(location.hash))));
+  // Tabelas que rolam na horizontal precisam ser alcançáveis pelo teclado (axe: scrollable-region-focusable).
+  root.querySelectorAll<HTMLElement>(".tw").forEach((el) => {
+    el.tabIndex = 0;
+  });
 }
 
 addEventListener("hashchange", render);

@@ -106,12 +106,17 @@ export function appView(state: State, route: Route): VNode {
       state.status === "ready" ? h("p", {}, h("button", { type: "button", class: "btn", id: "csv-btn", "aria-label": "Exportar todos os dados do painel em arquivo CSV" }, "⭳ Exportar dados (CSV)")) : null,
       chip ? h("p", {}, h("span", { class: `chip chip-${chip.level}` }, chip.text), " ", `Arquivo gerado em ${state.status === "ready" ? fmtDate(state.model.generated) : ""}.`) : null,
     ),
+    // Marcos: <main> contém abas e painel (axe: tudo dentro de landmark; role=tabpanel não é permitido em <main>).
     h(
-      "nav",
-      { role: "tablist", "aria-label": "Seções do dashboard", id: "tabs" },
-      ...TABS.map((t) => h("a", { role: "tab", id: `t-${t.id}`, href: tabHash(t.id), "aria-selected": String(t.id === tab), "aria-controls": "panel", tabindex: t.id === tab ? "0" : "-1" }, t.label)),
+      "main",
+      {},
+      h(
+        "div",
+        { role: "tablist", "aria-label": "Seções do dashboard", id: "tabs" },
+        ...TABS.map((t) => h("a", { role: "tab", id: `t-${t.id}`, href: tabHash(t.id), "aria-selected": String(t.id === tab), "aria-controls": "panel", tabindex: t.id === tab ? "0" : "-1" }, t.label)),
+      ),
+      h("div", { id: "panel", role: "tabpanel", "aria-labelledby": `t-${tab}` }, body),
     ),
-    h("main", { id: "panel", role: "tabpanel", "aria-labelledby": `t-${tab}` }, body),
     state.status === "ready" ? footerBlock(state.model) : h("footer", {}, "Informativo, sem recomendação de investimento."),
   );
 }
