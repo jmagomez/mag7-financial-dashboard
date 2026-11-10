@@ -34,7 +34,7 @@ interface FundCompany {
   niHistory: number[];
   fcfAnnual: number[];
   capex: number[];
-  valuation: { fcfYield?: number; fcfB?: number };
+  valuation: { fcfYield?: number; fcfB?: number; divYield?: number; grossMargin?: number };
 }
 export interface DailyFile {
   meta: {
