@@ -14,9 +14,23 @@ export const HIST_METRICS = [
 ] as const;
 export type HistMetric = (typeof HIST_METRICS)[number]["id"];
 
+export const PERIODS = [
+  { id: "annual", label: "Ano fiscal" },
+  { id: "quarter", label: "Trimestre" },
+] as const;
+export type Period = (typeof PERIODS)[number]["id"];
+
+export const SORT_KEYS = ["name", "revenueB", "revGrowth", "operatingIncomeB", "netIncomeB", "netMargin", "epsDiluted", "marketCapB", "price"] as const;
+export type SortKey = (typeof SORT_KEYS)[number];
+
 export interface Route {
   tab: Tab;
   metric: HistMetric;
+  /** Só na aba Indicadores. */
+  period: Period;
+  sort: SortKey;
+  /** 1 = crescente, -1 = decrescente. */
+  dir: 1 | -1;
 }
 
 /**
@@ -25,12 +39,28 @@ export interface Route {
  */
 export function parseRoute(hash: string): Route {
   const id = hash.replace(/^#/, "");
-  const [head, sub] = id.split("-", 2);
+  const [head, ...rest] = id.split("-");
   const tab = TABS.find((t) => t.id === head)?.id ?? "ind";
-  const metric = tab === "hist" ? (HIST_METRICS.find((m) => m.id === sub)?.id ?? "rev") : "rev";
-  return { tab, metric };
+  const metric = tab === "hist" ? (HIST_METRICS.find((m) => m.id === rest[0])?.id ?? "rev") : "rev";
+  // Indicadores: "#ind-quarter-revenueB-asc" (cada parte é opcional e só vale se for conhecida; o resto é ignorado).
+  const ind = tab === "ind" ? rest : [];
+  const period = PERIODS.find((x) => ind.includes(x.id))?.id ?? "annual";
+  const sort = SORT_KEYS.find((k) => ind.includes(k)) ?? "marketCapB";
+  const dir = ind.includes("asc") ? 1 : -1;
+  return { tab, metric, period, sort, dir };
 }
 
 export const parseTab = (hash: string): Tab => parseRoute(hash).tab;
 export const tabHash = (t: Tab): string => `#${t}`;
 export const metricHash = (m: HistMetric): string => (m === "rev" ? "#hist" : `#hist-${m}`);
+
+/** "#ind", "#ind-quarter", "#ind-quarter-revenueB-asc": só grava o que difere do padrão (anual, marketCapB, decrescente). */
+export function indHash(period: Period, sort: SortKey, dir: 1 | -1): string {
+  const parts = ["ind"];
+  if (period !== "annual") parts.push(period);
+  if (sort !== "marketCapB" || dir !== -1) {
+    parts.push(sort);
+    if (dir === 1) parts.push("asc");
+  }
+  return `#${parts.join("-")}`;
+}
