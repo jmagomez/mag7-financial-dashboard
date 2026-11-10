@@ -157,3 +157,15 @@ summary { cursor: pointer; font-weight: 600; }
 .ok-t { color: var(--fresh-fg); font-weight: 600; }
 .warn-t { color: var(--stale-fg); font-weight: 600; }
 td.muted { color: var(--muted); }
+.kpis { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.kpi .l { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+.kpi .v { font-size: 1.4rem; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.stack-sm { display: flex; flex-direction: column; gap: 6px; }
+.pos { color: var(--fresh-fg); }
+.neg { color: var(--stale-fg); }
+td.muted, .muted { color: var(--muted); }
+a.sortl { color: inherit; text-decoration: none; white-space: nowrap; }
+a.sortl:hover { text-decoration: underline; }
+a.sortl:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+th[aria-sort="ascending"], th[aria-sort="descending"] { color: var(--accent); }
