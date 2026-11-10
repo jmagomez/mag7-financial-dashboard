@@ -34,9 +34,11 @@ document.addEventListener("keydown", (e) => {
 });
 
 render();
-Promise.all([getJson<DailyFile>("data.json"), getJson<FundamentalsFile>("fundamentals.json")])
-  .then(([d, f]) => {
-    state = { status: "ready", model: buildModel(d, f) };
+// Snapshots são opcionais: se falharem, só a tendência do CDS mostra aviso (buildModel recebe null).
+const snaps = getJson<unknown>("history/snapshots.json").catch(() => null);
+Promise.all([getJson<DailyFile>("data.json"), getJson<FundamentalsFile>("fundamentals.json"), snaps])
+  .then(([d, f, s]) => {
+    state = { status: "ready", model: buildModel(d, f, s) };
   })
   .catch((err: unknown) => {
     state = { status: "error", message: err instanceof Error ? err.message : String(err) };
