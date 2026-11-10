@@ -1,10 +1,45 @@
-// Ponto de entrada da v2. Fase 1: só prova que o núcleo financeiro compila e roda no navegador.
-// A UI (abas, gráficos, tabelas) será portada na Fase 2 (docs/ROADMAP.md).
-import { pd5 } from "./lib/finance.ts";
+import "./styles.css";
+import { parseTab, TABS, tabHash, type Tab } from "./lib/router.ts";
+import { mount } from "./lib/vdom.ts";
+import { appView, type State } from "./ui/app.ts";
+import { buildModel } from "./ui/model.ts";
+import type { DailyFile, FundamentalsFile } from "./lib/merge.ts";
 
-const app = document.getElementById("app");
-if (app) {
-  const p = document.createElement("p");
-  p.textContent = `PD 5a implícita em 100 bps de CDS (R = 40%): ${pd5(100)}%`;
-  app.append(p);
+const root = document.getElementById("app");
+let state: State = { status: "loading" };
+
+async function getJson<T>(name: string): Promise<T> {
+  const res = await fetch(`${import.meta.env.BASE_URL}${name}`, { cache: "no-cache" });
+  if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
+  return (await res.json()) as T;
 }
+
+function render(): void {
+  if (!root) return;
+  const tab = parseTab(location.hash);
+  root.replaceChildren(mount(appView(state, tab)));
+}
+
+addEventListener("hashchange", render);
+// Setas esquerda/direita entre as abas (padrão WAI-ARIA para tablist).
+document.addEventListener("keydown", (e) => {
+  const t = e.target;
+  if (!(t instanceof HTMLElement) || t.getAttribute("role") !== "tab") return;
+  const i = TABS.findIndex((x) => `t-${x.id}` === t.id);
+  const next: Tab | undefined = e.key === "ArrowRight" ? TABS[(i + 1) % TABS.length]?.id : e.key === "ArrowLeft" ? TABS[(i - 1 + TABS.length) % TABS.length]?.id : undefined;
+  if (next) {
+    e.preventDefault();
+    location.hash = tabHash(next);
+    queueMicrotask(() => document.getElementById(`t-${next}`)?.focus());
+  }
+});
+
+render();
+Promise.all([getJson<DailyFile>("data.json"), getJson<FundamentalsFile>("fundamentals.json")])
+  .then(([d, f]) => {
+    state = { status: "ready", model: buildModel(d, f) };
+  })
+  .catch((err: unknown) => {
+    state = { status: "error", message: err instanceof Error ? err.message : String(err) };
+  })
+  .finally(render);
