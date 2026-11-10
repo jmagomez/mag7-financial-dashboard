@@ -37,3 +37,15 @@ export function spreadLabels(ys: readonly number[], gap: number, lo: number, hi:
   });
   return out;
 }
+
+const LOG_TICKS = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+
+/** Eixo logarítmico para valores positivos: piso 40 (ou o menor valor, se menor) e teto no próximo tick acima do maior valor. */
+export function logAxis(values: readonly number[]): { ticks: number[]; min: number; max: number } {
+  const pos = values.filter((v) => v > 0);
+  if (pos.length === 0) return { ticks: [50, 100], min: 40, max: 100 };
+  const min = Math.min(40, ...pos);
+  const top = Math.max(...pos);
+  const max = LOG_TICKS.find((t) => t >= top) ?? top;
+  return { ticks: LOG_TICKS.filter((t) => t >= min && t <= max), min, max };
+}
