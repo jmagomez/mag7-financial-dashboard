@@ -1,0 +1,563 @@
+{
+ "generated": "2026-11-09",
+ "marketSnapshot": "2026-11-06",
+ "companies": [
+  {
+   "ticker": "AAPL",
+   "price": 342.38,
+   "marketCapB": 4998,
+   "cds": null,
+   "valuation": {
+    "pe": 38.7,
+    "peCore": null,
+    "peFwd": 37.4,
+    "ev": 4936,
+    "evSales": 10.6,
+    "evEbitda": 31.4,
+    "net": 62.2,
+    "netPct": 1.2,
+    "impliedG": 15.8,
+    "fcfYield": 2.2,
+    "fcfB": 108
+   },
+   "capexOcf": 11.4,
+   "pd5": null
+  },
+  {
+   "ticker": "MSFT",
+   "price": 530.62,
+   "marketCapB": 3941,
+   "cds": 53,
+   "valuation": {
+    "pe": 29.5,
+    "peCore": 30.2,
+    "peFwd": 21.3,
+    "ev": 3905,
+    "evSales": 11.8,
+    "evEbitda": 16.2,
+    "net": 36.5,
+    "netPct": 0.9,
+    "impliedG": 19.1,
+    "fcfYield": 1.7,
+    "fcfB": 67
+   },
+   "capexOcf": 42.9,
+   "pd5": 4.3
+  },
+  {
+   "ticker": "NVDA",
+   "price": 186.65,
+   "marketCapB": 4521,
+   "cds": 139,
+   "valuation": {
+    "pe": 23.4,
+    "peCore": null,
+    "peFwd": 15,
+    "ev": 4498,
+    "evSales": 14.8,
+    "evEbitda": 24.5,
+    "net": 23.2,
+    "netPct": 0.5,
+    "impliedG": 12.5,
+    "fcfYield": 2.8,
+    "fcfB": 127
+   },
+   "capexOcf": 5,
+   "pd5": 10.9
+  },
+  {
+   "ticker": "GOOGL",
+   "price": 284.77,
+   "marketCapB": 3483,
+   "cds": 67,
+   "valuation": {
+    "pe": 14.3,
+    "peCore": 20.8,
+    "peFwd": 19.4,
+    "ev": 3339,
+    "evSales": 7.5,
+    "evEbitda": 20.6,
+    "net": 144.3,
+    "netPct": 4.1,
+    "impliedG": 20.1,
+    "fcfYield": 1.5,
+    "fcfB": 53
+   },
+   "capexOcf": 55.5,
+   "pd5": 5.4
+  },
+  {
+   "ticker": "AMZN",
+   "price": 259.3,
+   "marketCapB": 2798,
+   "cds": 68,
+   "valuation": {
+    "pe": 20.7,
+    "peCore": 37.2,
+    "peFwd": 31.2,
+    "ev": 2804,
+    "evSales": 3.6,
+    "evEbitda": 17.3,
+    "net": -5.9,
+    "netPct": -0.2,
+    "impliedG": null,
+    "fcfYield": -0.3,
+    "fcfB": -7.6
+   },
+   "capexOcf": 92.3,
+   "pd5": 5.5
+  },
+  {
+   "ticker": "META",
+   "price": 610.15,
+   "marketCapB": 1555,
+   "cds": 119,
+   "valuation": {
+    "pe": 22.8,
+    "peCore": 18.5,
+    "peFwd": 14.7,
+    "ev": 1548,
+    "evSales": 6.8,
+    "evEbitda": 15.7,
+    "net": 6.6,
+    "netPct": 0.4,
+    "impliedG": 13.6,
+    "fcfYield": 2.6,
+    "fcfB": 40
+   },
+   "capexOcf": 60.2,
+   "pd5": 9.4
+  },
+  {
+   "ticker": "TSLA",
+   "price": 358.23,
+   "marketCapB": 1413,
+   "cds": null,
+   "valuation": {
+    "pe": 370.9,
+    "peCore": null,
+    "peFwd": 192.6,
+    "ev": 1383,
+    "evSales": 13.3,
+    "evEbitda": 148.7,
+    "net": 30,
+    "netPct": 2.1,
+    "impliedG": null,
+    "fcfYield": 0.4,
+    "fcfB": 5.8
+   },
+   "capexOcf": 57.8,
+   "pd5": null
+  }
+ ],
+ "cdsRef": [
+  {
+   "ticker": "ORCL",
+   "cds": 298,
+   "pd5": 22
+  },
+  {
+   "ticker": "CRWV",
+   "cds": 1155,
+   "pd5": 61.8
+  }
+ ],
+ "inputs": {
+  "companies": [
+   {
+    "ticker": "AAPL",
+    "price": 342.38,
+    "marketCapB": 4998,
+    "cds": null,
+    "revHistory": [
+     90.75,
+     85.78,
+     94.93,
+     124.3,
+     95.4,
+     94,
+     102.5,
+     143.8,
+     111.2,
+     109.4
+    ],
+    "niHistory": [
+     23.64,
+     21.45,
+     14.74,
+     36.33,
+     24.8,
+     23.4,
+     27.5,
+     42.1,
+     29.6,
+     29.8
+    ],
+    "fcfAnnual": [
+     99.6,
+     108.8,
+     98.8
+    ],
+    "capex": [
+     10.7,
+     11,
+     9.5,
+     12.7
+    ],
+    "valuation": {
+     "fcfYield": 2.2,
+     "fcfB": 108
+    }
+   },
+   {
+    "ticker": "MSFT",
+    "price": 530.62,
+    "marketCapB": 3941,
+    "cds": 53,
+    "revHistory": [
+     61.86,
+     64.73,
+     65.59,
+     69.63,
+     70.1,
+     76.4,
+     77.7,
+     81.3,
+     82.9,
+     90
+    ],
+    "niHistory": [
+     21.94,
+     22.04,
+     24.67,
+     24.11,
+     25.8,
+     27.2,
+     27.7,
+     38.5,
+     31.8,
+     35.8
+    ],
+    "fcfAnnual": [
+     59.5,
+     74.1,
+     72.9
+    ],
+    "capex": [
+     23.9,
+     28.1,
+     44.5,
+     54.8
+    ],
+    "valuation": {
+     "fcfYield": 1.7,
+     "fcfB": 67
+    }
+   },
+   {
+    "ticker": "NVDA",
+    "price": 186.65,
+    "marketCapB": 4521,
+    "cds": 139,
+    "revHistory": [
+     26.04,
+     30.04,
+     35.08,
+     39.33,
+     44.1,
+     46.7,
+     57,
+     68.1,
+     81.6,
+     96.2
+    ],
+    "niHistory": [
+     14.88,
+     16.6,
+     19.31,
+     22.09,
+     18.8,
+     26.4,
+     31.9,
+     43,
+     58.3,
+     59.7
+    ],
+    "fcfAnnual": [
+     3.8,
+     27,
+     60.85
+    ],
+    "capex": [
+     1,
+     1.8,
+     1.1,
+     3.2
+    ],
+    "valuation": {
+     "fcfYield": 2.3,
+     "fcfB": 127
+    }
+   },
+   {
+    "ticker": "GOOGL",
+    "price": 284.77,
+    "marketCapB": 3483,
+    "cds": 67,
+    "revHistory": [
+     80.54,
+     84.74,
+     88.27,
+     96.47,
+     90.2,
+     96.4,
+     102.3,
+     113.1,
+     109.9,
+     119.8
+    ],
+    "niHistory": [
+     23.66,
+     23.62,
+     26.3,
+     26.54,
+     34.5,
+     28.2,
+     35,
+     34.5,
+     62.6,
+     112.1
+    ],
+    "fcfAnnual": [
+     69.5,
+     72.8,
+     73.3
+    ],
+    "capex": [
+     31.5,
+     32.3,
+     52.5,
+     91.4
+    ],
+    "valuation": {
+     "fcfYield": 1.2,
+     "fcfB": 53
+    }
+   },
+   {
+    "ticker": "AMZN",
+    "price": 259.3,
+    "marketCapB": 2798,
+    "cds": 68,
+    "revHistory": [
+     143.31,
+     147.98,
+     158.88,
+     187.79,
+     155.7,
+     167.7,
+     180.2,
+     213.3,
+     181.5,
+     200.6
+    ],
+    "niHistory": [
+     10.43,
+     13.49,
+     15.33,
+     20,
+     17.1,
+     18.2,
+     21.2,
+     21.2,
+     30.3,
+     62.6
+    ],
+    "fcfAnnual": [
+     36.8,
+     38.2,
+     11
+    ],
+    "capex": [
+     63.6,
+     52.7,
+     83,
+     131.8
+    ],
+    "valuation": {
+     "fcfYield": -0.3,
+     "fcfB": -7.6
+    }
+   },
+   {
+    "ticker": "META",
+    "price": 610.15,
+    "marketCapB": 1555,
+    "cds": 119,
+    "revHistory": [
+     36.46,
+     39.07,
+     40.59,
+     48.39,
+     42.3,
+     47.5,
+     51.2,
+     59.9,
+     56.3,
+     60.8
+    ],
+    "niHistory": [
+     12.37,
+     13.47,
+     15.69,
+     20.84,
+     16.6,
+     18.3,
+     2.7,
+     22.8,
+     26.8,
+     15.85
+    ],
+    "fcfAnnual": [
+     44.1,
+     54.1,
+     46.1
+    ],
+    "capex": [
+     31.4,
+     27.3,
+     37.3,
+     69.7
+    ],
+    "valuation": {
+     "fcfYield": 2.2,
+     "fcfB": 40
+    }
+   },
+   {
+    "ticker": "TSLA",
+    "price": 358.23,
+    "marketCapB": 1413,
+    "cds": null,
+    "revHistory": [
+     21.3,
+     25.5,
+     25.18,
+     25.71,
+     19.3,
+     22.5,
+     28.1,
+     24.9,
+     22.4,
+     28.24
+    ],
+    "niHistory": [
+     1.13,
+     1.48,
+     2.17,
+     2.32,
+     0.4,
+     1.2,
+     1.4,
+     0.8,
+     0.5,
+     1.11
+    ],
+    "fcfAnnual": [
+     4.4,
+     3.6,
+     6.2
+    ],
+    "capex": [
+     7.2,
+     8.9,
+     11.3,
+     8.5
+    ],
+    "valuation": {
+     "fcfYield": 0.4,
+     "fcfB": 5.8
+    }
+   }
+  ],
+  "derived": {
+   "balanceQ2_2026": {
+    "AAPL": {
+     "cash": 146.5,
+     "debt": 84.3
+    },
+    "MSFT": {
+     "cash": 76.8,
+     "debt": 40.3
+    },
+    "NVDA": {
+     "cash": 56.6,
+     "debt": 33.4
+    },
+    "GOOGL": {
+     "cash": 242.5,
+     "debt": 98.2
+    },
+    "AMZN": {
+     "cash": 123,
+     "debt": 128.9
+    },
+    "META": {
+     "cash": 90.3,
+     "debt": 83.7
+    },
+    "TSLA": {
+     "cash": 37,
+     "debt": 7
+    }
+   },
+   "fcfTTM": {
+    "AAPL": 108,
+    "MSFT": 67,
+    "NVDA": 127,
+    "GOOGL": 53,
+    "AMZN": -7.6,
+    "META": 40,
+    "TSLA": 5.8
+   },
+   "fwdPE": {
+    "AAPL": 34,
+    "MSFT": 20,
+    "NVDA": 18,
+    "GOOGL": 23,
+    "AMZN": 31,
+    "META": 14,
+    "TSLA": 188
+   },
+   "ebitdaImplB": {
+    "AAPL": 157.4,
+    "MSFT": 241.5,
+    "NVDA": 183.3,
+    "GOOGL": 161.9,
+    "AMZN": 161.9,
+    "META": 98.6,
+    "TSLA": 9.3
+   },
+   "fwdEPS": {
+    "AAPL": 9.16,
+    "MSFT": 24.97,
+    "NVDA": 12.46,
+    "GOOGL": 14.67,
+    "AMZN": 8.31,
+    "META": 41.62,
+    "TSLA": 1.86
+   },
+   "oneOffTTM": {
+    "MSFT": 3.2,
+    "GOOGL": 77.1,
+    "AMZN": 60,
+    "META": -15.9
+   },
+   "dcfAssumptions": {
+    "waccPct": 9,
+    "terminalGrowthPct": 3,
+    "years": 10
+   }
+  }
+ }
+}

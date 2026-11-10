@@ -1,0 +1,22 @@
+[project]
+name = "mag7-financial-dashboard"
+version = "0.1.0"
+description = "Dashboard Magnificent 7: rotina diária de dados, validação e e-mail."
+requires-python = ">=3.12"
+dependencies = []          # produção: só biblioteca padrão (por isso o CI/Action não instala nada)
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "jsonschema>=4.21", "ruff>=0.6", "playwright>=1.45"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "E701", "E702", "E741"]

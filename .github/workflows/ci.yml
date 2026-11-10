@@ -1,0 +1,54 @@
+# PROPOSTA — copiar para .github/workflows/ci.yml (substitui validate.yml). Só o dono do repositório pode
+# criar/editar arquivos em .github/workflows (a rotina diária e este PR não têm esse escopo).
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dados:
+    name: Dados + Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt ruff
+      - name: Lint (tests e tools; src/ tem 3 achados antigos — ver docs/ROADMAP.md — e entra depois)
+        run: ruff check tests tools
+      - name: Validar data.json, fundamentals.json e snapshots (mesmas regras do envio)
+        run: python src/validate.py
+      - name: Testes (schemas, invariantes, daily.py)
+        run: python -m pytest
+      - name: E-mail (dry-run, sem envio)
+        run: python src/send_email.py --dry-run
+
+  web:
+    name: Web (TypeScript)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json   # exige o package-lock.json commitado (ver docs/ROADMAP.md)
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test            # inclui paridade numérica com o dashboard (tests/golden)
+      - run: npm run build

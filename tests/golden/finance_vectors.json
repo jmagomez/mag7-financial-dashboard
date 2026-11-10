@@ -1,0 +1,11 @@
+{
+  "_doc": "Âncoras numéricas verificadas à mão, lidas pelos testes Python (tests/) e TypeScript (web/src/lib). pd5(s) = 1 − exp(−5·s/(1−R)) com R = 0,40, em %, 1 casa. Ex.: 100 bps -> 1 − exp(−5·0,01/0,6) = 7,99% -> 8,0.",
+  "pd5": [
+    {"bps": 0, "pct": 0},
+    {"bps": 53, "pct": 4.3},
+    {"bps": 100, "pct": 8},
+    {"bps": 139, "pct": 10.9},
+    {"bps": 298, "pct": 22.0},
+    {"bps": 1155, "pct": 61.8}
+  ]
+}
