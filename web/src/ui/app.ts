@@ -7,6 +7,7 @@ import { briefCard } from "./brief.ts";
 import { capexSpec, cdsLogBlock, footerBlock, ratingsTable, trendBlock, trendNotes } from "./credit.ts";
 import { chartFrame } from "./chart-frame.ts";
 import { signalsBlock } from "./signals.ts";
+import { comparisonTable, kpiBlock, periodCharts, periodNav } from "./indicators.ts";
 import { historySpec } from "./history.ts";
 import { lineFrame } from "./line-frame.ts";
 import { CAPEX_INT_NOTES, CAPEX_NOTES, CAPEX_OCF_NOTES, FCF_NOTES, HIST_NOTES, PD_NOTES, type Note } from "./notes.ts";
@@ -42,10 +43,20 @@ function credPanel(m: ViewModel): VNode {
   );
 }
 
-function panel({ tab, metric }: Route, m: ViewModel): VNode {
+function panel(route: Route, m: ViewModel): VNode {
+  const { tab, metric } = route;
   switch (tab) {
     case "ind":
-      return h("div", { class: "stack" }, m.brief ? briefCard(m.brief, m.generated) : null, signalsBlock(m), h("div", { class: "grid" }, chartFrame(marketCapChart(m))));
+      return h(
+        "div",
+        { class: "stack" },
+        m.brief ? briefCard(m.brief, m.generated) : null,
+        periodNav(route, m),
+        kpiBlock(m, route.period),
+        signalsBlock(m),
+        h("div", { class: "grid" }, ...periodCharts(m, route.period).map(chartFrame), chartFrame(marketCapChart(m))),
+        comparisonTable(route, m),
+      );
     case "val":
       return h("div", { class: "grid" }, chartFrame(peChart(m)), chartFrame(evEbitdaChart(m)), chartFrame(fcfYieldChart(m)));
     case "cred":
