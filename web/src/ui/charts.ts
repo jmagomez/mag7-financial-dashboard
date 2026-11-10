@@ -35,9 +35,19 @@ export function fcfYieldChart(m: ViewModel): ChartSpec {
   return { id: "c-fcfy", title: "FCF yield (fluxo de caixa livre ÷ valor de mercado)", unit: "%", data, summary: leader(data, "%", 1, "Maior rendimento") };
 }
 
+/** Limiar de atenção do painel atual (index.html): a partir daqui o CapEx consome quase todo o caixa operacional. */
+export const CAPEX_OCF_WARN = 80;
+
+export function capexIntensityChart(m: ViewModel): ChartSpec {
+  const data = byCompany(m, (c) => m.capexIntensity[c.ticker] ?? null);
+  return { id: "c-capexint", title: "Intensidade de CapEx (CapEx ÷ receita, último ano fiscal)", unit: "%", data, summary: leader(data, "%", 1, "Maior intensidade") };
+}
+
 export function capexOcfChart(m: ViewModel): ChartSpec {
   const data = byCompany(m, (c) => m.derived[c.ticker].capexOcf);
-  return { id: "c-capex", title: "CapEx ÷ caixa operacional (último ano fiscal)", unit: "%", data, summary: leader(data, "%", 1, "Maior intensidade") };
+  const high = data.filter((d) => d.value !== null && d.value >= CAPEX_OCF_WARN).map((d) => d.label);
+  const warn = high.length ? `Em ${CAPEX_OCF_WARN}% ou mais (CapEx absorve quase todo o caixa operacional): ${high.join(", ")}.` : `Nenhuma com ${CAPEX_OCF_WARN}% ou mais.`;
+  return { id: "c-capex", title: "CapEx ÷ caixa operacional (último ano fiscal)", unit: "%", data, summary: `${leader(data, "%", 1, "Maior intensidade")} ${warn}` };
 }
 
 export function cdsChart(m: ViewModel): ChartSpec {

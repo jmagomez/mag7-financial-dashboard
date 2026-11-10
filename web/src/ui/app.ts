@@ -2,12 +2,13 @@ import { fmtDate } from "../lib/format.ts";
 import { tradingDays, type Chip } from "../lib/freshness.ts";
 import { HIST_METRICS, metricHash, TABS, tabHash, type Route } from "../lib/router.ts";
 import { h, type VNode } from "../lib/vdom.ts";
-import { capexOcfChart, cdsChart, evEbitdaChart, fcfYieldChart, marketCapChart, peChart } from "./charts.ts";
+import { capexIntensityChart, capexOcfChart, cdsChart, evEbitdaChart, fcfYieldChart, marketCapChart, peChart } from "./charts.ts";
 import { briefCard } from "./brief.ts";
+import { capexSpec, cdsLogBlock, footerBlock, ratingsTable, trendBlock, trendNotes } from "./credit.ts";
 import { chartFrame } from "./chart-frame.ts";
 import { historySpec } from "./history.ts";
 import { lineFrame } from "./line-frame.ts";
-import { FCF_NOTES, HIST_NOTES, type Note } from "./notes.ts";
+import { CAPEX_INT_NOTES, CAPEX_NOTES, CAPEX_OCF_NOTES, FCF_NOTES, HIST_NOTES, PD_NOTES, type Note } from "./notes.ts";
 import type { ViewModel } from "./model.ts";
 
 export type State = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; model: ViewModel };
@@ -21,6 +22,25 @@ function priceChip(m: ViewModel): Chip {
 
 const notes = (items: Note[]): VNode => h("ul", { class: "notes" }, ...items.map((n) => h("li", {}, ...n)));
 
+function credPanel(m: ViewModel): VNode {
+  const trend = trendBlock(m);
+  return h(
+    "div",
+    { class: "stack" },
+    lineFrame(capexSpec(m)),
+    notes(CAPEX_NOTES),
+    h("div", { class: "grid" }, chartFrame(capexIntensityChart(m)), chartFrame(capexOcfChart(m))),
+    notes([...CAPEX_INT_NOTES, ...CAPEX_OCF_NOTES]),
+    chartFrame(cdsChart(m)),
+    ratingsTable(m),
+    notes(PD_NOTES),
+    trend.spec ? lineFrame(trend.spec) : h("p", { class: "card", role: "status" }, trend.message),
+    trend.spec ? notes(trendNotes(m)) : null,
+    m.creditNotes.length ? notes(m.creditNotes.map((n) => [n])) : null,
+    cdsLogBlock(m),
+  );
+}
+
 function panel({ tab, metric }: Route, m: ViewModel): VNode {
   switch (tab) {
     case "ind":
@@ -28,7 +48,7 @@ function panel({ tab, metric }: Route, m: ViewModel): VNode {
     case "val":
       return h("div", { class: "grid" }, chartFrame(peChart(m)), chartFrame(evEbitdaChart(m)), chartFrame(fcfYieldChart(m)));
     case "cred":
-      return h("div", { class: "grid" }, chartFrame(cdsChart(m)), chartFrame(capexOcfChart(m)));
+      return credPanel(m);
     case "hist":
       return h(
         "div",
@@ -68,6 +88,6 @@ export function appView(state: State, route: Route): VNode {
       ...TABS.map((t) => h("a", { role: "tab", id: `t-${t.id}`, href: tabHash(t.id), "aria-selected": String(t.id === tab), "aria-controls": "panel", tabindex: t.id === tab ? "0" : "-1" }, t.label)),
     ),
     h("main", { id: "panel", role: "tabpanel", "aria-labelledby": `t-${tab}` }, body),
-    h("footer", {}, "Informativo, sem recomendação de investimento. Dados de fontes públicas; veja as datas em cada indicador."),
+    state.status === "ready" ? footerBlock(state.model) : h("footer", {}, "Informativo, sem recomendação de investimento."),
   );
 }

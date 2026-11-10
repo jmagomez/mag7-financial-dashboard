@@ -1,5 +1,6 @@
 /** Modelo de visão: junta os dois JSON, calcula os derivados (núcleo da Fase 1) e resolve nomes e datas. */
 import { deriveAll } from "../lib/finance.ts";
+import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
 
@@ -9,6 +10,7 @@ export interface CdsRow {
   bps: number | null;
   asOf: string | null;
   ref: boolean; // referência fora das Mag 7 (ORCL, CRWV)
+  rating: { sp: string; moody: string } | null;
 }
 export interface Brief {
   headline: string;
@@ -27,29 +29,41 @@ export interface ViewModel {
   periods: string[];
   fcfPeriods: string[];
   brief: Brief | null;
+  capexLabels: string[];
+  /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
+  capexIntensity: Record<string, number | null>;
+  creditNotes: string[];
+  methodNotes: string[];
+  sources: { label: string; url: string }[];
+  cdsLog: { date: string; text: string }[];
+  /** null = snapshots indisponíveis (a tendência mostra aviso; o resto do painel segue). */
+  snapshots: Snapshot[] | null;
 }
 
 function labelsFor(given: string[] | undefined, n: number): string[] {
   return given && given.length > 0 ? given : Array.from({ length: n }, (_, i) => `#${i + 1}`);
 }
 
-export function buildModel(daily: DailyFile, fund: FundamentalsFile): ViewModel {
+export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRaw?: unknown): ViewModel {
   const companies = mergeCompanies(daily, fund);
   const names: Record<string, string> = Object.fromEntries(fund.companies.map((c) => [c.ticker, c.name ?? c.ticker]));
   const asOf = daily.meta.cdsAsOf ?? {};
+  const ratings = Object.fromEntries(fund.companies.map((c) => [c.ticker, c.rating ?? null]));
   const cds: CdsRow[] = [
-    ...companies.map((c) => ({ ticker: c.ticker, name: names[c.ticker] ?? c.ticker, bps: c.cds, asOf: asOf[c.ticker] ?? null, ref: false })),
-    ...(daily.meta.cdsRef ?? []).map((r) => ({ ticker: r.ticker, name: r.name, bps: r.cds, asOf: asOf[r.ticker] ?? null, ref: true })),
+    ...companies.map((c) => ({ ticker: c.ticker, name: names[c.ticker] ?? c.ticker, bps: c.cds, asOf: asOf[c.ticker] ?? null, ref: false, rating: ratings[c.ticker] ?? null })),
+    ...(daily.meta.cdsRef ?? []).map((r) => ({ ticker: r.ticker, name: r.name, bps: r.cds, asOf: asOf[r.ticker] ?? null, ref: true, rating: r.rating ?? null })),
   ];
   const first = companies[0];
   const periods = labelsFor(fund.meta?.historyLabels, first?.revHistory.length ?? 0);
   const fcfPeriods = labelsFor(fund.meta?.fcfLabels, first?.fcfAnnual.length ?? 0);
+  const capexLabels = labelsFor(fund.meta?.capexLabels, first?.capex.length ?? 0);
   // Falha alto: série de tamanho diferente dos rótulos deslocaria colunas sem aviso.
   for (const c of companies) {
     for (const [what, len, want] of [
       ["receita", c.revHistory.length, periods.length],
       ["lucro líquido", c.niHistory.length, periods.length],
       ["FCF anual", c.fcfAnnual.length, fcfPeriods.length],
+      ["CapEx", c.capex.length, capexLabels.length],
     ] as const) {
       if (len !== want) throw new Error(`${c.ticker}: ${what} tem ${len} pontos, os rótulos têm ${want}`);
     }
@@ -64,6 +78,13 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile): ViewModel 
     cds,
     periods,
     fcfPeriods,
+    capexLabels,
+    capexIntensity: Object.fromEntries(fund.companies.map((c) => [c.ticker, capexIntensity(c.capex, c.annual?.revenueB)])),
+    creditNotes: fund.meta?.creditNotes ?? [],
+    methodNotes: fund.meta?.notes ?? [],
+    sources: fund.sources ?? [],
+    cdsLog: daily.meta.cdsLog ?? [],
+    snapshots: snapshotsRaw === undefined || snapshotsRaw === null ? null : parseSnapshots(snapshotsRaw),
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
   };
 }
