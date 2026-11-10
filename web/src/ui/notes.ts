@@ -45,3 +45,10 @@ export const PERIOD_CAPTION = {
 } as const;
 
 export const TABLE_NOTE: Note = ["Valores GAAP salvo indicação. Tesla 2T 2026: LPA ajustado (non-GAAP) US$ 0,33."];
+
+export const VAL_NOTES: Note[] = [
+  [h("b", {}, "Qualidade do lucro:"), " líquido ÷ operacional bem acima de 1x indica ganho não operacional (por exemplo, marcação a mercado de participações), sem caixa; nesses casos o P/E e a margem GAAP do trimestre enganam — olhe o lucro operacional (tabela da aba Indicadores)."],
+  [h("b", {}, "Regra dos 40"), " = crescimento de receita (a/a) + margem de FCF (FCF ÷ receita do último ano fiscal). Acima de 40% indica equilíbrio entre crescer e gerar caixa."],
+  [h("b", {}, "Caixa líquido"), " = caixa + títulos negociáveis (curto e longo prazo) menos dívida financiada (bonds/commercial paper), sem arrendamentos nem participações não negociáveis. Fonte: balanços do 2T 2026 (SEC); Tesla aproximado. Para megacaps é só ±1–4% do valor de mercado, então EV ≈ valor de mercado."],
+  [h("b", {}, "DCF reverso:"), " crescimento de FCF em 10 anos que o EV atual embute (WACC 9%, crescimento terminal 3%). É uma leitura do que o preço pressupõe, não uma projeção."],
+];
