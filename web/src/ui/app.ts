@@ -52,7 +52,7 @@ function panel(route: Route, m: ViewModel): VNode {
       return h(
         "div",
         { class: "stack" },
-        m.brief ? briefCard(m.brief, m.generated) : null,
+        m.brief ? briefCard(m.brief, m.generated, m.glossary) : null,
         periodNav(route, m),
         kpiBlock(m, route.period),
         signalsBlock(m),
