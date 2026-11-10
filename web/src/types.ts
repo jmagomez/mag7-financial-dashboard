@@ -22,6 +22,8 @@ export interface Derived {
   fwdEPS: Partial<Record<Ticker, number>>;
   oneOffTTM: Partial<Record<Ticker, number>>;
   dcfAssumptions?: DcfAssumptions;
+  /** Receita trimestral dos segmentos de nuvem/IA (US$ bi) e crescimento a/a (%). */
+  cloudSegmentsQ2_2026?: { n: string; v: number; g: number }[];
 }
 
 /** Campos de uma empresa já mescladas (data.json + fundamentals.json) usados pelos cálculos. */
