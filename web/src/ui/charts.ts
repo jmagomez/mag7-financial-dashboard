@@ -1,6 +1,7 @@
 /** Montagem dos gráficos a partir do modelo. Nenhum número é calculado aqui: tudo vem de `finance.ts` ou dos dados. */
 import { CDS_ALERT, pd5 } from "../lib/finance.ts";
 import { fmtDateFull, fmtNum } from "../lib/format.ts";
+import { CAPEX_OCF_WARN } from "../lib/signals.ts";
 import { ageChip, CDS_STALE_AFTER_DAYS } from "../lib/freshness.ts";
 import type { BarDatum, ChartSpec } from "./chart-frame.ts";
 import { ranked } from "./chart-frame.ts";
@@ -35,8 +36,7 @@ export function fcfYieldChart(m: ViewModel): ChartSpec {
   return { id: "c-fcfy", title: "FCF yield (fluxo de caixa livre ÷ valor de mercado)", unit: "%", data, summary: leader(data, "%", 1, "Maior rendimento") };
 }
 
-/** Limiar de atenção do painel atual (index.html): a partir daqui o CapEx consome quase todo o caixa operacional. */
-export const CAPEX_OCF_WARN = 80;
+export { CAPEX_OCF_WARN };
 
 export function capexIntensityChart(m: ViewModel): ChartSpec {
   const data = byCompany(m, (c) => m.capexIntensity[c.ticker] ?? null);
