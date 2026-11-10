@@ -68,7 +68,7 @@ function panel(route: Route, m: ViewModel): VNode {
         m.cloudSegments.length ? chartFrame(cloudChart(m)) : null,
         scatterFrame(m),
         notes(VAL_NOTES),
-        valuationTable(m),
+        valuationTable(route, m),
       );
     case "cred":
       return credPanel(m);
