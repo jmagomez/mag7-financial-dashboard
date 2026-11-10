@@ -91,3 +91,15 @@ export function priceDeltas(rows: readonly IndRow[], snaps: readonly Snapshot[] 
   }
   return { from: prev ? prev.date : null, byTicker };
 }
+
+/** Regra dos 40 = crescimento de receita (%) + margem de FCF (%), uma casa decimal (mesma conta do painel atual). null sem os três dados ou com receita ≤ 0. */
+export function rule40(growth: number | undefined, fcf: number | undefined, revenue: number | undefined): number | null {
+  if (growth === undefined || fcf === undefined || revenue === undefined || !(revenue > 0)) return null;
+  return Math.round((growth + (fcf / revenue) * 100) * 10) / 10;
+}
+
+/** Lucro líquido ÷ lucro operacional (x). Só existe com operacional > 0: acima de ~1,5x o excesso costuma ser item não operacional. */
+export function netOverOperating(op: number | undefined, net: number | undefined): number | null {
+  if (op === undefined || net === undefined || !(op > 0)) return null;
+  return net / op;
+}
