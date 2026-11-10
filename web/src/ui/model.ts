@@ -46,6 +46,8 @@ export interface ViewModel {
   rows: IndRow[];
   annualLabel: string;
   quarterLabel: string;
+  /** Campos da tabela de valuation que vêm direto da fonte (não são calculados). */
+  valuationExtras: Record<string, { divYield: number | null; grossMargin: number | null }>;
 }
 
 function labelsFor(given: string[] | undefined, n: number): string[] {
@@ -134,6 +136,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
       annual: f.annual ?? {},
       quarter: f.quarter ?? {},
     })),
+    valuationExtras: Object.fromEntries(fund.companies.map((f) => [f.ticker, { divYield: f.valuation.divYield ?? null, grossMargin: f.valuation.grossMargin ?? null }])),
     annualLabel: fund.meta?.annualLabel ?? "ano fiscal",
     quarterLabel: fund.meta?.quarterLabel ?? "trimestre",
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
