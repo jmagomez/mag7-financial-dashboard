@@ -50,6 +50,8 @@ export interface ViewModel {
   valuationExtras: Record<string, { divYield: number | null; grossMargin: number | null }>;
   /** Balanço do 2T 2026 (caixa + títulos e dívida financiada), US$ bi. */
   balance: Record<string, { cash: number; debt: number } | undefined>;
+  /** Segmentos de nuvem/IA do trimestre (vazio se a fonte não traz). */
+  cloudSegments: { n: string; v: number; g: number }[];
 }
 
 function labelsFor(given: string[] | undefined, n: number): string[] {
@@ -140,6 +142,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     })),
     valuationExtras: Object.fromEntries(fund.companies.map((f) => [f.ticker, { divYield: f.valuation.divYield ?? null, grossMargin: f.valuation.grossMargin ?? null }])),
     balance: fund.derived.balanceQ2_2026,
+    cloudSegments: (fund.derived.cloudSegmentsQ2_2026 ?? []).map((s) => ({ n: s.n, v: s.v, g: s.g })),
     annualLabel: fund.meta?.annualLabel ?? "ano fiscal",
     quarterLabel: fund.meta?.quarterLabel ?? "trimestre",
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
