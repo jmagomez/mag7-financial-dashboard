@@ -117,6 +117,13 @@
    "marketCapB": {"AAPL": 5119, "MSFT": 4049, "NVDA": 4328, "GOOGL": 3524, "AMZN": 2880, "META": 1635, "TSLA": 1491},
    "cds": {"MSFT": 53, "NVDA": 139, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
    "note": "Fechamento de 09/11: The Wall Street Republic (nível e variação das sete), com Motley Fool e Stock Titan confirmando Nvidia 178,67 (-4,27%), Apple 350,69, Microsoft 545,18, Amazon 266,93, Meta 641,37 e Tesla 378,05; GOOGL 288,15 (+1,18%) só na primeira fonte (a Fool mostra GOOG 286,01, +0,7%). Market cap = preço × ações implícitas. CDS sem cotação nova verificável."
+  },
+  {
+   "date": "2026-11-11",
+   "prices": {"AAPL": 355.63, "MSFT": 521.13, "NVDA": 173.73, "GOOGL": 293.45, "AMZN": 266.17, "META": 628.77, "TSLA": 390.84},
+   "marketCapB": {"AAPL": 5191, "MSFT": 3870, "NVDA": 4208, "GOOGL": 3589, "AMZN": 2872, "META": 1603, "TSLA": 1541},
+   "cds": {"MSFT": 53, "NVDA": 139, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
+   "note": "Fechamento de 11/11: Marketalleys (nível e variação das sete: AAPL 355,63 +2,04%, MSFT 521,13 -2,26%, NVDA 173,73 +2,87%, GOOGL 293,45 +2,11%, AMZN 266,17 -1,74%, META 628,77 -1,97%, TSLA 390,84 +2,91%); Nvidia confirmada por Stock Titan, Meta e Tesla por Gotrade; Apple e Alphabet só na primeira fonte. Sem snapshot de 10/11. Market cap = preço × ações implícitas. CDS sem cotação nova verificável."
   }
  ]
 }
