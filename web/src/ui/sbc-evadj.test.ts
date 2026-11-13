@@ -20,7 +20,7 @@ const fund = (extra: Record<string, unknown>) =>
   ({
     meta: { annualLabel: "FY2025", quarterLabel: "Q2 2026" },
     companies: [co("AAA", "Alfa <i>"), co("BBB", "Beta")],
-    derived: { balanceQ2_2026: { AAA: { cash: 50, debt: 100 }, BBB: { cash: 10, debt: 10 } }, fcfTTM: { AAA: 40, BBB: -5 }, fwdPE: {}, ebitdaImplB: {}, fwdEPS: {}, oneOffTTM: {}, ...extra },
+    derived: { balanceQ2_2026: { AAA: { cash: 50, debt: 100 }, BBB: { cash: 10, debt: 10 } }, fcfTTM: { AAA: { value: 40, asOf: "2026-06-30", tier: "primary", source: { label: "Release", url: "https://exemplo.com/r" } }, BBB: { value: -5, asOf: "2026-06-30", tier: "primary", source: { label: "Release", url: "https://exemplo.com/r" } } } as never, fwdPE: {}, ebitdaImplB: {}, fwdEPS: {}, oneOffTTM: {}, ...extra },
   }) as unknown as FundamentalsFile;
 const sbc = { AAA: { valueB: 12.5, asOf: "2026-06-30", parts: "FY 1 + 2 − 3", source: S } };
 const ev = { AAA: { opLeaseB: 20, finLeaseB: 5, nciB: 0, asOf: "2026-06-30", source: S } };

@@ -102,27 +102,28 @@ def acronyms_in(text, gloss=None):
 PRICE_SRC_MARK = "$priceSource"   # marcador em fundamentals.sources: posição da fonte de preços do dia
 
 
-# Blocos de `derived` com um número por empresa (Fase 3: podem virar {value, asOf, tier, source}).
+# Blocos de `derived` com um número por empresa, todos no formato v2 {value, asOf, tier, source} (Fase 3).
 SCALAR_DERIVED = ("fcfTTM", "fwdPE", "ebitdaImplB", "fwdEPS", "oneOffTTM")
 
 
 def value_of(x):
-    """Valor numérico de um campo `derived`: aceita o número simples (formato atual) ou {"value": n, ...} (formato v2)."""
-    if isinstance(x, dict):
-        x = x.get("value")
-    return x
+    """Valor numérico de um campo escalar de `derived` no formato v2 ({"value": n, ...}); qualquer outra coisa → None."""
+    return x.get("value") if isinstance(x, dict) else None
 
 
 def unwrap_derived(der):
-    """Cópia de `derived` com os blocos escalares no formato antigo (número simples), seja qual for o formato de entrada.
+    """Cópia de `derived` com os blocos escalares reduzidos a um número por empresa (o que validate, e-mail e CSV leem).
 
-    Sem nenhum campo v2 o resultado é igual ao original: os leitores (validate, e-mail, CSV) não notam a diferença.
+    Número solto (formato antigo) é erro: falha alto, em vez de aceitar um dado sem data, nível e fonte.
     """
     if not isinstance(der, dict):
         return der
     out = dict(der)
     for blk in SCALAR_DERIVED:
         if isinstance(der.get(blk), dict):
+            soltos = [t for t, v in der[blk].items() if not isinstance(v, dict)]
+            if soltos:
+                raise ValueError(f"derived.{blk}: número solto em {', '.join(soltos)}; use {{value, asOf, tier, source}}")
             out[blk] = {t: value_of(v) for t, v in der[blk].items() if value_of(v) is not None}
     return out
 

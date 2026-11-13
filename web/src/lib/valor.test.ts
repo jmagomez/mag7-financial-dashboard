@@ -6,45 +6,45 @@ import { describe, it } from "node:test";
 import type { Derived } from "../types.ts";
 import { deriveAll } from "./finance.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "./merge.ts";
-import { unwrapDerived, valueOf } from "./valor.ts";
+import { SCALAR_DERIVED, unwrapDerived, valueOf } from "./valor.ts";
 
 const ROOT = join(import.meta.dirname, "..", "..", "..");
 const readJson = <T>(rel: string): T => JSON.parse(readFileSync(join(ROOT, rel), "utf-8")) as T;
 const SRC = { label: "10-Q", url: "https://www.sec.gov/" };
 
-describe("valueOf (leitor duplo)", () => {
-  it("número simples e {value} dão o mesmo número", () => {
-    assert.equal(valueOf(12.5), 12.5);
+describe("valueOf (formato v2)", () => {
+  it("devolve o value do objeto v2", () => {
     assert.equal(valueOf({ value: 12.5, asOf: "2026-06-30", tier: "primary", source: SRC }), 12.5);
-    assert.equal(valueOf(0), 0);
+    assert.equal(valueOf({ value: 0 }), 0);
   });
-  it("o que não é número finito vira undefined", () => {
-    for (const x of [null, undefined, "3", NaN, Infinity, {}, { value: "3" }, [1]]) assert.equal(valueOf(x), undefined);
+  it("número solto e o que não é número finito viram undefined", () => {
+    for (const x of [12.5, 0, null, undefined, "3", NaN, Infinity, {}, { value: "3" }, [1]]) assert.equal(valueOf(x), undefined);
   });
 });
 
-describe("unwrapDerived: formato v2 ≡ formato antigo", () => {
+describe("unwrapDerived: só o número de cada empresa", () => {
   const fund = readJson<FundamentalsFile>("fundamentals.json");
   const daily = readJson<DailyFile>("data.json");
-  const wrapped = (d: Derived): Derived => {
-    const o = { ...d } as unknown as Record<string, Record<string, unknown>>;
-    for (const blk of ["fcfTTM", "fwdPE", "ebitdaImplB", "fwdEPS", "oneOffTTM"]) {
-      o[blk] = Object.fromEntries(Object.entries(o[blk] ?? {}).map(([t, v]) => [t, { value: v, asOf: "2026-06-30", tier: "primary", source: SRC }]));
-    }
-    return o as unknown as Derived;
-  };
   const base = unwrapDerived(fund.derived);
-  it("unwrapDerived é idempotente", () => {
-    assert.deepEqual(unwrapDerived(base), base);
+  it("todo bloco escalar vira um número por empresa", () => {
+    for (const blk of SCALAR_DERIVED) {
+      const b = (base as unknown as Record<string, Record<string, unknown>>)[blk] ?? {};
+      assert.ok(Object.keys(b).length > 0);
+      assert.ok(Object.values(b).every((v) => typeof v === "number"));
+    }
   });
-  it("embrulhar cada campo em {value,…} não muda nenhum indicador", () => {
+  it("os indicadores saem do número de cada empresa", () => {
     const comps = mergeCompanies(daily, fund);
-    assert.deepEqual(deriveAll(comps, unwrapDerived(wrapped(base))), deriveAll(comps, base));
+    const out = deriveAll(comps, base);
+    assert.ok(Object.values(out).every((r) => r.valuation.fcfYield !== undefined));
   });
-  it("mistura dos dois formatos no mesmo bloco funciona", () => {
-    const w = wrapped(base);
-    const mixed = { ...base, fcfTTM: { ...base.fcfTTM, AAPL: (w.fcfTTM as Record<string, unknown>).AAPL } } as unknown as Derived;
-    assert.deepEqual(unwrapDerived(mixed).fcfTTM, base.fcfTTM);
+  it("número solto (formato antigo) é erro, com o bloco e as empresas na mensagem", () => {
+    const solto = { ...fund.derived, fcfTTM: { AAPL: 108, MSFT: 67 } } as unknown as Derived;
+    assert.throws(() => unwrapDerived(solto), /derived\.fcfTTM: número solto em AAPL, MSFT/);
+  });
+  it("empresa sem value fica de fora (n/d)", () => {
+    const sem = { ...fund.derived, fcfTTM: { AAPL: { asOf: "2026-06-30" } } } as unknown as Derived;
+    assert.deepEqual(unwrapDerived(sem).fcfTTM, {});
   });
 });
 

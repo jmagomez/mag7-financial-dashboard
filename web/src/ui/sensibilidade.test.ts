@@ -14,7 +14,7 @@ const fund = (balance: unknown) =>
   ({
     meta: { annualLabel: "FY2025", quarterLabel: "Q2 2026" },
     companies: [{ ticker: "AAA", name: "Alfa <i>", rating: { sp: "AA", moody: "Aa2" }, annual: {}, quarter: {}, revHistory: [1, 1, 1, 1], niHistory: [1, 1, 1, 1], fcfAnnual: [1], capex: [1], valuation: {} }],
-    derived: { balanceQ2_2026: balance, fcfTTM: { AAA: 40 }, fwdPE: {}, ebitdaImplB: {}, fwdEPS: {}, oneOffTTM: {}, dcfAssumptions: { waccPct: 9, terminalGrowthPct: 3, years: 10 } },
+    derived: { balanceQ2_2026: balance, fcfTTM: { AAA: { value: 40, asOf: "2026-06-30", tier: "primary", source: { label: "Release", url: "https://exemplo.com/r" } } } as never, fwdPE: {}, ebitdaImplB: {}, fwdEPS: {}, oneOffTTM: {}, dcfAssumptions: { waccPct: 9, terminalGrowthPct: 3, years: 10 } },
   }) as unknown as FundamentalsFile;
 
 test("sem balanço a seção some e o rodapé segue", () => {
