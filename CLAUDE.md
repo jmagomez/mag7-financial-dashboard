@@ -68,7 +68,7 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 
 ## Armadilhas conhecidas
 - MCP escreve arquivo inteiro: nunca retipar conteúdo de saída truncada; use `daily.py` e copie o arquivo gerado.
-- O conteúdo enviado pelo MCP interpreta `\uXXXX` como o caractere: para gravar o texto literal `﻿` num arquivo, escreva `﻿`.
+- O conteúdo enviado pelo MCP interpreta `\uXXXX` como o caractere: para gravar o texto literal `﻿` num arquivo, escreva `\\uFEFF`.
 - `merge()` aceita também o formato antigo (tudo em `data.json`), mas `daily.py` recusa esse formato.
 - O CI `validate.yml` roda em **todo** push/PR (sem filtro de caminho): `validate.py` + dry-run do e-mail. Só a Action de e-mail tem filtro (`data.json`).
 - `get_file_contents` de arquivos grandes salva em disco como JSON `[{type,text}]`.
