@@ -6,6 +6,8 @@ import { type AuditInput, type Finding } from "../lib/signals.ts";
 import { parseGlossary, type Glossary } from "../lib/glossary.ts";
 import { parseProvenance, type Provenance } from "../lib/provenance.ts";
 import { parseSharesOut, type SharesOut } from "../lib/shares.ts";
+import { evAdjRows, parseEvAdjust, type EvAdjRow, type EvAdjust } from "../lib/evadj.ts";
+import { parseSbc, sbcRows, type SbcRow, type SbcTtm } from "../lib/sbc.ts";
 import { sensitivityRows, type SensRow } from "../lib/sensibilidade.ts";
 import { parseWaccInputs, type WaccInputs, type WaccRow } from "../lib/wacc.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
@@ -48,6 +50,16 @@ export interface ViewModel {
   wacc: WaccRow[];
   /** Crescimento implícito do DCF reverso com o WACC deslocado (±1 e ±2 p.p.); só empresas com balanço. */
   sensitivity: SensRow[];
+  /** null = fundamentals.json sem `derived.sbcTTM` válido: a seção "FCF após SBC" some. */
+  sbcTtm: SbcTtm | null;
+  /** Linhas de FCF após SBC (só empresas com FCF TTM e SBC válidos). */
+  sbc: SbcRow[];
+  sbcNote: string;
+  /** null = fundamentals.json sem `derived.evAdjust` válido: a seção "EV ajustado" some. */
+  evAdjust: EvAdjust | null;
+  /** Linhas de EV ajustado (só empresas com os três itens confirmados). */
+  evAdj: EvAdjRow[];
+  evAdjNote: string;
   capexLabels: string[];
   /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
   capexIntensity: Record<string, number | null>;
@@ -103,6 +115,15 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
   const fd = { ...fund.derived, waccInputs: waccInputs ?? undefined };
   const derived = deriveAll(companies, fd);
   const wacc = companies.map((c) => waccOf(c, fd)).filter((w): w is WaccRow => w !== null);
+  const sbcTtm = parseSbc((fund.derived as { sbcTTM?: unknown }).sbcTTM);
+  const evAdjust = parseEvAdjust((fund.derived as { evAdjust?: unknown }).evAdjust);
+  // EV exato por ticker: mesma conta de deriveCompany (market cap − caixa líquido arredondado a 1 casa).
+  const evExact: Record<string, number | undefined> = Object.fromEntries(
+    companies.flatMap((c) => {
+      const bal = fund.derived.balanceQ2_2026[c.ticker];
+      return bal ? [[c.ticker, c.marketCapB - Math.round((bal.cash - bal.debt) * 10) / 10]] : [];
+    }),
+  );
   const dailyByTicker = new Map(daily.companies.map((c) => [c.ticker, c]));
   const snaps = snapshotsRaw === undefined || snapshotsRaw === null ? null : parseSnapshots(snapshotsRaw);
   const audit: AuditInput = {
@@ -142,6 +163,12 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     waccInputs,
     wacc,
     sensitivity: sensitivityRows(companies, fd),
+    sbcTtm,
+    sbc: sbcTtm ? sbcRows(companies, fund.derived.fcfTTM, sbcTtm) : [],
+    sbcNote: (fund.derived as { sbcTTMNote?: string }).sbcTTMNote ?? "",
+    evAdjust,
+    evAdj: evAdjust ? evAdjRows(companies.map((c) => String(c.ticker)), evExact, evAdjust) : [],
+    evAdjNote: (fund.derived as { evAdjustNote?: string }).evAdjustNote ?? "",
     cds,
     periods,
     fcfPeriods,
