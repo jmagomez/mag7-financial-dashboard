@@ -11,6 +11,7 @@ import { glossaryBlock } from "./glossary.ts";
 import { sharesBlock } from "./acoes.ts";
 import { waccBlock } from "./wacc.ts";
 import { provenanceBlock } from "./provenance.ts";
+import { qualityBlock } from "./qualidade.ts";
 import { auditBlock, integrityBlock } from "./signals.ts";
 import { TREND_NOTE, type Note } from "./notes.ts";
 
@@ -136,6 +137,7 @@ export function footerBlock(m: ViewModel): VNode {
       : null,
     glossaryBlock(m),
     provenanceBlock(m),
+    qualityBlock(m),
     sharesBlock(m),
     waccBlock(m),
     integrityBlock(m),

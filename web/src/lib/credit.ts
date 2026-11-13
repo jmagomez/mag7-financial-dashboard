@@ -8,11 +8,15 @@ export function capexIntensity(capex: readonly number[], revenueB: number | unde
   return Math.round((last / revenueB) * 1000) / 10;
 }
 
+import { parseQuality, type Quality } from "./quality.ts";
+
 export interface Snapshot {
   date: string;
   cds: Record<string, number | null>;
   /** Preços de fechamento por ticker; ausente em snapshots antigos. */
   prices: Record<string, number | null> | null;
+  /** Qualidade dos dados do dia (gravada por daily.py); ausente em snapshots antigos ou malformada. */
+  quality?: Quality;
 }
 
 const numRow = (o: unknown): Record<string, number | null> | null => {
@@ -32,9 +36,10 @@ export function parseSnapshots(raw: unknown): Snapshot[] {
   const out: Snapshot[] = [];
   for (const e of list) {
     if (typeof e !== "object" || e === null) continue;
-    const { date, cds, prices } = e as { date?: unknown; cds?: unknown; prices?: unknown };
+    const { date, cds, prices, quality } = e as { date?: unknown; cds?: unknown; prices?: unknown; quality?: unknown };
     if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-    out.push({ date, cds: numRow(cds) ?? {}, prices: numRow(prices) });
+    const q = parseQuality(quality);
+    out.push({ date, cds: numRow(cds) ?? {}, prices: numRow(prices), ...(q ? { quality: q } : {}) });
   }
   return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }

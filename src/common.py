@@ -24,6 +24,7 @@ TIERS = ("primary", "secondary", "derived")
 SHARES_ANCHOR_MAX_DAYS = 90   # market cap diário = preço × ações da capa do 10-Q/10-K; se a mais antiga passar disso, avisa para atualizar derived.sharesOut
 WACC_INPUTS_MAX_DAYS = 45      # juro livre e prêmio de risco de derived.waccInputs: acima disso, aviso (atualizar na tarefa mensal)
 WACC_BETA_MAX_DAYS = 120      # betas de derived.waccInputs: acima disso, aviso
+CDS_STALE_DAYS = 30           # cotação de CDS com mais de N dias é "defasada" (mesmo limite do painel e do validador)
 SHARES_DIVERGENCE_WARN = 2    # % entre as ações usadas no market cap (market cap ÷ preço) e as reportadas; acima disso, aviso (ação desatualizada ou desdobramento)
 
 
@@ -58,6 +59,23 @@ def shares_reported(fund):
         if not ok or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(e.get("asOf", ""))):
             raise SystemExit(f"fundamentals.json: derived.sharesOut.{t} precisa de total > 0 e asOf AAAA-MM-DD")
     return {t: sh[t] for t in TICKERS}
+
+
+def cds_quality(meta, comps, ref_date):
+    """Qualidade dos CDS das Mag 7 em `ref_date` (AAAA-MM-DD): quantos têm cotação, idade média/máxima em dias e quantos passam de CDS_STALE_DAYS.
+
+    Só conta CDS com nível e data (`meta.cdsAsOf`); sem nenhum, devolve None (nada é inventado). Referências fora das Mag 7 não entram."""
+    from datetime import date
+    ref = date.fromisoformat(ref_date)
+    ages = []
+    for c in comps:
+        dt = (meta.get("cdsAsOf") or {}).get(c["ticker"])
+        if c.get("cds") is not None and dt:
+            ages.append((ref - date.fromisoformat(dt)).days)
+    if not ages:
+        return None
+    return {"cdsCount": len(ages), "cdsAvgAgeDays": round(sum(ages) / len(ages), 1), "cdsMaxAgeDays": max(ages),
+            "cdsStale": sum(1 for a in ages if a > CDS_STALE_DAYS)}
 
 
 def glossary():
