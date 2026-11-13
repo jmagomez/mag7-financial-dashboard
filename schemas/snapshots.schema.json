@@ -25,6 +25,18 @@
           "prices": {"$ref": "#/$defs/perTicker"},
           "marketCapB": {"$ref": "#/$defs/perTicker"},
           "cds": {"$ref": "#/$defs/perTicker"},
+          "quality": {
+            "type": "object",
+            "required": ["pricesTier", "cdsCount", "cdsAvgAgeDays", "cdsMaxAgeDays", "cdsStale"],
+            "additionalProperties": false,
+            "properties": {
+              "pricesTier": {"enum": ["primary", "secondary", "derived"]},
+              "cdsCount": {"type": "integer", "minimum": 1, "maximum": 7},
+              "cdsAvgAgeDays": {"type": "number", "minimum": 0},
+              "cdsMaxAgeDays": {"type": "integer", "minimum": 0},
+              "cdsStale": {"type": "integer", "minimum": 0, "maximum": 7}
+            }
+          },
           "note": {"type": "string"}
         },
         "dependentRequired": {"prices": ["marketCapB"], "marketCapB": ["prices"]}
