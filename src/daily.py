@@ -61,6 +61,8 @@ def dump_snaps(doc):
         for k in ("prices", "marketCapB", "cds"):
             if k in s:
                 body.append(f'   "{k}": {one(s[k])}')
+        if s.get("quality"):
+            body.append(f'   "quality": {one(s["quality"])}')
         if s.get("note"):
             body.append(f'   "note": {one(s["note"])}')
         items.append("  {\n" + ",\n".join(body) + "\n  }")
@@ -191,6 +193,10 @@ def apply(d, snaps, delta, fund=None):
         ps["label"] = re.sub(r"Preços de \d{2}/\d{2}/\d{4}", f"Preços de {br(trade)}", ps["label"], count=1)
 
     m["provenance"] = build_provenance(d, delta, m.get("provenance"), shares)
+    # qualidade dos dados do dia (Fase 4): nível dos preços e idade dos CDS na data do pregão; vai no snapshot, não no data.json
+    q = C.cds_quality(m, comps, trade)
+    if q:
+        snap["quality"] = {"pricesTier": m["provenance"]["prices"]["tier"], **q}
 
     for k in ("dailyBrief", "audit", "catalysts"):
         if k in delta:
