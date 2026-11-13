@@ -12,6 +12,8 @@ export interface BarDatum {
   chip?: Chip;
   /** Esmaecida e excluída do ranking e do resumo. */
   dim?: boolean;
+  /** Cor fixa da empresa (0–6, mesma ordem de `m.companies`); sem ela a barra usa a cor de destaque. */
+  slot?: number;
   /** Células extras da tabela alternativa (mesma ordem de `ChartSpec.columns`). */
   cells?: string[];
 }
@@ -55,7 +57,7 @@ export function chartFrame(spec: ChartSpec): VNode {
       "g",
       {},
       h("text", { x: 0, y: y + 17, class: "lbl" }, r.label),
-      w > 0 ? h("rect", { x: LABEL_W, y, width: w, height: ROW - 10, rx: 3, class: r.dim ? "bar dim" : "bar" }) : null,
+      w > 0 ? h("rect", { x: LABEL_W, y, width: w, height: ROW - 10, rx: 3, class: r.dim ? "bar dim" : r.slot !== undefined ? `bar c${r.slot}` : "bar" }) : null,
       h("text", { x: LABEL_W + w + 8, y: y + 17, class: r.dim ? "val dim" : "val" }, r.value === null ? "n/d" : `${fmtNum(r.value, digits)} ${spec.unit}`.trim()),
     );
   });

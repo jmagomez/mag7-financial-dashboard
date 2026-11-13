@@ -5,6 +5,7 @@ import { indHash, PERIODS, SORT_KEYS, type Period, type Route, type SortKey } fr
 import { h, type VNode } from "../lib/vdom.ts";
 import type { BarDatum, ChartSpec } from "./chart-frame.ts";
 import { ranked } from "./chart-frame.ts";
+import { slotOf } from "./charts.ts";
 import type { ViewModel } from "./model.ts";
 import { PERIOD_CAPTION, TABLE_NOTE } from "./notes.ts";
 
@@ -37,7 +38,7 @@ function leader(data: BarDatum[], unit: string, digits: number, what: string): s
 }
 
 type Pick = (r: IndRow, p: Period) => number | null;
-const bars = (m: ViewModel, period: Period, pick: Pick): BarDatum[] => m.rows.map((r) => ({ label: r.name, value: pick(r, period) }));
+const bars = (m: ViewModel, period: Period, pick: Pick): BarDatum[] => m.rows.map((r) => ({ label: r.name, value: pick(r, period), slot: slotOf(m, r.ticker) }));
 
 /** Receita, margem líquida e crescimento do período escolhido. */
 export function periodCharts(m: ViewModel, period: Period): ChartSpec[] {
