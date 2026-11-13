@@ -9,6 +9,22 @@
   "$defs": {
     "isoDate": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
     "ticker": {"enum": ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]},
+    "tier": {"enum": ["primary", "secondary", "derived"], "description": "primary = emissor/bolsa/SEC; secondary = agregador ou imprensa; derived = calculado de outros valores."},
+    "provenanceEntry": {
+      "type": "object",
+      "required": ["tier", "asOf"],
+      "properties": {
+        "tier": {"$ref": "#/$defs/tier"},
+        "asOf": {"$ref": "#/$defs/isoDate"},
+        "source": {"type": "string"},
+        "method": {"type": "string"},
+        "anchor": {
+          "type": "object",
+          "required": ["date", "source"],
+          "properties": {"date": {"$ref": "#/$defs/isoDate"}, "source": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
     "link": {
       "type": "object",
       "required": ["label", "url"],
@@ -60,6 +76,17 @@
             "type": "object",
             "required": ["sev", "area", "finding", "action"],
             "properties": {"sev": {"enum": ["alta", "média", "baixa"]}, "area": {"type": "string"}, "finding": {"type": "string"}, "action": {"type": "string"}}
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "description": "Opcional (gravado por daily.py): fonte, data e nível de cada grupo de números diários.",
+          "required": ["prices", "marketCapB", "weight", "cds"],
+          "properties": {
+            "prices": {"$ref": "#/$defs/provenanceEntry"},
+            "marketCapB": {"$ref": "#/$defs/provenanceEntry"},
+            "weight": {"$ref": "#/$defs/provenanceEntry"},
+            "cds": {"type": "object", "additionalProperties": {"$ref": "#/$defs/provenanceEntry"}}
           }
         },
         "catalysts": {
