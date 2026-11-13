@@ -2,6 +2,8 @@
 
 export type Ticker = "AAPL" | "MSFT" | "NVDA" | "GOOGL" | "AMZN" | "META" | "TSLA";
 
+import type { WaccInputs } from "./lib/wacc.ts";
+
 export interface DcfAssumptions {
   waccPct?: number;
   terminalGrowthPct?: number;
@@ -22,6 +24,8 @@ export interface Derived {
   fwdEPS: Partial<Record<Ticker, number>>;
   oneOffTTM: Partial<Record<Ticker, number>>;
   dcfAssumptions?: DcfAssumptions;
+  /** Entradas do WACC por empresa (validadas em lib/wacc.ts); ausente = WACC único de `dcfAssumptions`. */
+  waccInputs?: WaccInputs;
   /** Receita trimestral dos segmentos de nuvem/IA (US$ bi) e crescimento a/a (%). */
   cloudSegmentsQ2_2026?: { n: string; v: number; g: number }[];
 }
@@ -32,6 +36,7 @@ export interface CompanyInput {
   price: number;
   marketCapB: number;
   cds: number | null;
+  rating?: { sp?: string };
   /** Últimos 10 trimestres, do mais antigo ao mais recente. */
   revHistory: number[];
   niHistory: number[];

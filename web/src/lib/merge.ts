@@ -70,6 +70,7 @@ export function mergeCompanies(daily: DailyFile, fund: FundamentalsFile): Compan
       price: d.price,
       marketCapB: d.marketCapB,
       cds: d.cds ?? null,
+      rating: f.rating,
       revHistory: f.revHistory,
       niHistory: f.niHistory,
       fcfAnnual: f.fcfAnnual,
