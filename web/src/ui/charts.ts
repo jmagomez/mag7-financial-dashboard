@@ -128,6 +128,12 @@ export function netCashChart(m: ViewModel): ChartSpec {
   };
 }
 
+function waccText(m: ViewModel): string {
+  if (m.wacc.length === 0) return "WACC 9%";
+  const ws = m.wacc.map((w) => w.waccPct);
+  return `WACC por empresa (${fmtNum(Math.min(...ws), 1)}% a ${fmtNum(Math.max(...ws), 1)}%)`;
+}
+
 export function impliedGrowthChart(m: ViewModel): ChartSpec {
   const data = byCompany(m, (c) => m.derived[c.ticker].valuation.impliedG);
   return {
@@ -135,7 +141,7 @@ export function impliedGrowthChart(m: ViewModel): ChartSpec {
     title: "O que está no preço: crescimento de FCF implícito (DCF reverso)",
     unit: "% a.a.",
     data,
-    summary: `${leader(data, "% a.a.", 1, "Maior crescimento embutido")} CAGR de FCF em 10 anos que o EV atual embute, com WACC 9% e crescimento terminal 3%.`,
+    summary: `${leader(data, "% a.a.", 1, "Maior crescimento embutido")} CAGR de FCF em 10 anos que o EV atual embute, com ${waccText(m)} e crescimento terminal 3%.`,
   };
 }
 
