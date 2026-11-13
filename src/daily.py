@@ -19,8 +19,11 @@ delta.json (campos opcionais exceto tradeDate e prices):
   "snapshotNote": "texto curto com fontes",
   "cdsLog": "texto da checagem (a numeração 'Nª checagem:' é automática)",
   "dailyBrief": {...}, "audit": [...], "catalysts": [...], "cdsNote": "texto completo (opcional)",
-  "priceSource": {"label": "Preços de DD/MM/AAAA (fontes)", "url": "..."}, "priceSourceShort": "StockAnalysis; ..."
+  "priceSource": {"label": "Preços de DD/MM/AAAA (fontes)", "url": "..."}, "priceSourceShort": "StockAnalysis; ...",
+  "priceTier": "secondary",                     # nível da fonte de preços (primary|secondary); padrão: o anterior ou secondary
+  "sharesAnchor": {"date": "2026-08-27", "source": "Slickcharts"}    # SÓ ao reancorar as ações implícitas do market cap
 }
+O script grava meta.provenance (fonte, data e nível de preços, market cap, pesos e CDS); cds.<T>.tier é opcional.
 Sem dado confiável, NÃO inclua o ticker em "cds": o nível e a data anteriores são mantidos.
 """
 import json
@@ -70,6 +73,45 @@ def sync_credit_note(n, levels):
         name = C.NAMES.get(t) or {"ORCL": "Oracle", "CRWV": "CoreWeave"}[t]
         n = re.sub(rf"({name} \(?)~[\d.]+", lambda m: f"{m.group(1)}~{lvl(v)}", n)
     return n
+
+
+def _tier(v, where):
+    if v not in C.TIERS:
+        raise SystemExit(f"{where}: nível {v!r} inválido (use {' | '.join(C.TIERS)})")
+    return v
+
+
+def build_provenance(d, delta, prev):
+    """meta.provenance: de onde vem e de quando é cada grupo de números. Determinístico; não inventa nada.
+
+    prices = fonte do dia (secondary, salvo declaração em contrário); marketCapB e weight = derived (preço × ações implícitas
+    de uma âncora datada; a âncora vem do delta, do estado anterior ou da nota de preços); cds = nível e data de cada cotação.
+    """
+    m = d["meta"]
+    trade = m["marketSnapshot"]
+    ps = d.get("priceSource") or {}
+    prev = prev or {}
+    ptier = _tier(delta.get("priceTier") or (prev.get("prices") or {}).get("tier") or "secondary", "priceTier")
+    anchor = delta.get("sharesAnchor") or (prev.get("marketCapB") or {}).get("anchor") or C.parse_shares_anchor(m.get("priceNote"))
+    if delta.get("sharesAnchor") and not (re.fullmatch(ISO, str(anchor.get("date", ""))) and anchor.get("source")):
+        raise SystemExit("sharesAnchor precisa de date (AAAA-MM-DD) e source")
+    mc = {"tier": "derived", "asOf": trade, "method": "preço do dia × ações implícitas (market cap anterior ÷ preço anterior)"}
+    if anchor:
+        mc["anchor"] = {"date": anchor["date"], "source": anchor["source"]}
+    levels = {c["ticker"] for c in d["companies"] if c.get("cds") is not None} | {r["ticker"] for r in m["cdsRef"] if r.get("cds") is not None}
+    cds = {}
+    for t in sorted(levels):
+        asof = m["cdsAsOf"].get(t)
+        old = (prev.get("cds") or {}).get(t) or {}
+        given = ((delta.get("cds") or {}).get(t) or {}).get("tier")
+        tier = _tier(given, f"cds.{t}.tier") if given else (old.get("tier") if old.get("asOf") == asof else None) or "secondary"
+        cds[t] = {"tier": tier, "asOf": asof}
+    return {
+        "prices": {"tier": ptier, "asOf": trade, "source": ps.get("label", "")},
+        "marketCapB": mc,
+        "weight": {"tier": "derived", "asOf": trade, "method": "market cap ÷ total do grupo"},
+        "cds": cds,
+    }
 
 
 def apply(d, snaps, delta):
@@ -142,6 +184,8 @@ def apply(d, snaps, delta):
         ps.update(delta["priceSource"])
     else:
         ps["label"] = re.sub(r"Preços de \d{2}/\d{2}/\d{4}", f"Preços de {br(trade)}", ps["label"], count=1)
+
+    m["provenance"] = build_provenance(d, delta, m.get("provenance"))
 
     for k in ("dailyBrief", "audit", "catalysts"):
         if k in delta:
