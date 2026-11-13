@@ -186,6 +186,35 @@ def check_sbc_ev(der, today):
             dated(where, e)
 
 
+# Blocos de derived já migrados para o formato v2 (Fase 3): data, nível e fonte por empresa passam a ser obrigatórios.
+V2_BLOCKS = ("fcfTTM", "oneOffTTM", "ebitdaImplB", "balanceQ2_2026")
+
+
+def check_v2_blocks(raw_der, today):
+    """derived.fcfTTM/oneOffTTM/ebitdaImplB/balanceQ2_2026 no arquivo (antes do merge): cada empresa precisa de
+    asOf (AAAA-MM-DD, não no futuro), tier (primary|secondary|derived) e fonte (label e url https).
+    Número solto é erro (regressão do formato); dado com mais de SBC_MAX_DAYS, aviso."""
+    for key in V2_BLOCKS:
+        blk = raw_der.get(key)
+        if not isinstance(blk, dict):
+            continue  # ausência do bloco já é reportada pelas checagens estruturais
+        for t, e in blk.items():
+            where = f"derived.{key}.{t}"
+            if not isinstance(e, dict):
+                err(f"{where}: precisa do formato v2 (objeto com asOf, tier e source), não número solto")
+                continue
+            if e.get("tier") not in TIERS:
+                err(f"{where}.tier deve ser um de {TIERS}: {e.get('tier')!r}")
+            src = e.get("source")
+            if not (isinstance(src, dict) and src.get("label") and str(src.get("url", "")).startswith("https://")):
+                err(f"{where}.source precisa de label e url https")
+            d_ = pdate(e.get("asOf") or "", f"{where}.asOf")
+            if d_ and d_ > today:
+                err(f"{where}.asOf {e['asOf']} está no futuro")
+            elif d_ and (today - d_).days > SBC_MAX_DAYS:
+                warn(f"{where}: dado de {e['asOf']} ({(today-d_).days} dias): atualizar na incorporação do trimestre")
+
+
 def main():
     today = date.today()
     if "--today" in sys.argv:
@@ -322,6 +351,7 @@ def main():
     check_shares(comps, der)
     check_wacc(der, today)
     check_sbc_ev(der, today)
+    check_v2_blocks((load("fundamentals.json") or {}).get("derived", {}), today)
 
     # --- frescor
     if snap and (today - snap).days > 3:
