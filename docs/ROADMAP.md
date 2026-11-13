@@ -18,8 +18,8 @@ Princípios: **(1)** nenhuma fase pode mudar um número exibido sem teste que ex
 
 **Pendência conhecida (lint em `src/`)**: `ruff check src` acusa 3 itens antigos, que este PR não corrige para não tocar
 código de produção: `src/daily.py:71` (B023, falso positivo prático: a função é usada na hora dentro do loop) e a ordem dos
-imports em `src/send_email.py:21` e `src/validate.py:9` (corrigíveis com `ruff check --fix`). O CI proposto faz lint só de
-`tests` e `tools`; ao corrigir esses 3 pontos, estender para `src`.
+imports em `src/send_email.py:21` e `src/validate.py:9` (corrigíveis com `ruff check --fix`). O CI proposto faz lint só
+de `tests` e `tools`; ao corrigir esses 3 pontos, estender para `src`.
 
 ## Fase 2 — UI v2 em `web/` (paridade funcional)
 Critério de aceite: 4 abas com os mesmos números do golden; zero `innerHTML` com dado externo e só URLs `https:` em `href`; axe sem violações sérias;
@@ -45,4 +45,4 @@ Lighthouse ≥ 95 (desempenho e acessibilidade; ok na 2o); bundle < 250 KB gz (~
 - Trava de e-mail gravada pela própria Action: `send_email.py` grava `history/email_log.json` quando `MAG7_WRITE_LOG=1` (sem a variável nada muda) e o `enviar-dashboard.yml` proposto liga a variável, tem `contents: write`, fila única e commita a trava com `[skip-email]`. Depois de aplicado, a rotina diária deixa de gravar `email_log.json`.
 - Ações fixadas por SHA de commit nos quatro workflows (`ci`, `pages`, `validate`, `enviar-dashboard`), com o rótulo da versão em comentário.
 
-**Pendente:** histórico de qualidade dos dados (% de preços `derived`, idade média de CDS) exibido no rodapé — exige que `daily.py` grave a medida em cada snapshot (muda o formato de `history/snapshots.json`; decisão do dono); e-mail com o mesmo componente de idade/qualidade do painel.
+**Feito (histórico de qualidade, PR #33):** `daily.py` grava em cada snapshot novo `quality` (nível dos preços e, só para as Mag 7, quantidade, idade média, idade máxima e número de CDS com mais de 30 dias, relativos ao pregão). Sem backfill: snapshots antigos não são reconstruídos. O painel mostra a série no rodapé ("Qualidade dos dados ao longo do tempo", últimos 10 pregões) e o e-mail ganha a linha "Qualidade dos dados" com a mesma medida. Substituiu o "% de preços `derived`" planejado, que seria sempre 0% ou 100% (todos os preços têm o mesmo nível). A Fase 4 está concluída.
