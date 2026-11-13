@@ -39,9 +39,9 @@ export function provenanceBlock(m: ViewModel): VNode | null {
       ? h(
           "p",
           {},
-          `O market cap diário é o preço do dia × ações implícitas ancoradas em ${fmtDateFull(anchor.date)} (${anchor.source}), há ${age} d. `,
-          old ? h("span", { class: "chip chip-stale" }, `defasada · reancorar (limite de ${ANCHOR_MAX_DAYS} d)`) : h("span", { class: "chip chip-fresh" }, `atual · dentro do limite de ${ANCHOR_MAX_DAYS} d`),
+          `O market cap diário é o preço do dia × a quantidade de ações com data-base mais antiga em ${fmtDateFull(anchor.date)} (${anchor.source}), há ${age} d. `,
+          old ? h("span", { class: "chip chip-stale" }, `defasada · atualizar as ações (limite de ${ANCHOR_MAX_DAYS} d)`) : h("span", { class: "chip chip-fresh" }, `atual · dentro do limite de ${ANCHOR_MAX_DAYS} d`),
         )
-      : h("p", {}, "Sem âncora das ações implícitas informada: a idade do market cap não pode ser avaliada."),
+      : h("p", {}, "Sem data-base das ações informada: a idade do market cap não pode ser avaliada."),
   );
 }

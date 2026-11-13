@@ -1,6 +1,6 @@
 /**
  * Ações em circulação reportadas (`derived.sharesOut` de fundamentals.json: capa do último 10-Q/10-K, em milhões).
- * Servem só para CONFERIR as ações implícitas do market cap diário (market cap ÷ preço); nenhum número exibido muda.
+ * Base do market cap diário (preço × ações reportadas, em src/daily.py); aqui servem também para CONFERIR as ações recalculadas do market cap exibido (market cap ÷ preço).
  * Opcional: bloco ausente ou malformado → null e o painel segue sem a seção.
  */
 export const SHARES_DIVERGENCE_WARN = 2; // % de diferença entre ações implícitas e reportadas; decisão de design.
