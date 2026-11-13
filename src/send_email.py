@@ -11,7 +11,7 @@ Regras de envio (nesta ordem):
      (contents: write + MAG7_WRITE_LOG=1) é a própria Action que grava e commita o arquivo.
 
 Conteúdo: alerta de CDS (>100 bps), briefing do dia, o que mudou desde o snapshot
-anterior (preço e CDS), tabela de indicadores-chave recálculados, CDS com data da
+anterior (preço e CDS), tabela de indicadores-chave recalculados, CDS com data da
 cotação, próximos catalisadores e itens de auditoria de severidade alta.
 
 Antes de enviar, roda src/validate.py: erro de validação BLOQUEIA o envio (exit 1).
@@ -229,7 +229,7 @@ def build(d, snaps):
         + '<h3 style="margin:18px 0 6px">CDS 5 anos</h3>' + ctbl
         + cat_html + aud_html
         + '<p style="font-size:11.5px;color:#999;margin-top:18px">CDS são cotações pontuais de imprensa (dado proprietário); ⚠ = cotação com mais de 30 dias. '
-          'P/E, FCF yield e caixa líquido recálculados do data.json. Conteúdo informativo, sem recomendação de investimento. '
+          'P/E, FCF yield e caixa líquido recalculados do data.json. Conteúdo informativo, sem recomendação de investimento. '
           f'<a href="{REPO}" style="color:#999">Repositório</a></p></div>')
 
     lines = [f"Magnificent 7 - Briefing diário ({gen})", URL]
