@@ -28,7 +28,7 @@ Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusiv
 
 | Arquivo | Descrição |
 |---|---|
-| `index.html` | Dashboard completo (Chart.js via CDN). Só apresentação + cálculos derivados; lê `data.json`, `fundamentals.json`, `history/snapshots.json` e `glossary.json`. |
+| `web/` | Dashboard (Vite + TypeScript, SVG próprio, sem dependências de execução). Só apresentação + cálculos derivados; lê `data.json`, `fundamentals.json`, `history/snapshots.json` e `glossary.json`. Publicado no GitHub Pages por `.github/workflows/pages.yml`. O `index.html` antigo da raiz (Chart.js via CDN) foi aposentado; está no histórico do git (commit `3acacf7`). |
 | `data.json` | **Dados diários** (preço, market cap, peso, CDS, briefing, auditoria, nota de CDS). Também é o gatilho da Action de e-mail. |
 | `fundamentals.json` | **Dados trimestrais/estáticos**: resultados, históricos, ratings, bloco `derived`, notas metodológicas e fontes. Só muda ao incorporar um trimestre. |
 | `glossary.json` | Glossário único de siglas (dashboard, e-mail, validação). |
@@ -37,10 +37,12 @@ Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusiv
 | `history/email_log.json` | Último envio (trava de 1 e-mail/dia). Gravado pela rotina diária (commit `[skip-email]`) logo após o envio. |
 | `src/common.py` | Constantes e utilitários compartilhados (tickers, limiar de CDS, PD implícita, glossário) e `load_data()`, que junta `data.json` + `fundamentals.json`. |
 | `src/daily.py` | Atualização diária determinística de `data.json` + snapshot a partir de um `delta.json`; roda a validação. |
-| `src/validate.py` | Validador de `data.json` + `fundamentals.json` e snapshots (erros de estrutura e de consistência com o snapshot e entre rótulos trimestrais; avisos de dado velho, trimestre defasado no HTML e sigla fora do glossário). |
+| `src/validate.py` | Validador de `data.json` + `fundamentals.json` e snapshots (erros de estrutura e de consistência com o snapshot e entre rótulos trimestrais; avisos de dado velho, trimestre defasado nos textos fixos de `web/src/ui/` e sigla fora do glossário). |
 | `src/send_email.py` | E-mail executivo diário (SMTP). Pula `[skip-email]` e aplica a trava diária. `--dry-run` gera `preview.html`. |
 | `.github/workflows/enviar-dashboard.yml` | Action existente: executa `src/send_email.py` em push que altere `data.json`. |
 | `.github/workflows/validate.yml` | CI: validação + dry-run do e-mail em todo push/PR. |
+| `.github/workflows/ci.yml` | CI do `web/`: tipos, testes, build, e2e (axe) e Lighthouse. |
+| `.github/workflows/pages.yml` | Publica `web/` e os JSONs no GitHub Pages quando `web/`, `data.json`, `fundamentals.json`, `glossary.json` ou `history/` mudam em `main`. |
 
 ### `fundamentals.json` → bloco `derived` (fonte única auditável)
 
@@ -96,7 +98,7 @@ Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica
 ## Como atualizar
 
 - **Diário**: `python3 src/daily.py delta.json` (ver `CLAUDE.md`) — nunca editar preços/market cap/pesos à mão.
-- **Novo trimestre** (manual, só `fundamentals.json`): acrescente o período em `revHistory`/`niHistory` (mantendo a janela de 10), atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived`; os textos de narrativa fixos no `index.html` são revisados à mão (o validador avisa quando ficam defasados). Detalhes no `CLAUDE.md`.
+- **Novo trimestre** (manual, só `fundamentals.json`): acrescente o período em `revHistory`/`niHistory` (mantendo a janela de 10), atualize `quarter`, `historyLabels`, `quarterLabel` e o `derived`; os textos de narrativa fixos em `web/src/ui/` (notas, rótulos de trimestre) são revisados à mão (o validador avisa quando ficam defasados). Detalhes no `CLAUDE.md`.
 - Campos diários de `meta`: `cdsAsOf`, `catalysts`, `dailyBrief`, `audit`, `cdsNote`, `priceNote`. Siglas novas vão em `glossary.json`.
 
 ## Aviso
