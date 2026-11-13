@@ -19,7 +19,7 @@ Público: analistas CFA / setor de tecnologia. Postura: especialista em finança
 | `src/daily.py` | Aplica o *delta* do dia a `data.json` + snapshot de forma determinística e roda `validate.py`. Grava também `meta.provenance` (preços, market cap e peso `derived`, CDS por empresa; aditivo, nenhum campo existente muda). O validador avisa se a âncora tiver mais de 90 dias ou faltar, e bloqueia tier inválido ou `asOf` incoerente com `marketSnapshot`/`cdsAsOf`. Só escreve `data.json` e `history/snapshots.json`. |
 | `src/validate.py` | Bloqueia o envio em erro; avisa em dado velho. Mesmas regras no CI. |
 | `src/send_email.py` | E-mail executivo (Action `enviar-dashboard.yml`, disparada por push em `data.json`). |
-| `index.html` | Apresentação + cálculos derivados; lê `data.json`, `fundamentals.json`, `history/snapshots.json`, `glossary.json`. |
+| `web/` | Apresentação (Vite + TypeScript) + cálculos derivados; lê `data.json`, `fundamentals.json`, `history/snapshots.json`, `glossary.json`. Deploy: `pages.yml`. O `index.html` da raiz foi aposentado (commit `3acacf7`). |
 
 ## Rotina diária (dias úteis) — procedimento
 
@@ -47,7 +47,7 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 4. Quando um **ano fiscal** fecha: `annual`, `fcfAnnual`/`fcfLabels` e `capex`/`capexLabels`.
 5. `data.json` (não é desta tarefa, mas conferir): marcar `done` nos `catalysts` já divulgados e revisar `meta.audit` (remover item resolvido, ex.: "Calendário"/"Itens não recorrentes").
 
-**Textos fixos no `index.html`** (narrativa de trimestre, ex.: segNotes, qoeNotes, valNotes, rótulos "2T 2026"/"Q2 2026", "jun–jul/2026"): não são gerados dos dados. `validate.py` **avisa** quando o HTML cita no máximo um trimestre anterior ao `quarterLabel`. A tarefa automática **não** reescreve o HTML: liste esses textos no relatório para revisão manual (o dashboard continua correto nos números, mas a narrativa fica defasada).
+**Textos fixos em `web/src/ui/`** (narrativa de trimestre, ex.: segNotes, qoeNotes, valNotes, rótulos "2T 2026"/"Q2 2026", "jun–jul/2026"): não são gerados dos dados. `validate.py` **avisa** quando esses arquivos citam no máximo um trimestre anterior ao `quarterLabel`. A tarefa automática **não** reescreve o código da UI: liste esses textos no relatório para revisão manual (o dashboard continua correto nos números, mas a narrativa fica defasada).
 
 **Validar e publicar**: rode `python3 src/validate.py` num clone (sem `-I`) com 0 erros — o validador cobra `quarterLabel` × `historyLabels`, últimos pontos × `quarter` e tamanhos das séries. Commit de `fundamentals.json` com `[skip-email]`; depois **um** commit de `data.json` (`meta.generated` = hoje) **sem** a tag para disparar o e-mail, respeitando a trava de 1 por dia e a validação. Mudanças só em `fundamentals.json` não disparam a Action de e-mail (o gatilho é `data.json`).
 
@@ -63,7 +63,7 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 - CDS: bps a 5 anos, data em `meta.cdsAsOf` (aviso se > 30 dias); salto > 2× ou < 0,5× vs. último snapshot é **erro**, > 25% é aviso; `cdsNote` contém "~<cds>" de cada CDS das Mag 7.
 - Preço com salto > 25% vs. snapshot anterior é erro (provável digitação).
 - `cdsLog` em ordem e sem data posterior a `generated`; snapshots ordenados e únicos por data.
-- `quarterLabel` no formato `Qn AAAA` e igual ao último rótulo de `historyLabels`; `index.html` sem BOM literal.
+- `quarterLabel` no formato `Qn AAAA` e igual ao último rótulo de `historyLabels`.
 - PD 5a implícita: 1 − exp(−5·s/(1−R)), R = 0,40 (neutra ao risco; compara, não prevê).
 
 ## Armadilhas conhecidas
@@ -72,7 +72,7 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 - `merge()` aceita também o formato antigo (tudo em `data.json`), mas `daily.py` recusa esse formato.
 - O CI `validate.yml` roda em **todo** push/PR (sem filtro de caminho): `validate.py` + dry-run do e-mail. Só a Action de e-mail tem filtro (`data.json`).
 - `get_file_contents` de arquivos grandes salva em disco como JSON `[{type,text}]`.
-- Chart.js vem de CDN; em testes de navegador no sandbox é preciso simular (`page.route`).
+- A v2 não usa Chart.js (SVG próprio). O `index.html` antigo (Chart.js via CDN) só existe no histórico do git (commit `3acacf7`); `tools/golden_from_dashboard.py` o lê de lá e, no sandbox, simula o Chart.js (`page.route`).
 - O workflow dispara por push em `data.json`; qualquer mudança de caminho/trigger exige edição manual de `.github/workflows` pelo dono.
 
 ## Prompts mínimos das tarefas agendadas
