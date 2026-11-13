@@ -19,7 +19,7 @@ export function evAdjustedBlock(m: ViewModel): VNode | null {
       h(
         "table",
         {},
-        h("caption", {}, "EV da tabela de múltiplos e EV ajustado por empresa (US$ bi)"),
+        h("caption", {}, "EV de mercado e EV ajustado por empresa (US$ bi)"),
         h("thead", {}, h("tr", {}, ...["Empresa", "EV", "Arrend. operacional", "Arrend. financeiro", "Minoritários", "EV ajustado", "Ajuste", "Balanço de"].map((c) => h("th", { scope: "col" }, c)))),
         h(
           "tbody",
