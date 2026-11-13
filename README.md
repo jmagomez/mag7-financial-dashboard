@@ -34,7 +34,7 @@ Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusiv
 | `glossary.json` | Glossário único de siglas (dashboard, e-mail, validação). |
 | `CLAUDE.md` | **Manual operacional completo** da rotina diária (procedimento, e-mail, invariantes, armadilhas). |
 | `history/snapshots.json` | Série própria: um snapshot por dia útil (preços, market cap, CDS). Alimenta o gráfico de tendência de CDS, a coluna Δ dia e as variações do e-mail. |
-| `history/email_log.json` | Último envio (trava de 1 e-mail/dia). Gravado pela rotina diária (commit `[skip-email]`) logo após o envio. |
+| `history/email_log.json` | Último envio (trava de 1 e-mail/dia). Gravado pela própria Action de envio (commit `[skip-email]` do `github-actions[bot]`) logo após o envio; a rotina diária só lê. |
 | `src/common.py` | Constantes e utilitários compartilhados (tickers, limiar de CDS, PD implícita, glossário) e `load_data()`, que junta `data.json` + `fundamentals.json`. |
 | `src/daily.py` | Atualização diária determinística de `data.json` + snapshot a partir de um `delta.json`; roda a validação. |
 | `src/validate.py` | Validador de `data.json` + `fundamentals.json` e snapshots (erros de estrutura e de consistência com o snapshot e entre rótulos trimestrais; avisos de dado velho, trimestre defasado nos textos fixos de `web/src/ui/` e sigla fora do glossário). |
@@ -48,12 +48,14 @@ Botão **Exportar dados (CSV)** gera um arquivo com todas as métricas, inclusiv
 
 As **entradas** dos cálculos do front-end ficam em `fundamentals.json` sob `derived`, não embutidas no HTML — assim tudo é auditável em um só lugar e sai no CSV:
 
-- `balanceQ2_2026` — caixa + títulos negociáveis e dívida financiada por empresa (para caixa líquido e EV);
+- `balanceQ2_2026` — caixa + títulos negociáveis e dívida financiada por empresa (para caixa líquido e EV); guarda `{cash, debt, asOf, tier, source}`;
 - `cloudSegmentsQ2_2026` — receita e crescimento dos segmentos de nuvem/IA;
 - `fcfTTM` — FCF TTM das 7 empresas, usado como ponto de partida do DCF reverso **e como base do FCF yield exibido**;
 - `fwdPE` — P/E forward de consenso de ago/2026 (referência); `ebitdaImplB` e `fwdEPS` — denominadores implícitos usados para reescalar EV/EBITDA e P/E forward ao snapshot atual;
 - `oneOffTTM` — ajustes de itens não recorrentes para o P/E core;
 - `dcfAssumptions` — WACC, crescimento terminal e horizonte do DCF reverso.
+
+**Formato v2 (Fase 3).** `fcfTTM`, `fwdPE`, `ebitdaImplB`, `fwdEPS` e `oneOffTTM` guardam, por empresa, `{value, asOf, tier, source:{label,url}}`: o número, a data a que ele se refere, o nível da fonte (`primary`, `secondary` ou `derived`) e a fonte com link https. `balanceQ2_2026` segue o mesmo princípio, com `cash` e `debt` como chaves diretas. O leitor (`merge()` em `src/common.py` e `unwrapDerived` no painel) entrega só o número ao resto do sistema e **recusa número solto**; o validador exige data, nível e fonte, e o rodapé do painel lista as datas e fontes em "Datas e fontes dos dados trimestrais".
 
 O front-end **recalcula** P/E TTM, P/E core, FCF yield, caixa líquido, EV, EV/Vendas, EV/EBITDA, crescimento implícito, CapEx/OCF, PD implícita de CDS e P/E forward a cada carregamento; por isso os arquivos de dados guardam apenas dados reportados + entradas, sem múltiplos "congelados".
 
@@ -61,8 +63,8 @@ O front-end **recalcula** P/E TTM, P/E core, FCF yield, caixa líquido, EV, EV/V
 
 - **Anos fiscais** — as 7 empresas têm calendários diferentes. `FY2025` = o ano fiscal rotulado 2025 por cada uma. `Q2 2026` = trimestre-calendário Abr–Jun 2026, alinhado entre todas (Apple = Q3 FY26, Microsoft = Q4 FY26, Nvidia = Q2 FY27; demais = Q2 2026).
 - **P/E TTM (GAAP)** = market cap do snapshot de preços (`meta.marketSnapshot`) ÷ lucro líquido GAAP dos últimos 4 trimestres.
-- **P/E core** = P/E TTM excluindo itens não recorrentes (`oneOffTTM`), sobretudo ganhos NÃO realizados com participações (mark-to-market). Aproximado, líquido de impostos estimado.
-- **FCF yield** = `derived.fcfTTM` ÷ market cap. Todas as 7 empresas têm `fcfTTM` (Amazon −US$ 7,6 bi; Tesla US$ 5,8 bi); se alguma ficar sem, o painel mostra o valor declarado e sinaliza como não auditado.
+- **P/E core** = P/E TTM excluindo itens não recorrentes (`derived.oneOffTTM`, nível `derived`: ajuste estimado), sobretudo ganhos NÃO realizados com participações (mark-to-market). Aproximado, líquido de impostos estimado.
+- **FCF yield** = `derived.fcfTTM` (campo `value`) ÷ market cap. Todas as 7 empresas têm `fcfTTM` (Amazon −US$ 7,6 bi; Tesla US$ 5,8 bi); se alguma ficar sem, o painel mostra o valor declarado e sinaliza como não auditado.
 - **Qualidade do lucro** — compara lucro **operacional** (o negócio) com lucro **líquido GAAP** do trimestre. O sinal automático acende quando o líquido supera 1,5× o operacional (ex.: Alphabet, Amazon e Tesla no 2T'26).
 - **Caixa líquido** = caixa + títulos negociáveis − dívida financiada (exclui arrendamentos e participações não negociáveis). **EV** = market cap − caixa líquido.
 - **DCF reverso** — resolve o CAGR de FCF nos próximos 10 anos que iguala o valor presente ao EV atual (WACC 9%, crescimento terminal 3%). Fica "n/s" quando o FCF TTM é ≤ 0 ou quando o EV exigiria mais de 30% a.a. por 10 anos (hoje Amazon e Tesla).
@@ -82,9 +84,9 @@ O histórico recente de checagens fica em `meta.cdsLog` de `data.json` (lista de
 
 ### Vintages dos dados (datas diferentes por métrica)
 
-- Preços, pesos e market cap: **snapshot em `meta.marketSnapshot`** (atualizado a cada pregão pela rotina diária). Preço de fechamento (StockAnalysis, conferido com outras fontes) × quantidade de ações implícita no market cap anterior (aproximação); pesos = market cap ÷ total. O chip do cabeçalho mostra a idade; atualize para manter P/E, EV e FCF yield coerentes.
+- Preços, pesos e market cap: **snapshot em `meta.marketSnapshot`** (atualizado a cada pregão pela rotina diária). Preço de fechamento (StockAnalysis, conferido com outras fontes) × ações reportadas na capa do último 10-Q/10-K (`derived.sharesOut`); pesos = market cap ÷ total. O chip do cabeçalho mostra a idade; atualize para manter P/E, EV e FCF yield coerentes.
 - Resultados trimestrais/anuais: releases oficiais e SEC (10-Q/8-K).
-- EV/EBITDA e P/E forward: **reescalados** ao snapshot de preços — `derived.ebitdaImplB` (EBITDA implícito no múltiplo de jun–jul/2026) e `derived.fwdEPS` (LPA forward implícito no consenso de ago/2026) ficam constantes; o painel divide o EV/preço atual por eles. Revisões de EBITDA/consenso posteriores a ago/2026 NÃO estão incorporadas (ver `derived.multiplesNote`).
+- EV/EBITDA e P/E forward: **reescalados** ao snapshot de preços — `derived.ebitdaImplB` (EBITDA implícito no múltiplo de jun–jul/2026) e `derived.fwdEPS` (LPA forward implícito no consenso de ago/2026; ambos nível `derived`, com data e fonte por empresa no formato v2) ficam constantes; o painel divide o EV/preço atual por eles. Revisões de EBITDA/consenso posteriores a ago/2026 NÃO estão incorporadas (ver `derived.multiplesNote`).
 - CDS: cotações pontuais de imprensa, datadas por emissor em `meta.cdsAsOf` e nas notas de crédito.
 
 ## Automação
