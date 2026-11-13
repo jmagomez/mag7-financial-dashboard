@@ -1,8 +1,10 @@
-"""Fase 3, passo 1: leitor duplo de `derived` (número simples ou {value, ...}); nenhuma mudança de dados."""
+"""Fase 3: leitor dos blocos escalares de `derived` (formato v2 {value, asOf, tier, source}); número solto é erro."""
 import copy
 import json
 import os
 import sys
+
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 import common  # noqa: E402
@@ -18,23 +20,35 @@ def _wrap(der):
     return out
 
 
-def test_value_of_aceita_os_dois_formatos():
-    assert value_of(12.5) == 12.5
+def test_value_of_so_aceita_o_objeto_v2():
     assert value_of({"value": 12.5, "asOf": "2026-06-30"}) == 12.5
-    assert value_of(0) == 0
-    assert value_of({}) is None
-    assert value_of(None) is None
+    assert value_of({"value": 0}) == 0
+    for x in (12.5, 0, {}, None, "3", [1]):
+        assert value_of(x) is None
 
 
-def test_unwrap_e_idempotente():
+def test_unwrap_entrega_um_numero_por_empresa():
     base = unwrap_derived(common.load("fundamentals.json")["derived"])
-    assert unwrap_derived(base) == base
-    assert all(isinstance(v, (int, float)) for blk in SCALAR_DERIVED for v in base[blk].values())
+    for blk in SCALAR_DERIVED:
+        assert base[blk] and all(isinstance(v, (int, float)) for v in base[blk].values())
 
 
-def test_formato_v2_equivale_ao_antigo():
+def test_unwrap_ignora_a_proveniencia():
     base = unwrap_derived(common.load("fundamentals.json")["derived"])
     assert unwrap_derived(_wrap(base)) == base
+
+
+def test_numero_solto_e_erro_com_bloco_e_empresas():
+    der = copy.deepcopy(common.load("fundamentals.json")["derived"])
+    der["fcfTTM"]["AAPL"] = 108
+    der["fcfTTM"]["MSFT"] = 67
+    with pytest.raises(ValueError, match=r"derived\.fcfTTM: número solto em AAPL, MSFT"):
+        unwrap_derived(der)
+
+
+def test_empresa_sem_value_fica_de_fora():
+    der = {"fcfTTM": {"AAPL": {"asOf": "2026-06-30"}, "MSFT": {"value": 67}}}
+    assert unwrap_derived(der)["fcfTTM"] == {"MSFT": 67}
 
 
 def test_merge_entrega_formato_antigo_mesmo_com_v2():
