@@ -13,6 +13,7 @@ import { waccBlock } from "./wacc.ts";
 import { sensitivityBlock } from "./sensibilidade.ts";
 import { sbcBlock } from "./sbc.ts";
 import { evAdjustedBlock } from "./ev-ajustado.ts";
+import { datasBlock } from "./datas.ts";
 import { provenanceBlock } from "./provenance.ts";
 import { qualityBlock } from "./qualidade.ts";
 import { auditBlock, integrityBlock } from "./signals.ts";
@@ -146,6 +147,7 @@ export function footerBlock(m: ViewModel): VNode {
     sensitivityBlock(m),
     sbcBlock(m),
     evAdjustedBlock(m),
+    datasBlock(m),
     integrityBlock(m),
     auditBlock(m),
     h("p", {}, "Informativo, sem recomendação de investimento. Dados de fontes públicas; veja as datas em cada indicador."),
