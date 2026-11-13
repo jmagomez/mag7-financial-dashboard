@@ -33,16 +33,31 @@ describe("unwrapDerived: formato v2 ≡ formato antigo", () => {
     }
     return o as unknown as Derived;
   };
-  it("dados atuais (número simples): resultado idêntico à entrada", () => {
-    assert.deepEqual(unwrapDerived(fund.derived), fund.derived);
+  const base = unwrapDerived(fund.derived);
+  it("unwrapDerived é idempotente", () => {
+    assert.deepEqual(unwrapDerived(base), base);
   });
   it("embrulhar cada campo em {value,…} não muda nenhum indicador", () => {
     const comps = mergeCompanies(daily, fund);
-    assert.deepEqual(deriveAll(comps, unwrapDerived(wrapped(fund.derived))), deriveAll(comps, fund.derived));
+    assert.deepEqual(deriveAll(comps, unwrapDerived(wrapped(base))), deriveAll(comps, base));
   });
   it("mistura dos dois formatos no mesmo bloco funciona", () => {
-    const w = wrapped(fund.derived);
-    const mixed = { ...fund.derived, fcfTTM: { ...fund.derived.fcfTTM, AAPL: (w.fcfTTM as Record<string, unknown>).AAPL } } as unknown as Derived;
-    assert.deepEqual(unwrapDerived(mixed).fcfTTM, fund.derived.fcfTTM);
+    const w = wrapped(base);
+    const mixed = { ...base, fcfTTM: { ...base.fcfTTM, AAPL: (w.fcfTTM as Record<string, unknown>).AAPL } } as unknown as Derived;
+    assert.deepEqual(unwrapDerived(mixed).fcfTTM, base.fcfTTM);
+  });
+});
+
+describe("fcfTTM no formato v2 (passo 2)", () => {
+  const fund = readJson<FundamentalsFile>("fundamentals.json");
+  it("mesmos números de antes da conversão", () => {
+    assert.deepEqual(unwrapDerived(fund.derived).fcfTTM, { AAPL: 108, MSFT: 67, NVDA: 127, GOOGL: 53, AMZN: -7.6, META: 40, TSLA: 5.8 });
+  });
+  it("cada empresa traz data, nível e fonte https", () => {
+    for (const v of Object.values(fund.derived.fcfTTM as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
+      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
+      assert.ok(["primary", "secondary", "derived"].includes(v.tier));
+      assert.ok(v.source.url.startsWith("https://"));
+    }
   });
 });
