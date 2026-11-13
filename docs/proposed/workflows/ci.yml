@@ -52,3 +52,29 @@ jobs:
       - run: npm run typecheck
       - run: npm test            # inclui paridade numérica com o dashboard (tests/golden)
       - run: npm run build
+
+  e2e:
+    name: E2E (Playwright + axe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            web/e2e/package-lock.json
+      - name: Build do web/ (o e2e serve o dist com vite preview)
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+      - name: Dependências do e2e (projeto separado, com playwright e axe-core em versões fixas)
+        working-directory: web/e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Testes e2e (6 rotas × 2 temas no axe, teclado, ordenação, CSV, sem hosts externos)
+        working-directory: web/e2e
+        run: npm test
