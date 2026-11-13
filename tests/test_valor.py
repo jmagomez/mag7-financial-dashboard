@@ -98,3 +98,16 @@ def test_balance_v2_mesmos_numeros_e_proveniencia_completa():
     for t, b in raw.items():
         assert b["tier"] == ("derived" if t == "TSLA" else "primary")
         assert len(b["asOf"]) == 10 and b["source"]["url"].startswith("https://") and b["source"]["label"]
+
+
+FWD_PE_ANTES = {"AAPL": 34, "MSFT": 20, "NVDA": 18, "GOOGL": 23, "AMZN": 31, "META": 14, "TSLA": 188}
+
+
+def test_fwdpe_v2_mesmos_numeros_e_proveniencia_completa():
+    """fwdPE no formato v2 não muda nenhum número; tier 'secondary' (agregador, valor como publicado)."""
+    raw = common.load("fundamentals.json")["derived"]["fwdPE"]
+    assert {t: value_of(v) for t, v in raw.items()} == FWD_PE_ANTES
+    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["fwdPE"] == FWD_PE_ANTES
+    for v in raw.values():
+        assert v["tier"] == "secondary"
+        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
