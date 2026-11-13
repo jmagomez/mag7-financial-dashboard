@@ -89,3 +89,19 @@ describe("ebitdaImplB no formato v2", () => {
     }
   });
 });
+
+describe("balanceQ2_2026 com data, nível e fonte (v2)", () => {
+  const fund = readJson<FundamentalsFile>("fundamentals.json");
+  const bal = fund.derived.balanceQ2_2026 as unknown as Record<string, { cash: number; debt: number; asOf: string; tier: string; source: { url: string } }>;
+  it("mesmos números de antes da conversão", () => {
+    const got = Object.fromEntries(Object.entries(bal).map(([t, b]) => [t, [b.cash, b.debt]]));
+    assert.deepEqual(got, { AAPL: [146.5, 84.3], MSFT: [76.8, 40.3], NVDA: [56.6, 33.4], GOOGL: [242.5, 98.2], AMZN: [123.0, 128.9], META: [90.3, 83.7], TSLA: [37.0, 7.0] });
+  });
+  it("cada empresa traz data, nível e fonte https", () => {
+    for (const [t, b] of Object.entries(bal)) {
+      assert.match(b.asOf, /^\d{4}-\d{2}-\d{2}$/);
+      assert.equal(b.tier, t === "TSLA" ? "derived" : "primary");
+      assert.ok(b.source.url.startsWith("https://"));
+    }
+  });
+});
