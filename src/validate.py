@@ -11,8 +11,8 @@ import re
 import sys
 from datetime import date, datetime, timedelta
 
+from common import CDS_LOG_KEEP, NAMES, SHARES_ANCHOR_MAX_DAYS, TICKERS, TIERS, glossary, load, merge
 from common import path as C_path
-from common import CDS_LOG_KEEP, NAMES, TICKERS, glossary, load, merge
 
 errors, warnings = [], []
 # siglas de uso corrente (ou veículos de imprensa) que dispensam entrada no glossary.json
@@ -38,6 +38,42 @@ def pdate(s, where):
     except Exception:
         err(f"{where}: data inválida {s!r} (esperado AAAA-MM-DD)")
         return None
+
+
+def check_provenance(m, today):
+    """meta.provenance (aditivo: ausente = ainda não gerado pelo daily.py, sem aviso). Estrutura inválida é erro; âncora velha é aviso."""
+    pv = m.get("provenance")
+    if pv is None:
+        return
+    snap = m.get("marketSnapshot")
+    entries = [(k, pv.get(k)) for k in ("prices", "marketCapB", "weight")] + [(f"cds.{t}", v) for t, v in (pv.get("cds") or {}).items()]
+    for name, e in entries:
+        if not isinstance(e, dict):
+            err(f"provenance.{name} ausente")
+            continue
+        if e.get("tier") not in TIERS:
+            err(f"provenance.{name}.tier inválido: {e.get('tier')!r} (use {', '.join(TIERS)})")
+        dd = pdate(e.get("asOf") or "", f"provenance.{name}.asOf")
+        if dd and dd > today:
+            err(f"provenance.{name}.asOf {e['asOf']} está no futuro")
+    for k in ("prices", "marketCapB", "weight"):
+        if isinstance(pv.get(k), dict) and pv[k].get("asOf") != snap:
+            err(f"provenance.{k}.asOf {pv[k].get('asOf')} != marketSnapshot {snap}")
+    for k in ("marketCapB", "weight"):
+        if isinstance(pv.get(k), dict) and pv[k].get("tier") != "derived":
+            err(f"provenance.{k}.tier deve ser 'derived' (é calculado)")
+    for t, e in (pv.get("cds") or {}).items():
+        if isinstance(e, dict) and e.get("asOf") != (m.get("cdsAsOf") or {}).get(t):
+            err(f"provenance.cds.{t}.asOf {e.get('asOf')} != cdsAsOf.{t} {(m.get('cdsAsOf') or {}).get(t)}")
+    mc = pv.get("marketCapB")
+    if isinstance(mc, dict):
+        a = mc.get("anchor")
+        if not a:
+            warn("provenance.marketCapB sem âncora das ações implícitas (informe sharesAnchor no delta)")
+        else:
+            ad = pdate(a.get("date") or "", "provenance.marketCapB.anchor.date")
+            if ad and (today - ad).days > SHARES_ANCHOR_MAX_DAYS:
+                warn(f"market cap derivado de ações implícitas de {a['date']} ({a.get('source')}, {(today-ad).days} dias): reancorar com dado novo (sharesAnchor)")
 
 
 def main():
@@ -172,6 +208,8 @@ def main():
                     err(f"cdsAsOf.{t} {dt} está no futuro")
                 if dd and (today - dd).days > 30:
                     warn(f"CDS {t} com cotação de {dt} ({(today-dd).days} dias) — defasado")
+
+    check_provenance(m, today)
 
     # --- frescor
     if snap and (today - snap).days > 3:
