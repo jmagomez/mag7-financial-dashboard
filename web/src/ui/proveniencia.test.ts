@@ -56,9 +56,9 @@ test("com proveniência: tabela com nível em palavra, data e fonte; texto sempr
 
 test("âncora das ações: dentro de 90 d é atual; acima disso pede reancoragem (idade por meta.generated)", () => {
   const novo = toHtml(provenanceBlock(buildModel(daily(prov("2026-08-27")), fund))!); // 74 d
-  assert.ok(novo.includes("há 74 d") && novo.includes("atual · dentro do limite de 90 d") && !novo.includes("reancorar"));
+  assert.ok(novo.includes("há 74 d") && novo.includes("atual · dentro do limite de 90 d") && !novo.includes("defasada"));
   const velho = toHtml(provenanceBlock(buildModel(daily(prov("2026-07-01")), fund))!); // 131 d
-  assert.ok(velho.includes("há 131 d") && velho.includes("defasada · reancorar"));
+  assert.ok(velho.includes("há 131 d") && velho.includes("defasada · atualizar as ações"));
   const semAncora = toHtml(provenanceBlock(buildModel(daily({ ...prov(), marketCapB: { tier: "derived", asOf: "2026-11-06" } }), fund))!);
-  assert.ok(semAncora.includes("Sem âncora das ações implícitas informada"));
+  assert.ok(semAncora.includes("Sem data-base das ações informada"));
 });
