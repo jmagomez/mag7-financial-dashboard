@@ -60,15 +60,38 @@ document.addEventListener("keydown", (e) => {
 });
 
 render();
-// Snapshots são opcionais: se falharem, só a tendência do CDS mostra aviso (buildModel recebe null).
-const snaps = getJson<unknown>("history/snapshots.json").catch(() => null);
-// Glossário também é opcional: sem ele o painel só perde as dicas e a seção.
-const gloss = getJson<unknown>("glossary.json").catch(() => null);
-Promise.all([getJson<DailyFile>("data.json"), getJson<FundamentalsFile>("fundamentals.json"), snaps, gloss])
-  .then(([d, f, s, g]) => {
-    state = { status: "ready", model: buildModel(d, f, s, g) };
+/** Carrega os quatro arquivos. Snapshots e glossário são opcionais: sem eles o painel só perde a tendência do CDS e as dicas. */
+async function loadModel() {
+  const snaps = getJson<unknown>("history/snapshots.json").catch(() => null);
+  const gloss = getJson<unknown>("glossary.json").catch(() => null);
+  const [d, f, s, g] = await Promise.all([getJson<DailyFile>("data.json"), getJson<FundamentalsFile>("fundamentals.json"), snaps, gloss]);
+  return buildModel(d, f, s, g);
+}
+
+loadModel()
+  .then((model) => {
+    state = { status: "ready", model };
   })
   .catch((err: unknown) => {
     state = { status: "error", message: err instanceof Error ? err.message : String(err) };
   })
   .finally(render);
+
+// Atualização: ao voltar à aba ou à rede (no máx. a cada 5 min; o relógio só limita a frequência, nunca decide a idade do dado).
+// Se falhar, o último arquivo bom continua na tela e o estado "obsoleto" aparece; se der certo, o aviso some.
+const REFRESH_MIN_MS = 5 * 60_000;
+let lastTry = Date.now();
+async function refresh(): Promise<void> {
+  if (state.status !== "ready" || Date.now() - lastTry < REFRESH_MIN_MS) return;
+  lastTry = Date.now();
+  try {
+    state = { status: "ready", model: await loadModel() };
+  } catch (err) {
+    state = { ...state, refreshError: err instanceof Error ? err.message : String(err) };
+  }
+  render();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") void refresh();
+});
+addEventListener("online", () => void refresh());

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
-import { AXE_SOURCE, launch, open, ROUTES, startServer } from "./helpers.mjs";
+import { AXE_SOURCE, BASE, launch, open, ROUTES, startServer } from "./helpers.mjs";
 
 let server;
 let browser;
@@ -107,6 +107,34 @@ describe("interação", () => {
     const { context, page } = await open(browser, "#ind");
     assert.ok((await page.locator(".brief abbr[title]").count()) >= 1);
     assert.ok((await page.locator("footer dl.gl dt").count()) >= 10);
+    await context.close();
+  });
+
+  test("cabeçalho: chip de preços e chip de resultados trimestrais, ambos com o nível em palavra", async () => {
+    const { context, page } = await open(browser, "#ind");
+    const chips = await page.locator("header .chip").allTextContents();
+    assert.equal(chips.length, 2);
+    assert.match(chips[0], /^(atual|atenção|defasado) · preços de \d{2}\/\d{2}/);
+    assert.match(chips[1], /^(atual|atenção|defasado) · resultados de Q[1-4] \d{4} · \d+ d após o fim do trimestre$/);
+    await context.close();
+  });
+
+  test("atualização que falha mantém a tela e mostra \"obsoleto\"; ao voltar a rede, o aviso some", async () => {
+    const context = await browser.newContext({ viewport: { width: 1000, height: 900 } });
+    const page = await context.newPage();
+    await page.clock.install();
+    await page.goto(BASE + "#ind");
+    await page.waitForSelector("#csv-btn");
+    assert.equal(await page.locator("text=obsoleto").count(), 0);
+    await page.route("**/data.json*", (r) => r.abort());
+    await page.clock.fastForward("06:00"); // passa o intervalo mínimo de 5 min entre tentativas
+    await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await page.waitForSelector("text=obsoleto · não foi possível atualizar");
+    assert.equal(await page.locator("#csv-btn").count(), 1, "o painel segue na tela com o último arquivo bom");
+    await page.unroute("**/data.json*");
+    await page.clock.fastForward("06:00");
+    await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await page.waitForFunction(() => !document.body.textContent.includes("obsoleto"));
     await context.close();
   });
 

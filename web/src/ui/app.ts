@@ -1,5 +1,5 @@
-import { fmtDate } from "../lib/format.ts";
-import { tradingDays, type Chip } from "../lib/freshness.ts";
+import { fmtDate, fmtDateFull } from "../lib/format.ts";
+import { quarterChip, tradingDays, type Chip } from "../lib/freshness.ts";
 import { HIST_METRICS, metricHash, TABS, tabHash, type Route } from "../lib/router.ts";
 import { h, type VNode } from "../lib/vdom.ts";
 import { capexIntensityChart, capexOcfChart, cdsChart, cloudChart, divYieldChart, earningsQualityChart, evEbitdaChart, fcfYieldChart, impliedGrowthChart, marketCapChart, netCashChart, peChart, peForwardChart, rule40Chart } from "./charts.ts";
@@ -15,13 +15,19 @@ import { lineFrame } from "./line-frame.ts";
 import { CAPEX_INT_NOTES, CAPEX_NOTES, CAPEX_OCF_NOTES, FCF_NOTES, HIST_NOTES, PD_NOTES, VAL_NOTES, type Note } from "./notes.ts";
 import type { ViewModel } from "./model.ts";
 
-export type State = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; model: ViewModel };
+export type State = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; model: ViewModel; refreshError?: string };
 
 function priceChip(m: ViewModel): Chip {
   const n = tradingDays(m.marketSnapshot, m.generated);
   const level = n <= 1 ? "fresh" : n <= 3 ? "aging" : "stale";
   const word = level === "fresh" ? "atual" : level === "aging" ? "atenção" : "defasado";
   return { level, text: `${word} · preços de ${fmtDate(m.marketSnapshot)} · ${n} pregão(ões)` };
+}
+
+/** Aviso de dado obsoleto: a atualização falhou, mas o último arquivo carregado segue na tela (com a data dele). */
+export function staleNotice(state: State): Chip | null {
+  if (state.status !== "ready" || !state.refreshError) return null;
+  return { level: "stale", text: `obsoleto · não foi possível atualizar (${state.refreshError}); exibindo o arquivo de ${fmtDateFull(state.model.generated)}` };
 }
 
 const notes = (items: Note[]): VNode => h("ul", { class: "notes" }, ...items.map((n) => h("li", {}, ...n)));
@@ -96,6 +102,8 @@ export function appView(state: State, route: Route): VNode {
         ? h("p", { role: "alert", class: "err" }, `Não foi possível carregar os dados: ${state.message}`)
         : panel(route, state.model);
   const chip = state.status === "ready" ? priceChip(state.model) : null;
+  const qchip = state.status === "ready" ? quarterChip(state.model.quarterLabel, state.model.generated) : null;
+  const stale = staleNotice(state);
   return h(
     "div",
     { class: "wrap" },
@@ -105,6 +113,8 @@ export function appView(state: State, route: Route): VNode {
       h("h1", {}, "Magnificent 7 · indicadores financeiros"),
       state.status === "ready" ? h("p", {}, h("button", { type: "button", class: "btn", id: "csv-btn", "aria-label": "Exportar todos os dados do painel em arquivo CSV" }, "⭳ Exportar dados (CSV)")) : null,
       chip ? h("p", {}, h("span", { class: `chip chip-${chip.level}` }, chip.text), " ", `Arquivo gerado em ${state.status === "ready" ? fmtDate(state.model.generated) : ""}.`) : null,
+      qchip ? h("p", {}, h("span", { class: `chip chip-${qchip.level}` }, qchip.text)) : null,
+      stale ? h("p", { role: "status" }, h("span", { class: `chip chip-${stale.level}` }, stale.text)) : null,
     ),
     // Marcos: <main> contém abas e painel (axe: tudo dentro de landmark; role=tabpanel não é permitido em <main>).
     h(
