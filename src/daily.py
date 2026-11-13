@@ -2,7 +2,7 @@
 """Aplica a atualização diária de números (determinística) em data.json e history/snapshots.json.
 
 data.json guarda só os dados DIÁRIOS (os trimestrais ficam em fundamentals.json e nunca são tocados aqui).
-Faz a parte mecânica, onde erros de conta/formatação aparecem: market cap por ações implícitas,
+Faz a parte mecânica, onde erros de conta/formatação aparecem: market cap = preço × ações reportadas (fundamentals.json),
 pesos, total do grupo, cdsAsOf, numeração do cdsLog (mantém só os últimos CDS_LOG_KEEP), snapshot do dia,
 datas em meta.priceNote/priceSource e os níveis "~N bps" de meta.cdsNote. A parte analítica (briefing,
 auditoria, texto da nota de CDS) continua sendo escrita/revisada por quem atualiza e vai no mesmo delta.
@@ -20,9 +20,9 @@ delta.json (campos opcionais exceto tradeDate e prices):
   "cdsLog": "texto da checagem (a numeração 'Nª checagem:' é automática)",
   "dailyBrief": {...}, "audit": [...], "catalysts": [...], "cdsNote": "texto completo (opcional)",
   "priceSource": {"label": "Preços de DD/MM/AAAA (fontes)", "url": "..."}, "priceSourceShort": "StockAnalysis; ...",
-  "priceTier": "secondary",                     # nível da fonte de preços (primary|secondary); padrão: o anterior ou secondary
-  "sharesAnchor": {"date": "2026-08-27", "source": "Slickcharts"}    # SÓ ao reancorar as ações implícitas do market cap
+  "priceTier": "secondary"                      # nível da fonte de preços (primary|secondary); padrão: o anterior ou secondary
 }
+As ações do market cap vêm de fundamentals.json (derived.sharesOut, capa do último 10-Q/10-K); o delta não as informa.
 O script grava meta.provenance (fonte, data e nível de preços, market cap, pesos e CDS); cds.<T>.tier é opcional.
 Sem dado confiável, NÃO inclua o ticker em "cds": o nível e a data anteriores são mantidos.
 """
@@ -36,6 +36,10 @@ from zoneinfo import ZoneInfo
 import common as C
 
 ISO = r"\d{4}-\d{2}-\d{2}"
+
+
+MCAP_NOTE = ("Market cap = preço de {day} × ações em circulação da capa do último 10-Q/10-K de cada empresa (todas as classes ao preço da ação cotada, "
+             "e Nvidia com a capa arredondada a 0,1 bi, ±0,2%); peso = market cap ÷ total. Pode diferir dos market caps de agregadores, que usam outras contagens de ações.")
 
 
 def br(iso):
@@ -81,23 +85,22 @@ def _tier(v, where):
     return v
 
 
-def build_provenance(d, delta, prev):
+def build_provenance(d, delta, prev, shares):
     """meta.provenance: de onde vem e de quando é cada grupo de números. Determinístico; não inventa nada.
 
-    prices = fonte do dia (secondary, salvo declaração em contrário); marketCapB e weight = derived (preço × ações implícitas
-    de uma âncora datada; a âncora vem do delta, do estado anterior ou da nota de preços); cds = nível e data de cada cotação.
+    prices = fonte do dia (secondary, salvo declaração em contrário); marketCapB e weight = derived (preço × ações reportadas;
+    a "âncora" é a data mais antiga entre as capas de derived.sharesOut); cds = nível e data de cada cotação.
     """
     m = d["meta"]
     trade = m["marketSnapshot"]
     ps = d.get("priceSource") or {}
     prev = prev or {}
     ptier = _tier(delta.get("priceTier") or (prev.get("prices") or {}).get("tier") or "secondary", "priceTier")
-    anchor = delta.get("sharesAnchor") or (prev.get("marketCapB") or {}).get("anchor") or C.parse_shares_anchor(m.get("priceNote"))
-    if delta.get("sharesAnchor") and not (re.fullmatch(ISO, str(anchor.get("date", ""))) and anchor.get("source")):
-        raise SystemExit("sharesAnchor precisa de date (AAAA-MM-DD) e source")
-    mc = {"tier": "derived", "asOf": trade, "method": "preço do dia × ações implícitas (market cap anterior ÷ preço anterior)"}
-    if anchor:
-        mc["anchor"] = {"date": anchor["date"], "source": anchor["source"]}
+    if "sharesAnchor" in delta:
+        raise SystemExit("sharesAnchor foi aposentado: as ações vêm de derived.sharesOut em fundamentals.json")
+    oldest = min(shares.values(), key=lambda e: e["asOf"])
+    mc = {"tier": "derived", "asOf": trade, "method": "preço do dia × ações em circulação da capa do último 10-Q/10-K (derived.sharesOut)",
+          "anchor": {"date": oldest["asOf"], "source": "capas dos 10-Q/10-K (a mais antiga)"}}
     levels = {c["ticker"] for c in d["companies"] if c.get("cds") is not None} | {r["ticker"] for r in m["cdsRef"] if r.get("cds") is not None}
     cds = {}
     for t in sorted(levels):
@@ -114,7 +117,7 @@ def build_provenance(d, delta, prev):
     }
 
 
-def apply(d, snaps, delta):
+def apply(d, snaps, delta, fund=None):
     if d["companies"] and "annual" in d["companies"][0]:
         raise SystemExit("data.json no formato antigo (tudo em um arquivo): migre para data.json + fundamentals.json")
     m, comps = d["meta"], d["companies"]
@@ -127,11 +130,13 @@ def apply(d, snaps, delta):
     if trade > today:
         raise SystemExit("tradeDate no futuro")
 
-    # market cap = preço × ações implícitas (razão cap/preço do estado atual); peso = cap ÷ total
+    # market cap = preço × ações reportadas (milhões ÷ 1000 = bilhões); peso = cap ÷ total.
+    # Alphabet e Meta: todas as classes ao preço da ação cotada (a classe B não tem cotação própria).
+    shares = C.shares_reported(fund if fund is not None else C.load("fundamentals.json"))
     caps = {}
     for c in comps:
         t = c["ticker"]
-        caps[t] = round(c["marketCapB"] * px[t] / c["price"])
+        caps[t] = round(px[t] * shares[t]["total"] / 1000)
     total = sum(caps.values())
     for c in comps:
         t = c["ticker"]
@@ -175,7 +180,7 @@ def apply(d, snaps, delta):
     note = m["priceNote"]
     note = re.sub(r"fechamento de \d{2}/\d{2}/\d{4}", f"fechamento de {br(trade)}", note, count=1)
     note = re.sub(r"cap total do grupo US\$ [\d.,]+ tri", "cap total do grupo US$ " + f"{total/1000:.2f}".replace(".", ",") + " tri", note, count=1)
-    note = re.sub(r"preço de \d{2}/\d{2} ×", f"preço de {br(trade)[:5]} ×", note, count=1)
+    note = re.sub(r"Market cap = [^;]*; peso = market cap ÷ total\.( Difere até ~[\d,]+% dos market caps arredondados das fontes \(ex\.: Nvidia\)\.)?", MCAP_NOTE.format(day=br(trade)[:5]), note, count=1)
     if delta.get("priceSourceShort"):
         note = re.sub(r"\(fontes: [^)]*\)", f"(fontes: {delta['priceSourceShort']})", note, count=1)
     m["priceNote"] = note
@@ -185,7 +190,7 @@ def apply(d, snaps, delta):
     else:
         ps["label"] = re.sub(r"Preços de \d{2}/\d{2}/\d{4}", f"Preços de {br(trade)}", ps["label"], count=1)
 
-    m["provenance"] = build_provenance(d, delta, m.get("provenance"))
+    m["provenance"] = build_provenance(d, delta, m.get("provenance"), shares)
 
     for k in ("dailyBrief", "audit", "catalysts"):
         if k in delta:
