@@ -7,7 +7,8 @@ Regras de envio (nesta ordem):
   3. Trava diária: se history/email_log.json registra envio na data de hoje
      (fuso America/Sao_Paulo) -> NÃO envia. O arquivo é gravado pela rotina diária
      (commit [skip-email]) logo APÓS o commit final de data.json, pois a Action
-     não tem permissão de escrita no repositório.
+     não tem permissão de escrita no repositório. Com o workflow de docs/proposed/fase4/
+     (contents: write + MAG7_WRITE_LOG=1) é a própria Action que grava e commita o arquivo.
 
 Conteúdo: alerta de CDS (>100 bps), briefing do dia, o que mudou desde o snapshot
 anterior (preço e CDS), tabela de indicadores-chave recalculados, CDS com data da
@@ -55,6 +56,14 @@ def commit_message():
         except Exception:
             return ""
     return ""
+
+
+def write_log(note="Gravado pela Action de envio logo após o e-mail (MAG7_WRITE_LOG=1)."):
+    """Trava de 1 e-mail/dia gravada pelo próprio envio (E1/E2). Só roda com MAG7_WRITE_LOG=1 (o workflow proposto em
+    docs/proposed/fase4/ liga e faz o commit [skip-email]); sem a variável, nada muda e a rotina diária segue gravando o arquivo."""
+    with open(LOG, "w", encoding="utf-8") as f:
+        json.dump({"lastSent": today_br().isoformat(), "note": note}, f, ensure_ascii=False)
+        f.write("\n")
 
 
 def already_sent_today():
@@ -278,6 +287,9 @@ def main():
         s.login(user, pwd)
         s.sendmail(user, dest + bcc, msg.as_string())
     print(f"E-mail enviado para {dest} | alerta: {alerted}")
+    if os.environ.get("MAG7_WRITE_LOG") == "1":
+        write_log()
+        print(f"{LOG} atualizado (lastSent = {today_br().isoformat()}).")
 
 
 if __name__ == "__main__":
