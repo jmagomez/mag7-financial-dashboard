@@ -70,3 +70,16 @@ def test_oneoffttm_v2_mesmos_numeros_e_proveniencia_completa():
     for v in raw.values():
         assert v["tier"] == "derived"
         assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
+
+
+EBITDA_IMPL_ANTES = {"AAPL": 157.4, "MSFT": 241.5, "NVDA": 183.3, "GOOGL": 161.9, "AMZN": 161.9, "META": 98.6, "TSLA": 9.3}
+
+
+def test_ebitdaimplb_v2_mesmos_numeros_e_proveniencia_completa():
+    """ebitdaImplB no formato v2 não muda nenhum número; tier 'derived' (reescalado do múltiplo)."""
+    raw = common.load("fundamentals.json")["derived"]["ebitdaImplB"]
+    assert {t: value_of(v) for t, v in raw.items()} == EBITDA_IMPL_ANTES
+    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["ebitdaImplB"] == EBITDA_IMPL_ANTES
+    for v in raw.values():
+        assert v["tier"] == "derived"
+        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
