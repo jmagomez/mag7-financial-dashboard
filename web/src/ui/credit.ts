@@ -8,6 +8,7 @@ import { h, type VNode } from "../lib/vdom.ts";
 import type { LineSpec } from "./line-frame.ts";
 import type { ViewModel } from "./model.ts";
 import { glossaryBlock } from "./glossary.ts";
+import { sharesBlock } from "./acoes.ts";
 import { provenanceBlock } from "./provenance.ts";
 import { auditBlock, integrityBlock } from "./signals.ts";
 import { TREND_NOTE, type Note } from "./notes.ts";
@@ -134,6 +135,7 @@ export function footerBlock(m: ViewModel): VNode {
       : null,
     glossaryBlock(m),
     provenanceBlock(m),
+    sharesBlock(m),
     integrityBlock(m),
     auditBlock(m),
     h("p", {}, "Informativo, sem recomendação de investimento. Dados de fontes públicas; veja as datas em cada indicador."),
