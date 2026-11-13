@@ -78,3 +78,6 @@ jobs:
       - name: Testes e2e (6 rotas × 2 temas no axe, teclado, ordenação, CSV, sem hosts externos)
         working-directory: web/e2e
         run: npm test
+      - name: Lighthouse (desempenho e acessibilidade >= 95; celular e desktop em 3 rotas)
+        working-directory: web/e2e
+        run: npm run lighthouse
