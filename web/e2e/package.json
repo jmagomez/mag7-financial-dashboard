@@ -6,7 +6,8 @@
   "description": "Testes de ponta a ponta do web/ (Playwright + axe-core). Projeto separado: o `npm ci` de web/ não baixa nada daqui.",
   "engines": { "node": ">=22.18" },
   "scripts": {
-    "test": "node --test --test-concurrency=1 \"tests/**/*.test.mjs\""
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.mjs\"",
+    "lighthouse": "node lighthouse-check.mjs"
   },
   "devDependencies": {
     "axe-core": "4.10.2",
