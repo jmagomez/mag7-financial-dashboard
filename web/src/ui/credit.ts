@@ -10,6 +10,7 @@ import type { ViewModel } from "./model.ts";
 import { glossaryBlock } from "./glossary.ts";
 import { sharesBlock } from "./acoes.ts";
 import { waccBlock } from "./wacc.ts";
+import { sensitivityBlock } from "./sensibilidade.ts";
 import { provenanceBlock } from "./provenance.ts";
 import { qualityBlock } from "./qualidade.ts";
 import { auditBlock, integrityBlock } from "./signals.ts";
@@ -140,6 +141,7 @@ export function footerBlock(m: ViewModel): VNode {
     qualityBlock(m),
     sharesBlock(m),
     waccBlock(m),
+    sensitivityBlock(m),
     integrityBlock(m),
     auditBlock(m),
     h("p", {}, "Informativo, sem recomendação de investimento. Dados de fontes públicas; veja as datas em cada indicador."),

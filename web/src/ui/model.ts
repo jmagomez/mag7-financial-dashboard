@@ -6,6 +6,7 @@ import { type AuditInput, type Finding } from "../lib/signals.ts";
 import { parseGlossary, type Glossary } from "../lib/glossary.ts";
 import { parseProvenance, type Provenance } from "../lib/provenance.ts";
 import { parseSharesOut, type SharesOut } from "../lib/shares.ts";
+import { sensitivityRows, type SensRow } from "../lib/sensibilidade.ts";
 import { parseWaccInputs, type WaccInputs, type WaccRow } from "../lib/wacc.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
@@ -45,6 +46,8 @@ export interface ViewModel {
   waccInputs: WaccInputs | null;
   /** WACC por empresa (vazio sem `waccInputs`). */
   wacc: WaccRow[];
+  /** Crescimento implícito do DCF reverso com o WACC deslocado (±1 e ±2 p.p.); só empresas com balanço. */
+  sensitivity: SensRow[];
   capexLabels: string[];
   /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
   capexIntensity: Record<string, number | null>;
@@ -138,6 +141,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     derived,
     waccInputs,
     wacc,
+    sensitivity: sensitivityRows(companies, fd),
     cds,
     periods,
     fcfPeriods,
