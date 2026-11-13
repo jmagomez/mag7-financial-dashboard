@@ -1,11 +1,12 @@
 /** Modelo de visão: junta os dois JSON, calcula os derivados (núcleo da Fase 1) e resolve nomes e datas. */
-import { deriveAll } from "../lib/finance.ts";
+import { deriveAll, waccOf } from "../lib/finance.ts";
 import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts";
 import { type IndRow } from "../lib/indicators.ts";
 import { type AuditInput, type Finding } from "../lib/signals.ts";
 import { parseGlossary, type Glossary } from "../lib/glossary.ts";
 import { parseProvenance, type Provenance } from "../lib/provenance.ts";
 import { parseSharesOut, type SharesOut } from "../lib/shares.ts";
+import { parseWaccInputs, type WaccInputs, type WaccRow } from "../lib/wacc.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
 
@@ -40,6 +41,10 @@ export interface ViewModel {
   provenance: Provenance | null;
   /** null = fundamentals.json sem `derived.sharesOut` (ou malformado): a seção do rodapé some. */
   sharesOut: SharesOut | null;
+  /** null = fundamentals.json sem `derived.waccInputs` (ou malformado): o DCF reverso usa o WACC único e a seção do rodapé some. */
+  waccInputs: WaccInputs | null;
+  /** WACC por empresa (vazio sem `waccInputs`). */
+  wacc: WaccRow[];
   capexLabels: string[];
   /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
   capexIntensity: Record<string, number | null>;
@@ -91,7 +96,10 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
       if (len !== want) throw new Error(`${c.ticker}: ${what} tem ${len} pontos, os rótulos têm ${want}`);
     }
   }
-  const derived = deriveAll(companies, fund.derived);
+  const waccInputs = parseWaccInputs((fund.derived as { waccInputs?: unknown }).waccInputs);
+  const fd = { ...fund.derived, waccInputs: waccInputs ?? undefined };
+  const derived = deriveAll(companies, fd);
+  const wacc = companies.map((c) => waccOf(c, fd)).filter((w): w is WaccRow => w !== null);
   const dailyByTicker = new Map(daily.companies.map((c) => [c.ticker, c]));
   const snaps = snapshotsRaw === undefined || snapshotsRaw === null ? null : parseSnapshots(snapshotsRaw);
   const audit: AuditInput = {
@@ -128,6 +136,8 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     names,
     companies,
     derived,
+    waccInputs,
+    wacc,
     cds,
     periods,
     fcfPeriods,

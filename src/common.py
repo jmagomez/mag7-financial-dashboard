@@ -22,6 +22,8 @@ CDS_LOG_KEEP = 6     # entradas de meta.cdsLog mantidas em data.json (as antigas
 # Proveniência (meta.provenance): primary = emissor/bolsa/SEC; secondary = agregador ou imprensa; derived = calculado de outros valores.
 TIERS = ("primary", "secondary", "derived")
 SHARES_ANCHOR_MAX_DAYS = 90   # market cap diário = preço × ações da capa do 10-Q/10-K; se a mais antiga passar disso, avisa para atualizar derived.sharesOut
+WACC_INPUTS_MAX_DAYS = 45      # juro livre e prêmio de risco de derived.waccInputs: acima disso, aviso (atualizar na tarefa mensal)
+WACC_BETA_MAX_DAYS = 120      # betas de derived.waccInputs: acima disso, aviso
 SHARES_DIVERGENCE_WARN = 2    # % entre as ações usadas no market cap (market cap ÷ preço) e as reportadas; acima disso, aviso (ação desatualizada ou desdobramento)
 
 

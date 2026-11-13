@@ -12,7 +12,8 @@ import re
 import sys
 from datetime import date, datetime, timedelta
 
-from common import CDS_LOG_KEEP, NAMES, SHARES_ANCHOR_MAX_DAYS, SHARES_DIVERGENCE_WARN, TICKERS, TIERS, glossary, load, merge
+from common import (CDS_LOG_KEEP, NAMES, SHARES_ANCHOR_MAX_DAYS, SHARES_DIVERGENCE_WARN, TICKERS, TIERS, WACC_BETA_MAX_DAYS,
+                    WACC_INPUTS_MAX_DAYS, glossary, load, merge)
 from common import path as C_path
 
 errors, warnings = [], []
@@ -90,6 +91,51 @@ def check_shares(comps, der):
         diff = (implied / e["total"] - 1) * 100
         if abs(diff) > SHARES_DIVERGENCE_WARN:
             warn(f"{c['ticker']}: ações no market cap ({implied:,.0f} mi) diferem {diff:+.1f}% das reportadas ({e['total']:,.0f} mi, capa de {e.get('asOf')}): desdobramento ou ações desatualizadas?")
+
+
+def check_wacc(der, today):
+    """derived.waccInputs (opcional: ausente = DCF reverso com o WACC único). Presente e malformado é erro; entradas velhas, aviso."""
+    wi = der.get("waccInputs")
+    if wi is None:
+        return
+
+    def rng(k, lo, hi):
+        if not (isnum(wi.get(k)) and lo <= wi[k] <= hi):
+            err(f"derived.waccInputs.{k} fora de [{lo}, {hi}]: {wi.get(k)!r}")
+
+    def https(where, s):
+        if not (isinstance(s, dict) and s.get("label") and str(s.get("url", "")).startswith("https://")):
+            err(f"derived.waccInputs.{where}: fonte precisa de label e url https")
+
+    if not isinstance(wi, dict):
+        err("derived.waccInputs deve ser um objeto")
+        return
+    rng("rfPct", 0, 20)
+    rng("erpPct", 0, 15)
+    rng("taxPct", 0, 50)
+    for k in ("rfSource", "erpSource", "spreadsSource"):
+        https(k, wi.get(k))
+    for k, label in (("asOf", "rfPct"), ("erpAsOf", "erpPct")):
+        d_ = pdate(wi.get(k) or "", f"derived.waccInputs.{k}")
+        if d_ and d_ > today:
+            err(f"derived.waccInputs.{k} {wi[k]} está no futuro")
+        elif d_ and (today - d_).days > WACC_INPUTS_MAX_DAYS:
+            warn(f"derived.waccInputs.{k}: {label} de {wi[k]} ({(today-d_).days} dias): atualizar na tarefa mensal")
+    sp = wi.get("ratingSpreadsPct")
+    if not (isinstance(sp, dict) and sp and all(isnum(v) and 0 <= v <= 30 for v in sp.values())):
+        err("derived.waccInputs.ratingSpreadsPct inválido")
+    betas = wi.get("betas") or {}
+    for t in TICKERS:
+        b = betas.get(t)
+        if not (isinstance(b, dict) and isnum(b.get("beta")) and 0 < b["beta"] <= 5):
+            err(f"derived.waccInputs.betas.{t} ausente ou fora de (0, 5]")
+            continue
+        https(f"betas.{t}.source", b.get("source"))
+        bd = pdate(b.get("asOf") or "", f"derived.waccInputs.betas.{t}.asOf")
+        if bd and bd > today:
+            err(f"derived.waccInputs.betas.{t}.asOf {b['asOf']} está no futuro")
+        elif bd and (today - bd).days > WACC_BETA_MAX_DAYS:
+            warn(f"derived.waccInputs.betas.{t}: beta de {b['asOf']} ({(today-bd).days} dias): atualizar")
 
 
 def main():
@@ -226,6 +272,7 @@ def main():
 
     check_provenance(m, today)
     check_shares(comps, der)
+    check_wacc(der, today)
 
     # --- frescor
     if snap and (today - snap).days > 3:

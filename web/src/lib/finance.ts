@@ -7,6 +7,7 @@
  *  - arredondamento "meio para cima" a 1 casa (Math.round(x*10)/10), como o front em produção;
  *  - `null` = não calculável (dado ausente ou sem significado), nunca zero nem NaN.
  */
+import { computeWacc, type WaccRow } from "./wacc.ts";
 import type { CompanyInput, DcfAssumptions, Derived, DerivedResult, Ticker } from "../types.ts";
 
 /** Recuperação assumida na PD implícita do CDS (mesma constante de src/common.py: CDS_R). */
@@ -61,6 +62,12 @@ export function impliedGrowth(ev: number, fcf: number | undefined, a: DcfAssumpt
   return Math.round(((lo + hi) / 2) * 1000) / 10;
 }
 
+/** WACC da empresa (CAPM, `derived.waccInputs`); null sem entradas válidas → vale o WACC único de `dcfAssumptions`. */
+export function waccOf(c: CompanyInput, d: Derived): WaccRow | null {
+  const bal = d.balanceQ2_2026[c.ticker];
+  return d.waccInputs && bal ? computeWacc(c.ticker, c.marketCapB, bal.debt, c.rating?.sp, d.waccInputs) : null;
+}
+
 /** Deriva os indicadores de UMA empresa a partir das entradas auditáveis (`derived`). */
 export function deriveCompany(c: CompanyInput, d: Derived): DerivedResult {
   const ttmNi = trailing(c.niHistory);
@@ -81,7 +88,8 @@ export function deriveCompany(c: CompanyInput, d: Derived): DerivedResult {
     const evExact = c.marketCapB - net;
     ev = Math.round(evExact);
     evSales = ttmRev !== null ? round1(evExact / ttmRev) : null;
-    impliedG = impliedGrowth(evExact, fcf, d.dcfAssumptions);
+    const w = waccOf(c, d);
+    impliedG = impliedGrowth(evExact, fcf, w ? { ...d.dcfAssumptions, waccPct: w.waccPct } : d.dcfAssumptions);
   }
 
   const ebitda = d.ebitdaImplB[c.ticker];
