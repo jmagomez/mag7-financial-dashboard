@@ -12,7 +12,7 @@ Público: analistas CFA / setor de tecnologia. Postura: especialista em finança
 |---|---|
 | `data.json` | Dados **diários** (~16 KB): por empresa só `price`, `weight`, `marketCapB`, `cds`; em `meta`: `generated`, `marketSnapshot`, `totalMarketCapT`, `cdsRef`, `cdsAsOf`, `cdsLog` (últimos 6), `cdsNote`, `priceNote`, `dailyBrief`, `audit`, `catalysts`; mais `priceSource`. JSON compacto + `\n`. Escrito por `src/daily.py`. É o arquivo que dispara a Action de e-mail. |
 | `fundamentals.json` | Dados **trimestrais/estáticos** (~20 KB): resultados, históricos, ratings, `derived`, notas metodológicas e fontes. Só muda na incorporação de um trimestre (ou revisão de consenso). Nunca é tocado pela rotina diária. |
-| `history/snapshots.json` | Um snapshot por pregão (preços, marketCapB, CDS, nota). |
+| `history/snapshots.json` | Um snapshot por pregão (preços, marketCapB, CDS, `quality`, nota). `quality` = nível dos preços e idade dos CDS das Mag 7, gravado por `daily.py` desde o PR #33 (snapshots antigos não têm). |
 | `history/email_log.json` | Trava de 1 e-mail/dia: `{"lastSent":"AAAA-MM-DD","note":"..."}`. **Gravado pela própria Action de envio** (commit `chore: trava de e-mail do dia [skip-email]`, por `github-actions[bot]`); a rotina diária só lê. |
 | `glossary.json` | **Glossário único de siglas**: lido pelo dashboard (dicas + seção), pelo e-mail (rodapé) e por `validate.py`. |
 | `src/common.py` | Constantes compartilhadas (TICKERS, NAMES, CDS_ALERT=100, R=0.40, CDS_LOG_KEEP=6), `pd5`, `glossary()` e `load_data()`/`merge()`, que juntam `data.json` + `fundamentals.json` no formato único usado por validador, e-mail e dashboard. |
