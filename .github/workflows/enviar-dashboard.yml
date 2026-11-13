@@ -8,22 +8,48 @@ on:
       - "data.json"
   workflow_dispatch:
 
+# contents: write só para a Action gravar a trava do dia (history/email_log.json) depois do envio.
+permissions:
+  contents: write
+
+# Fila única: dois pushes seguidos em data.json não enviam em paralelo (a trava do dia é lida do arquivo).
+concurrency:
+  group: enviar-dashboard
+  cancel-in-progress: false
+
 jobs:
   enviar:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
 
-      - name: Enviar e-mail (SMTP)
+      - name: Enviar e-mail (SMTP) e gravar a trava do dia
         env:
           MAG7_SMTP_USER:         ${{ secrets.MAG7_SMTP_USER }}
           MAG7_SMTP_APP_PASSWORD: ${{ secrets.MAG7_SMTP_APP_PASSWORD }}
           MAG7_EMAIL_DEST:        ${{ secrets.MAG7_EMAIL_DEST }}
           MAG7_EMAIL_BCC:         ${{ secrets.MAG7_EMAIL_BCC }}
+          MAG7_WRITE_LOG:         "1"
         run: python src/send_email.py
+
+      - name: Commitar a trava (history/email_log.json, [skip-email])
+        run: |
+          if git diff --quiet -- history/email_log.json; then
+            echo "Trava sem mudança (e-mail não enviado ou já gravada)."; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history/email_log.json
+          git commit -m "chore: trava de e-mail do dia [skip-email]"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 5
+          done
+          echo "::warning::não consegui gravar a trava; grave history/email_log.json à mão ([skip-email])"
