@@ -57,3 +57,16 @@ def test_fcfttm_v2_mesmos_numeros_e_proveniencia_completa():
     for v in raw.values():
         assert v["tier"] in common.TIERS
         assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
+
+
+ONE_OFF_TTM_ANTES = {"MSFT": 3.2, "GOOGL": 77.1, "AMZN": 60, "META": -15.9}
+
+
+def test_oneoffttm_v2_mesmos_numeros_e_proveniencia_completa():
+    """Passo 3: oneOffTTM no formato v2 não muda nenhum número; tier 'derived' (ajuste estimado)."""
+    raw = common.load("fundamentals.json")["derived"]["oneOffTTM"]
+    assert {t: value_of(v) for t, v in raw.items()} == ONE_OFF_TTM_ANTES
+    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["oneOffTTM"] == ONE_OFF_TTM_ANTES
+    for v in raw.values():
+        assert v["tier"] == "derived"
+        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]

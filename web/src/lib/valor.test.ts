@@ -61,3 +61,17 @@ describe("fcfTTM no formato v2 (passo 2)", () => {
     }
   });
 });
+
+describe("oneOffTTM no formato v2 (passo 3)", () => {
+  const fund = readJson<FundamentalsFile>("fundamentals.json");
+  it("mesmos números de antes da conversão", () => {
+    assert.deepEqual(unwrapDerived(fund.derived).oneOffTTM, { MSFT: 3.2, GOOGL: 77.1, AMZN: 60, META: -15.9 });
+  });
+  it("cada empresa traz data, nível 'derived' e fonte https", () => {
+    for (const v of Object.values(fund.derived.oneOffTTM as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
+      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
+      assert.equal(v.tier, "derived");
+      assert.ok(v.source.url.startsWith("https://"));
+    }
+  });
+});
