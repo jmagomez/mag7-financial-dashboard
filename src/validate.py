@@ -12,8 +12,20 @@ import re
 import sys
 from datetime import date, datetime, timedelta
 
-from common import (CDS_LOG_KEEP, NAMES, SBC_MAX_DAYS, SHARES_ANCHOR_MAX_DAYS, SHARES_DIVERGENCE_WARN, TICKERS, TIERS, WACC_BETA_MAX_DAYS,
-                    WACC_INPUTS_MAX_DAYS, glossary, load, merge)
+from common import (
+    CDS_LOG_KEEP,
+    NAMES,
+    SBC_MAX_DAYS,
+    SHARES_ANCHOR_MAX_DAYS,
+    SHARES_DIVERGENCE_WARN,
+    TICKERS,
+    TIERS,
+    WACC_BETA_MAX_DAYS,
+    WACC_INPUTS_MAX_DAYS,
+    glossary,
+    load,
+    merge,
+)
 from common import path as C_path
 
 errors, warnings = [], []
