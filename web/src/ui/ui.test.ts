@@ -73,9 +73,9 @@ test("fmtNum em pt-BR e n/d", () => {
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const tokens = (block: string): Record<string, string> =>
   Object.fromEntries([...block.matchAll(/--([\w-]+):\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1] as string, (m[2] as string).toLowerCase()]));
-const lightBlock = /:root \{([^}]*)\}/.exec(css)?.[1] ?? "";
-const mediaBlock = /prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme="light"\]\) \{([^}]*)\}/.exec(css)?.[1] ?? "";
-const darkBlock = /:root\[data-theme="dark"\] \{([^}]*)\}/.exec(css)?.[1] ?? "";
+const darkBlock = /:root \{([^}]*)\}/.exec(css)?.[1] ?? "";
+const mediaBlock = /prefers-color-scheme: light\) \{\s*:root:not\(\[data-theme="dark"\]\) \{([^}]*)\}/.exec(css)?.[1] ?? "";
+const lightBlock = /:root\[data-theme="light"\] \{([^}]*)\}/.exec(css)?.[1] ?? "";
 
 function lum(hex: string): number {
   const c = [1, 3, 5].map((i) => {
@@ -89,9 +89,9 @@ const ratio = (a: string, b: string): number => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-test("tema escuro por mídia e por atributo têm os mesmos tokens", () => {
-  assert.deepEqual(tokens(mediaBlock), tokens(darkBlock));
-  assert.ok(Object.keys(tokens(lightBlock)).length >= 20);
+test("tema claro por mídia e por atributo têm os mesmos tokens", () => {
+  assert.deepEqual(tokens(mediaBlock), tokens(lightBlock));
+  assert.ok(Object.keys(tokens(lightBlock)).length >= 20 && Object.keys(tokens(darkBlock)).length >= 20);
 });
 
 for (const [name, block] of [["claro", lightBlock], ["escuro", darkBlock]] as const) {
