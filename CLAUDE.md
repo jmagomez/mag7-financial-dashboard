@@ -16,7 +16,7 @@ Público: analistas CFA / setor de tecnologia. Postura: especialista em finança
 | `history/email_log.json` | Trava de 1 e-mail/dia: `{"lastSent":"AAAA-MM-DD","note":"..."}`. |
 | `glossary.json` | **Glossário único de siglas**: lido pelo dashboard (dicas + seção), pelo e-mail (rodapé) e por `validate.py`. |
 | `src/common.py` | Constantes compartilhadas (TICKERS, NAMES, CDS_ALERT=100, R=0.40, CDS_LOG_KEEP=6), `pd5`, `glossary()` e `load_data()`/`merge()`, que juntam `data.json` + `fundamentals.json` no formato único usado por validador, e-mail e dashboard. |
-| `src/daily.py` | Aplica o *delta* do dia a `data.json` + snapshot de forma determinística e roda `validate.py`. Só escreve `data.json` e `history/snapshots.json`. |
+| `src/daily.py` | Aplica o *delta* do dia a `data.json` + snapshot de forma determinística e roda `validate.py`. Grava também `meta.provenance` (preços, market cap e peso `derived`, CDS por empresa; aditivo, nenhum campo existente muda). O validador avisa se a âncora tiver mais de 90 dias ou faltar, e bloqueia tier inválido ou `asOf` incoerente com `marketSnapshot`/`cdsAsOf`. Só escreve `data.json` e `history/snapshots.json`. |
 | `src/validate.py` | Bloqueia o envio em erro; avisa em dado velho. Mesmas regras no CI. |
 | `src/send_email.py` | E-mail executivo (Action `enviar-dashboard.yml`, disparada por push em `data.json`). |
 | `index.html` | Apresentação + cálculos derivados; lê `data.json`, `fundamentals.json`, `history/snapshots.json`, `glossary.json`. |
@@ -26,7 +26,7 @@ Público: analistas CFA / setor de tecnologia. Postura: especialista em finança
 1. **Ler estado**: `CLAUDE.md` (este arquivo), `data.json`, últimas entradas de `history/snapshots.json`, `history/email_log.json`. Data de hoje no fuso America/Sao_Paulo.
 2. **Pesquisar** (cada número com fonte e data): fechamento do último pregão das 7 ações; CDS 5a (só cotações novas e confiáveis, com a data da cotação); consenso/EBITDA, ratings, emissões de dívida; calendário de resultados (`meta.catalysts`); notícias relevantes ao crédito/IA.
 3. **Montar `delta.json`** e rodar `python3 src/daily.py delta.json` (**sem `-I`**, senão o import de `common` falha). Chaves do delta:
-   `tradeDate`, `today`, `prices` (7 tickers), `cds` `{ticker:{bps,asOf}}` (apenas novas), `snapshotNote`, `cdsLog` (numeração "Nª checagem" automática; substitui entrada do mesmo dia), `dailyBrief`, `audit`, `catalysts`, `cdsNote` (texto completo, opcional), `priceSource {label,url}`, `priceSourceShort`.
+   `tradeDate`, `today`, `prices` (7 tickers), `cds` `{ticker:{bps,asOf}}` (apenas novas), `snapshotNote`, `cdsLog` (numeração "Nª checagem" automática; substitui entrada do mesmo dia), `dailyBrief`, `audit`, `catalysts`, `cdsNote` (texto completo, opcional), `priceSource {label,url}`, `priceSourceShort`. Opcionais de proveniência: `priceTier` (`primary|secondary|derived`; padrão: o anterior, senão `secondary`), `sharesAnchor {date,source}` (âncora das ações implícitas; padrão: a anterior, senão lida de `priceNote`) e `cds.<T>.tier` (vale só enquanto a cotação não muda).
    O script recalcula: preço, `marketCapB = round(cap_ant × preço_novo / preço_ant)` (ações implícitas), pesos (2 casas), `totalMarketCapT`, `marketSnapshot`, `generated`, `cdsRef/cdsAsOf`, o snapshot do dia, os "~N" de `cdsNote`, datas/total em `priceNote` e `priceSource` — mantém só os 6 últimos itens do `cdsLog` — e roda `validate.py`.
 4. **Briefing** (`dailyBrief`): sempre nomear a empresa que passou de 100 bps de CDS; **escrever siglas por extenso na primeira menção** (o e-mail não tem as dicas do painel; siglas fora de `glossary.json` geram aviso — acrescente-as ao glossário).
    **Textos curtos**: `cdsNote` ≤ ~1.200 caracteres (níveis, datas, fontes principais; o histórico fica no `cdsLog` e nos snapshots), itens de `audit` ≤ ~400 caracteres, `cdsLog` uma linha de 1–3 frases por dia. Reescreva `cdsNote` quando mudarem datas/fontes (o script só sincroniza os níveis e a data "verificado em").
@@ -68,7 +68,7 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 
 ## Armadilhas conhecidas
 - MCP escreve arquivo inteiro: nunca retipar conteúdo de saída truncada; use `daily.py` e copie o arquivo gerado.
-- O conteúdo enviado pelo MCP interpreta `\uXXXX` como o caractere: para gravar o texto literal `﻿` num arquivo, escreva `\uFEFF`.
+- O conteúdo enviado pelo MCP interpreta a sequência barra invertida + `u` + 4 dígitos hexadecimais como o caractere correspondente: para gravar o texto literal do escape do BOM (barra invertida, `uFEFF`) num arquivo, o envio direto não serve; use um clone local e confira com `cmp` depois.
 - `merge()` aceita também o formato antigo (tudo em `data.json`), mas `daily.py` recusa esse formato.
 - O CI `validate.yml` roda em **todo** push/PR (sem filtro de caminho): `validate.py` + dry-run do e-mail. Só a Action de e-mail tem filtro (`data.json`).
 - `get_file_contents` de arquivos grandes salva em disco como JSON `[{type,text}]`.

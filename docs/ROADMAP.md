@@ -34,6 +34,7 @@ Lighthouse ≥ 95 (desempenho e acessibilidade; ok na 2o); bundle < 250 KB gz (~
 **Falta para a paridade:** só ativar o CI com os jobs `e2e` e Lighthouse (ação do dono: copiar `docs/proposed/workflows/ci.yml`).
 
 ## Fase 3 — Modelo de dados com proveniência
+**Progresso (3a):** `meta.provenance` aditiva gravada por `daily.py` (tier e `asOf` de preços, market cap, peso e CDS; âncora das ações implícitas), validada por `validate.py` (erro: tier inválido ou `asOf` incoerente; aviso: âncora ausente ou com mais de 90 dias) e descrita em `schemas/data.schema.json`. Nenhum campo existente mudou; rotina e e-mail iguais. Ainda não exibida no painel. Os itens abaixo seguem pendentes.
 1. `schemas/` v2: cada valor externo como `{value, asOf, source, tier}` (`primary|secondary|derived`).
 2. `daily.py` valida `tier` (bloqueia `derived` por mais de 1 dia), grava `provenance` e preenche lacunas de snapshots.
 3. Mover dados para `data/` e particionar `history/snapshots/AAAA-MM.json` (exige editar o gatilho do workflow de e-mail — ação do dono).
