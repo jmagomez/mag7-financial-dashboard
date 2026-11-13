@@ -38,7 +38,7 @@ Lighthouse ≥ 95 (desempenho e acessibilidade; ok na 2o); bundle < 250 KB gz (~
 1. `schemas/` v2: cada valor externo como `{value, asOf, source, tier}` (`primary|secondary|derived`).
 2. `daily.py` valida `tier` (bloqueia `derived` por mais de 1 dia), grava `provenance` e preenche lacunas de snapshots.
 3. Mover dados para `data/` e particionar `history/snapshots/AAAA-MM.json` (exige editar o gatilho do workflow de e-mail — ação do dono).
-4. `sharesOutB` por classe (10-Q) substituindo ações implícitas; `fcfAfterSbcTTM`; WACC por empresa; EV ajustado.
+4. **(3c feito)** `derived.sharesOut` (ações da capa do 10-Q/10-K por classe, com fonte e data) e tabela implícitas × reportadas no rodapé (aviso acima de 2%; diferenças atuais ≤ 0,5%). **Pendente (3d, exige acordo do dono):** trocar o market cap diário por preço × ações reportadas (muda os números exibidos em ≤ 0,5%); `sharesOutB` por classe substituindo ações implícitas; `fcfAfterSbcTTM`; WACC por empresa; EV ajustado.
 
 ## Fase 4 — Operação
 Trava de e-mail gravada pela própria Action (E1/E2); fixar ações por SHA; histórico de qualidade dos dados
