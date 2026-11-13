@@ -4,6 +4,7 @@ import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts"
 import { type IndRow } from "../lib/indicators.ts";
 import { type AuditInput, type Finding } from "../lib/signals.ts";
 import { parseGlossary, type Glossary } from "../lib/glossary.ts";
+import { parseProvenance, type Provenance } from "../lib/provenance.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
 
@@ -34,6 +35,8 @@ export interface ViewModel {
   /** Siglas e definições (`glossary.json`); vazio se o arquivo falhar (o painel segue sem dicas). */
   glossary: Glossary;
   brief: Brief | null;
+  /** null = data.json sem `meta.provenance` (ou malformada): a seção do rodapé some. */
+  provenance: Provenance | null;
   capexLabels: string[];
   /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
   capexIntensity: Record<string, number | null>;
@@ -149,6 +152,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     annualLabel: fund.meta?.annualLabel ?? "ano fiscal",
     quarterLabel: fund.meta?.quarterLabel ?? "trimestre",
     glossary: parseGlossary(glossaryRaw),
+    provenance: parseProvenance(daily.meta.provenance),
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
   };
 }

@@ -138,6 +138,36 @@ describe("interação", () => {
     await context.close();
   });
 
+  test("proveniência: com meta.provenance no data.json a seção aparece no rodapé, completa e sem violações de acessibilidade", async () => {
+    for (const scheme of ["light", "dark"]) {
+      const context = await browser.newContext({ viewport: { width: 1000, height: 900 }, colorScheme: scheme });
+      const page = await context.newPage();
+      await page.route("**/data.json*", async (route) => {
+        const d = await (await route.fetch()).json();
+        const t = d.meta.marketSnapshot;
+        d.meta.provenance = {
+          prices: { tier: "secondary", asOf: t, source: d.priceSource.label },
+          marketCapB: { tier: "derived", asOf: t, method: "preço do dia × ações implícitas", anchor: { date: "2026-08-27", source: "Slickcharts" } },
+          weight: { tier: "derived", asOf: t, method: "market cap ÷ total do grupo" },
+          cds: Object.fromEntries(Object.entries(d.meta.cdsAsOf).map(([k, v]) => [k, { tier: "secondary", asOf: v }])),
+        };
+        await route.fulfill({ json: d });
+      });
+      await page.goto(BASE + "#cred");
+      await page.waitForSelector("#csv-btn");
+      await page.evaluate(() => document.querySelectorAll("details").forEach((d) => (d.open = true)));
+      assert.equal((await page.locator("footer details:has(summary:text('Proveniência')) tbody tr").count()) >= 4, true);
+      assert.ok((await page.locator("footer").innerText()).includes("Slickcharts"));
+      await page.addScriptTag({ content: AXE_SOURCE });
+      const violations = await page.evaluate(async () => {
+        const r = await globalThis.axe.run(document, { runOnly: ["wcag2a", "wcag2aa", "wcag21aa", "best-practice"] });
+        return r.violations.map((v) => `${v.id} (${v.impact}) ×${v.nodes.length}: ${v.nodes[0]?.target.join(" ")}`);
+      });
+      await context.close();
+      assert.deepEqual(violations, [], `tema ${scheme}`);
+    }
+  });
+
   test("exportar CSV: baixa arquivo com BOM, cabeçalho e uma linha por empresa", async () => {
     const { context, page } = await open(browser, "#ind");
     const [download] = await Promise.all([page.waitForEvent("download"), page.click("#csv-btn")]);
