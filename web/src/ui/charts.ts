@@ -13,8 +13,14 @@ function leader(data: BarDatum[], unit: string, digits: number, what: string): s
   return top && top.value !== null ? `${what}: ${top.label}, ${fmtNum(top.value, digits)} ${unit}.` : "Sem dados válidos.";
 }
 
+/** Cor fixa por empresa: posição do ticker em `m.companies`. */
+export function slotOf(m: ViewModel, ticker: string): number | undefined {
+  const i = m.companies.findIndex((c) => c.ticker === ticker);
+  return i < 0 ? undefined : i % 7;
+}
+
 function byCompany(m: ViewModel, pick: (t: ViewModel["companies"][number]) => number | null): BarDatum[] {
-  return m.companies.map((c) => ({ label: m.names[c.ticker] ?? c.ticker, value: pick(c) }));
+  return m.companies.map((c, i) => ({ label: m.names[c.ticker] ?? c.ticker, value: pick(c), slot: i % 7 }));
 }
 
 export function marketCapChart(m: ViewModel): ChartSpec {
@@ -105,6 +111,7 @@ export function netCashChart(m: ViewModel): ChartSpec {
     return {
       label: m.names[c.ticker] ?? c.ticker,
       value: m.derived[c.ticker].valuation.net,
+      slot: slotOf(m, c.ticker),
       cells: b ? [fmtNum(b.cash, 0), fmtNum(b.debt, 0)] : ["n/d", "n/d"],
     };
   });
@@ -144,6 +151,7 @@ export function earningsQualityChart(m: ViewModel): ChartSpec {
     return {
       label: m.names[c.ticker] ?? c.ticker,
       value: netOverOperating(p?.operatingIncomeB, p?.netIncomeB),
+      slot: slotOf(m, c.ticker),
       cells: [p?.operatingIncomeB === undefined ? "n/d" : fmtNum(p.operatingIncomeB, 1), p?.netIncomeB === undefined ? "n/d" : fmtNum(p.netIncomeB, 1)],
     };
   });
