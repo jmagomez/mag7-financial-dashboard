@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Gera o "golden" dos indicadores derivados a partir do dashboard ATUAL (index.html é o oráculo).
+"""Gera o "golden" dos indicadores derivados a partir do dashboard ATUAL (o index.html aposentado é o oráculo).
 
-Abre o index.html num Chromium headless, serve data.json / fundamentals.json / history / glossary
+Lê o index.html aposentado do histórico do git (`git show 3acacf7:index.html`; o arquivo saiu da raiz) e o abre num Chromium headless, serve data.json / fundamentals.json / history / glossary
 do disco, substitui o Chart.js por um stub (não há rede) e lê os campos calculados no cliente
 (`valuation`, `capexOcf`, `pd5`). O resultado vai para tests/golden/derived_golden.json e é
 usado pelos testes do núcleo TypeScript (web/src/lib) para provar paridade numérica. O arquivo guarda
@@ -12,11 +12,13 @@ Requer: playwright (Python) com Chromium instalado.
 """
 import json
 import pathlib
+import subprocess
 import sys
 
 from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+LEGACY_REF = "3acacf7"  # último commit com o index.html na raiz
 STUB = """
 window.Chart = class { constructor(){ this.data={}; } destroy(){} update(){} };
 window.Chart.register = function(){}; window.Chart.defaults = {font:{}, plugins:{legend:{labels:{}}}};
@@ -34,7 +36,10 @@ def main():
             url = route.request.url
             rel = url.split("://", 1)[1].split("/", 1)[1].split("?")[0] or "index.html"
             f = ROOT / rel
-            if f.is_file():
+            if rel == "index.html":
+                body = subprocess.run(["git", "show", f"{LEGACY_REF}:index.html"], cwd=ROOT, check=True, capture_output=True).stdout
+                route.fulfill(body=body, content_type="text/html")
+            elif f.is_file():
                 ctype = "text/html" if rel.endswith(".html") else "application/json"
                 route.fulfill(body=f.read_bytes(), content_type=ctype)
             else:

@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Front-end (Vite + TypeScript) do dashboard Magnificent 7. Fase 1: núcleo financeiro tipado e testado; a UI ainda é o index.html da raiz.",
+  "description": "Front-end (Vite + TypeScript) do dashboard Magnificent 7. Núcleo financeiro tipado e testado, UI em SVG próprio e deploy no GitHub Pages.",
   "engines": { "node": ">=22.18" },
   "scripts": {
     "dev": "vite",
