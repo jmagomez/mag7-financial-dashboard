@@ -22,6 +22,7 @@ export const V2_BLOCKS: readonly (readonly [string, string])[] = [
   ["ebitdaImplB", "EBITDA implícito"],
   ["balanceQ2_2026", "Caixa e dívida financiada"],
   ["fwdPE", "P/E forward (consenso)"],
+  ["fwdEPS", "LPA forward implícito"],
 ];
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;

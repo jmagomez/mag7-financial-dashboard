@@ -111,3 +111,16 @@ def test_fwdpe_v2_mesmos_numeros_e_proveniencia_completa():
     for v in raw.values():
         assert v["tier"] == "secondary"
         assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
+
+
+FWD_EPS_ANTES = {"AAPL": 9.16, "MSFT": 24.97, "NVDA": 12.46, "GOOGL": 14.67, "AMZN": 8.31, "META": 41.62, "TSLA": 1.86}
+
+
+def test_fwdeps_v2_mesmos_numeros_e_proveniencia_completa():
+    """fwdEPS no formato v2 não muda nenhum número; tier 'derived' (preço ÷ P/E forward)."""
+    raw = common.load("fundamentals.json")["derived"]["fwdEPS"]
+    assert {t: value_of(v) for t, v in raw.items()} == FWD_EPS_ANTES
+    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["fwdEPS"] == FWD_EPS_ANTES
+    for v in raw.values():
+        assert v["tier"] == "derived"
+        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
