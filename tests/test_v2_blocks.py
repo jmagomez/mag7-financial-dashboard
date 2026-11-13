@@ -51,7 +51,8 @@ def test_data_no_futuro_e_erro_e_dado_velho_e_aviso():
     assert any("fcfTTM.AAPL" in w for w in warns)
 
 
-def test_blocos_nao_migrados_continuam_com_numero_solto():
+def test_todos_os_blocos_escalares_estao_em_v2():
     der = _real()
-    assert all(isinstance(v, (int, float)) for v in der["fwdEPS"].values())
+    assert all(isinstance(v, dict) for blk in C.SCALAR_DERIVED for v in der[blk].values())
+    assert set(C.SCALAR_DERIVED) <= set(validate.V2_BLOCKS)
     assert _check(der) == ([], [])
