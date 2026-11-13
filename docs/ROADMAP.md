@@ -16,10 +16,7 @@ Princípios: **(1)** nenhuma fase pode mudar um número exibido sem teste que ex
 **Ações do dono após o merge** (feitas): `package-lock.json` commitado, `ci.yml` ativado em `.github/workflows/` e licença MIT adicionada.
 `pages.yml` foi ativado na paridade da Fase 2; segue opcional o `enviar-dashboard.yml` endurecido.
 
-**Pendência conhecida (lint em `src/`)**: `ruff check src` acusa 3 itens antigos, que este PR não corrige para não tocar
-código de produção: `src/daily.py:71` (B023, falso positivo prático: a função é usada na hora dentro do loop) e a ordem dos
-imports em `src/send_email.py:21` e `src/validate.py:9` (corrigíveis com `ruff check --fix`). O CI proposto faz lint só de
-`tests` e `tools`; ao corrigir esses 3 pontos, estender para `src`.
+**Lint em `src/` (resolvido):** os 3 achados antigos do `ruff` (B023 em `daily.py`, ordem dos imports em `send_email.py` e `validate.py`) foram corrigidos sem mudar comportamento. Falta só o dono estender o passo de lint do `ci.yml` de `ruff check tests tools` para `ruff check src tests tools` (o token da rotina não edita `.github/workflows/`).
 
 ## Fase 2 — UI v2 em `web/` (paridade funcional)
 Critério de aceite: 4 abas com os mesmos números do golden; zero `innerHTML` com dado externo e só URLs `https:` em `href`; axe sem violações sérias;

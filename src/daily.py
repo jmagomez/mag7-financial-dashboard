@@ -77,7 +77,7 @@ def sync_credit_note(n, levels):
         return f"{v:,}".replace(",", ".")
     for t, v in levels.items():
         name = C.NAMES.get(t) or {"ORCL": "Oracle", "CRWV": "CoreWeave"}[t]
-        n = re.sub(rf"({name} \(?)~[\d.]+", lambda m: f"{m.group(1)}~{lvl(v)}", n)
+        n = re.sub(rf"({name} \(?)~[\d.]+", rf"\g<1>~{lvl(v)}", n)
     return n
 
 

@@ -24,7 +24,7 @@ import os
 import smtplib
 import ssl
 import sys
-from datetime import datetime, date
+from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from html import escape as esc
