@@ -13,7 +13,7 @@ Público: analistas CFA / setor de tecnologia. Postura: especialista em finança
 | `data.json` | Dados **diários** (~16 KB): por empresa só `price`, `weight`, `marketCapB`, `cds`; em `meta`: `generated`, `marketSnapshot`, `totalMarketCapT`, `cdsRef`, `cdsAsOf`, `cdsLog` (últimos 6), `cdsNote`, `priceNote`, `dailyBrief`, `audit`, `catalysts`; mais `priceSource`. JSON compacto + `\n`. Escrito por `src/daily.py`. É o arquivo que dispara a Action de e-mail. |
 | `fundamentals.json` | Dados **trimestrais/estáticos** (~20 KB): resultados, históricos, ratings, `derived`, notas metodológicas e fontes. Só muda na incorporação de um trimestre (ou revisão de consenso). Nunca é tocado pela rotina diária. |
 | `history/snapshots.json` | Um snapshot por pregão (preços, marketCapB, CDS, nota). |
-| `history/email_log.json` | Trava de 1 e-mail/dia: `{"lastSent":"AAAA-MM-DD","note":"..."}`. |
+| `history/email_log.json` | Trava de 1 e-mail/dia: `{"lastSent":"AAAA-MM-DD","note":"..."}`. **Gravado pela própria Action de envio** (commit `chore: trava de e-mail do dia [skip-email]`, por `github-actions[bot]`); a rotina diária só lê. |
 | `glossary.json` | **Glossário único de siglas**: lido pelo dashboard (dicas + seção), pelo e-mail (rodapé) e por `validate.py`. |
 | `src/common.py` | Constantes compartilhadas (TICKERS, NAMES, CDS_ALERT=100, R=0.40, CDS_LOG_KEEP=6), `pd5`, `glossary()` e `load_data()`/`merge()`, que juntam `data.json` + `fundamentals.json` no formato único usado por validador, e-mail e dashboard. |
 | `src/daily.py` | Aplica o *delta* do dia a `data.json` + snapshot de forma determinística e roda `validate.py`. O market cap é preço × `derived.sharesOut` de `fundamentals.json` (recusa se faltar ticker, total ou data). Grava também `meta.provenance` (preços, market cap e peso `derived`, CDS por empresa; a âncora é a capa mais antiga de `sharesOut`). O validador avisa se essa âncora tiver mais de 90 dias, se as ações recalculadas (market cap ÷ preço) divergirem mais de 2% das reportadas, e bloqueia tier inválido ou `asOf` incoerente com `marketSnapshot`/`cdsAsOf`. Só escreve `data.json` e `history/snapshots.json`. |
@@ -58,7 +58,7 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 ## E-mail: exatamente um por dia
 - Todo commit intermediário leva `[skip-email]` na mensagem. Só o **commit final de `data.json`** não leva a tag.
 - Se `email_log.lastSent` já é hoje (America/Sao_Paulo), **todos** os commits levam `[skip-email]`.
-- **Ordem obrigatória**: (1) snapshot, (2) demais arquivos, (3) `data.json` final (dispara a Action), (4) `email_log.json` com `lastSent` de hoje, com `[skip-email]`. `validate.py` dá **erro** se `data.json` avançar sem o snapshot correspondente, e se preços/market cap/CDS divergirem do snapshot do mesmo pregão.
+- **Ordem obrigatória**: (1) snapshot, (2) demais arquivos, (3) `data.json` final (dispara a Action, que envia o e-mail e **ela mesma** commita `history/email_log.json` com `lastSent` de hoje). A rotina **não grava mais** `email_log.json`; depois do commit final, confira em `history/email_log.json` (ou nos commits) se o bot gravou a trava, e avise na notificação se não gravou (grave à mão com `[skip-email]` só nesse caso). `validate.py` dá **erro** se `data.json` avançar sem o snapshot correspondente, e se preços/market cap/CDS divergirem do snapshot do mesmo pregão.
 - Rodapé de todo commit:
   `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>` e `Claude-Session: <url da sessão>`.
 
