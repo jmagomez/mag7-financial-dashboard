@@ -83,3 +83,18 @@ def test_ebitdaimplb_v2_mesmos_numeros_e_proveniencia_completa():
     for v in raw.values():
         assert v["tier"] == "derived"
         assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
+
+
+BALANCE_ANTES = {"AAPL": (146.5, 84.3), "MSFT": (76.8, 40.3), "NVDA": (56.6, 33.4), "GOOGL": (242.5, 98.2),
+                 "AMZN": (123.0, 128.9), "META": (90.3, 83.7), "TSLA": (37.0, 7.0)}
+
+
+def test_balance_v2_mesmos_numeros_e_proveniencia_completa():
+    """balanceQ2_2026 com asOf/tier/source: cash e debt seguem como chaves diretas e nenhum número muda."""
+    raw = common.load("fundamentals.json")["derived"]["balanceQ2_2026"]
+    assert {t: (b["cash"], b["debt"]) for t, b in raw.items()} == BALANCE_ANTES
+    merged = common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["balanceQ2_2026"]
+    assert {t: (b["cash"], b["debt"]) for t, b in merged.items()} == BALANCE_ANTES
+    for t, b in raw.items():
+        assert b["tier"] == ("derived" if t == "TSLA" else "primary")
+        assert len(b["asOf"]) == 10 and b["source"]["url"].startswith("https://") and b["source"]["label"]
