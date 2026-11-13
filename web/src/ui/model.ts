@@ -1,5 +1,6 @@
 /** Modelo de visão: junta os dois JSON, calcula os derivados (núcleo da Fase 1) e resolve nomes e datas. */
 import { deriveAll, waccOf } from "../lib/finance.ts";
+import { unwrapDerived } from "../lib/valor.ts";
 import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts";
 import { type IndRow } from "../lib/indicators.ts";
 import { type AuditInput, type Finding } from "../lib/signals.ts";
@@ -112,7 +113,8 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     }
   }
   const waccInputs = parseWaccInputs((fund.derived as { waccInputs?: unknown }).waccInputs);
-  const fd = { ...fund.derived, waccInputs: waccInputs ?? undefined };
+  const dv = unwrapDerived(fund.derived); // leitor duplo (Fase 3): número simples ou {value,…}
+  const fd = { ...dv, waccInputs: waccInputs ?? undefined };
   const derived = deriveAll(companies, fd);
   const wacc = companies.map((c) => waccOf(c, fd)).filter((w): w is WaccRow => w !== null);
   const sbcTtm = parseSbc((fund.derived as { sbcTTM?: unknown }).sbcTTM);
@@ -143,7 +145,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
         quarter: f.quarter,
         netCashB: r?.valuation.net ?? null,
         capexOcf: r?.capexOcf ?? null,
-        fcfRecalc: fund.derived.fcfTTM[f.ticker] !== undefined,
+        fcfRecalc: dv.fcfTTM[f.ticker] !== undefined,
         fcfYield: r?.valuation.fcfYield ?? null,
         fcfYieldSrc: f.valuation.fcfYield ?? null,
       };
@@ -164,7 +166,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     wacc,
     sensitivity: sensitivityRows(companies, fd),
     sbcTtm,
-    sbc: sbcTtm ? sbcRows(companies, fund.derived.fcfTTM, sbcTtm) : [],
+    sbc: sbcTtm ? sbcRows(companies, dv.fcfTTM, sbcTtm) : [],
     sbcNote: (fund.derived as { sbcTTMNote?: string }).sbcTTMNote ?? "",
     evAdjust,
     evAdj: evAdjust ? evAdjRows(companies.map((c) => String(c.ticker)), evExact, evAdjust) : [],

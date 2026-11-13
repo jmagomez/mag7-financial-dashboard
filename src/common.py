@@ -102,6 +102,31 @@ def acronyms_in(text, gloss=None):
 PRICE_SRC_MARK = "$priceSource"   # marcador em fundamentals.sources: posição da fonte de preços do dia
 
 
+# Blocos de `derived` com um número por empresa (Fase 3: podem virar {value, asOf, tier, source}).
+SCALAR_DERIVED = ("fcfTTM", "fwdPE", "ebitdaImplB", "fwdEPS", "oneOffTTM")
+
+
+def value_of(x):
+    """Valor numérico de um campo `derived`: aceita o número simples (formato atual) ou {"value": n, ...} (formato v2)."""
+    if isinstance(x, dict):
+        x = x.get("value")
+    return x
+
+
+def unwrap_derived(der):
+    """Cópia de `derived` com os blocos escalares no formato antigo (número simples), seja qual for o formato de entrada.
+
+    Sem nenhum campo v2 o resultado é igual ao original: os leitores (validate, e-mail, CSV) não notam a diferença.
+    """
+    if not isinstance(der, dict):
+        return der
+    out = dict(der)
+    for blk in SCALAR_DERIVED:
+        if isinstance(der.get(blk), dict):
+            out[blk] = {t: value_of(v) for t, v in der[blk].items() if value_of(v) is not None}
+    return out
+
+
 def merge(d, f):
     """Junta data.json (diário) e fundamentals.json (trimestral) no formato único.
 
@@ -122,7 +147,7 @@ def merge(d, f):
     comps = [{**fc, **dc.get(fc["ticker"], {})} for fc in f["companies"]]
     ps = d.get("priceSource")
     sources = [ps if (s.get(PRICE_SRC_MARK) and ps) else s for s in f["sources"] if ps or not s.get(PRICE_SRC_MARK)]
-    return {"meta": m, "companies": comps, "derived": f.get("derived", {}), "sources": sources}
+    return {"meta": m, "companies": comps, "derived": unwrap_derived(f.get("derived", {})), "sources": sources}
 
 
 def load_data():
