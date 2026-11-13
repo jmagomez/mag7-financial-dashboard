@@ -21,6 +21,7 @@ export const V2_BLOCKS: readonly (readonly [string, string])[] = [
   ["oneOffTTM", "Itens não recorrentes (ajuste do P/E core)"],
   ["ebitdaImplB", "EBITDA implícito"],
   ["balanceQ2_2026", "Caixa e dívida financiada"],
+  ["fwdPE", "P/E forward (consenso)"],
 ];
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;

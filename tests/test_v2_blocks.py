@@ -53,6 +53,5 @@ def test_data_no_futuro_e_erro_e_dado_velho_e_aviso():
 
 def test_blocos_nao_migrados_continuam_com_numero_solto():
     der = _real()
-    assert all(isinstance(v, (int, float)) for v in der["fwdPE"].values())
     assert all(isinstance(v, (int, float)) for v in der["fwdEPS"].values())
     assert _check(der) == ([], [])

@@ -24,11 +24,11 @@ test("linhas só dos blocos v2 bem formados; número solto e entrada malformada 
   assert.deepEqual(derivedDateRows(undefined), []);
 });
 
-test("arquivo real: 25 linhas (4 blocos migrados) e seção no rodapé com datas pt-BR e nomes escapados", () => {
+test("arquivo real: 32 linhas (5 blocos migrados) e seção no rodapé com datas pt-BR e nomes escapados", () => {
   const fund = readJson<FundamentalsFile>("fundamentals.json");
   const daily = readJson<DailyFile>("data.json");
   const rows = derivedDateRows(fund.derived);
-  assert.equal(rows.length, 7 + 4 + 7 + 7);
+  assert.equal(rows.length, 7 + 4 + 7 + 7 + 7);
   const m = buildModel(daily, fund);
   const html = toHtml(datasBlock(m)!);
   assert.ok(html.includes("Datas e fontes dos dados trimestrais") && html.includes("Apple") && html.includes("derivada"));

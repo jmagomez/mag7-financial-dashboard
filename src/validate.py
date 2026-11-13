@@ -187,7 +187,7 @@ def check_sbc_ev(der, today):
 
 
 # Blocos de derived já migrados para o formato v2 (Fase 3): data, nível e fonte por empresa passam a ser obrigatórios.
-V2_BLOCKS = ("fcfTTM", "oneOffTTM", "ebitdaImplB", "balanceQ2_2026")
+V2_BLOCKS = ("fcfTTM", "oneOffTTM", "ebitdaImplB", "balanceQ2_2026", "fwdPE")
 
 
 def check_v2_blocks(raw_der, today):
