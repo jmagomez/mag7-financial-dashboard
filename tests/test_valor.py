@@ -26,19 +26,34 @@ def test_value_of_aceita_os_dois_formatos():
     assert value_of(None) is None
 
 
-def test_dados_atuais_ficam_identicos():
-    der = common.load("fundamentals.json")["derived"]
-    assert unwrap_derived(der) == der
+def test_unwrap_e_idempotente():
+    base = unwrap_derived(common.load("fundamentals.json")["derived"])
+    assert unwrap_derived(base) == base
+    assert all(isinstance(v, (int, float)) for blk in SCALAR_DERIVED for v in base[blk].values())
 
 
 def test_formato_v2_equivale_ao_antigo():
-    der = common.load("fundamentals.json")["derived"]
-    assert unwrap_derived(_wrap(der)) == der
+    base = unwrap_derived(common.load("fundamentals.json")["derived"])
+    assert unwrap_derived(_wrap(base)) == base
 
 
 def test_merge_entrega_formato_antigo_mesmo_com_v2():
     d, f = common.load("data.json"), common.load("fundamentals.json")
+    base = unwrap_derived(f["derived"])
     f2 = copy.deepcopy(f)
-    f2["derived"] = _wrap(f["derived"])
+    f2["derived"] = _wrap(base)
     assert common.merge(d, f2) == common.merge(d, f)
-    assert json.dumps(common.merge(d, f)["derived"], sort_keys=True) == json.dumps(f["derived"], sort_keys=True)
+    assert json.dumps(common.merge(d, f)["derived"], sort_keys=True) == json.dumps(base, sort_keys=True)
+
+
+FCF_TTM_ANTES = {"AAPL": 108, "MSFT": 67, "NVDA": 127, "GOOGL": 53, "AMZN": -7.6, "META": 40, "TSLA": 5.8}
+
+
+def test_fcfttm_v2_mesmos_numeros_e_proveniencia_completa():
+    """Passo 2: fcfTTM no formato v2 não muda nenhum número e traz data, nível e fonte https por empresa."""
+    raw = common.load("fundamentals.json")["derived"]["fcfTTM"]
+    assert {t: value_of(v) for t, v in raw.items()} == FCF_TTM_ANTES
+    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["fcfTTM"] == FCF_TTM_ANTES
+    for v in raw.values():
+        assert v["tier"] in common.TIERS
+        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
