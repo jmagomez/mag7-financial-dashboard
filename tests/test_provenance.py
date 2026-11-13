@@ -35,15 +35,17 @@ def _issues(m, today=date(2099, 1, 2)):
     return list(validate.errors), list(validate.warnings)
 
 
-def test_ancora_vem_da_nota_de_precos_sem_inventar():
-    n = "… quantidade de ações implícita no snapshot anterior (Slickcharts, 27/08/2026); peso = market cap ÷ total."
-    assert C.parse_shares_anchor(n) == {"date": "2026-08-27", "source": "Slickcharts"}
-    assert C.parse_shares_anchor("sem âncora aqui") is None and C.parse_shares_anchor(None) is None
-
-
-def test_data_json_real_tem_ancora_na_nota(base):
-    a = C.parse_shares_anchor(base[0]["meta"]["priceNote"])
-    assert a and a["source"] and len(a["date"]) == 10
+def test_acoes_reportadas_vem_de_fundamentals_e_recusa_lacuna():
+    fund = C.load("fundamentals.json")
+    assert set(C.shares_reported(fund)) == set(C.TICKERS)
+    bad = copy.deepcopy(fund)
+    del bad["derived"]["sharesOut"]["TSLA"]
+    with pytest.raises(SystemExit):
+        C.shares_reported(bad)
+    bad = copy.deepcopy(fund)
+    bad["derived"]["sharesOut"]["AAPL"]["asOf"] = "ontem"
+    with pytest.raises(SystemExit):
+        C.shares_reported(bad)
 
 
 def test_daily_grava_proveniencia_completa(base):
@@ -52,7 +54,9 @@ def test_daily_grava_proveniencia_completa(base):
     pv = m["provenance"]
     assert pv["prices"] == {"tier": "secondary", "asOf": "2099-01-01", "source": out["priceSource"]["label"]}
     assert pv["marketCapB"]["tier"] == "derived" and pv["marketCapB"]["asOf"] == "2099-01-01"
-    assert pv["marketCapB"]["anchor"] == C.parse_shares_anchor(base[0]["meta"]["priceNote"])
+    sh = C.shares_reported(C.load("fundamentals.json"))
+    assert pv["marketCapB"]["anchor"] == {"date": min(e["asOf"] for e in sh.values()), "source": "capas dos 10-Q/10-K (a mais antiga)"}
+    assert "10-Q/10-K" in pv["marketCapB"]["method"]
     assert pv["weight"]["tier"] == "derived"
     with_level = {c["ticker"] for c in base[0]["companies"] if c["cds"] is not None} | {r["ticker"] for r in base[0]["meta"]["cdsRef"] if r["cds"] is not None}
     assert set(pv["cds"]) == with_level
@@ -70,13 +74,13 @@ def test_nao_muda_nenhum_campo_existente(base):
     assert json.dumps(sem, sort_keys=True) == json.dumps(antigo, sort_keys=True)
 
 
-def test_reexecucao_preserva_ancora_e_tier_e_delta_sobrescreve(base):
-    d1 = _run(base, priceTier="primary", sharesAnchor={"date": "2099-01-01", "source": "10-Q"})
-    assert d1["meta"]["provenance"]["marketCapB"]["anchor"] == {"date": "2099-01-01", "source": "10-Q"}
+def test_reexecucao_preserva_tier_de_precos_e_sharesanchor_foi_aposentado(base):
+    d1 = _run(base, priceTier="primary")
     s = copy.deepcopy(base[1])
-    d2, _ = daily.apply(d1, s, _delta(d1))  # sem priceTier/sharesAnchor: mantém os anteriores
-    pv = d2["meta"]["provenance"]
-    assert pv["prices"]["tier"] == "primary" and pv["marketCapB"]["anchor"]["source"] == "10-Q"
+    d2, _ = daily.apply(d1, s, _delta(d1))  # sem priceTier: mantém o anterior
+    assert d2["meta"]["provenance"]["prices"]["tier"] == "primary"
+    with pytest.raises(SystemExit):
+        _run(base, sharesAnchor={"date": "2099-01-01", "source": "10-Q"})
 
 
 def test_tier_do_cds_so_persiste_enquanto_a_cotacao_nao_muda(base):
@@ -109,7 +113,9 @@ def test_schema_aceita_e_rejeita(base):
 
 def test_validate_ausente_nao_avisa_e_valido_passa(base):
     assert _issues({"marketSnapshot": "2099-01-01"}) == ([], [])
-    assert _issues(_run(base, sharesAnchor={"date": "2098-12-01", "source": "x"})["meta"]) == ([], [])
+    m = _run(base)["meta"]
+    m["provenance"]["marketCapB"]["anchor"]["date"] = "2098-12-01"
+    assert _issues(m) == ([], [])
 
 
 def test_validate_pega_estrutura_errada(base):
@@ -127,9 +133,21 @@ def test_validate_avisa_ancora_ausente_ou_velha(base):
     m = _run(base)["meta"]
     m["provenance"]["marketCapB"]["anchor"]["date"] = "2098-09-01"
     _, w = _issues(m)
-    assert any("reancorar" in x for x in w)
+    assert any("atualizar derived.sharesOut" in x for x in w)
     del m["provenance"]["marketCapB"]["anchor"]
     errs, w = _issues(m)
     assert errs == [] and any("sem âncora" in x for x in w)
     m["provenance"]["marketCapB"]["anchor"] = {"date": "2098-12-01", "source": "x"}
     assert _issues(m) == ([], [])  # 32 dias: dentro do limite de 90
+
+
+def test_validate_avisa_quando_acoes_do_market_cap_divergem_das_reportadas():
+    comps = [{"ticker": "AAA", "price": 10.0, "marketCapB": 1.0}, {"ticker": "BBB", "price": 10.0, "marketCapB": 1.05}]
+    der = {"sharesOut": {"AAA": {"total": 100, "asOf": "2026-10-01"}, "BBB": {"total": 100, "asOf": "2026-10-01"}}}
+    validate.errors.clear()
+    validate.warnings.clear()
+    validate.check_shares(comps, der)
+    assert validate.errors == [] and len(validate.warnings) == 1 and "BBB" in validate.warnings[0]
+    validate.warnings.clear()
+    validate.check_shares(comps, {})  # sem derived.sharesOut: nada a conferir
+    assert validate.warnings == []

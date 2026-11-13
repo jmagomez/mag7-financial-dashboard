@@ -21,7 +21,8 @@ CDS_R = 0.40         # recuperação assumida na PD implícita
 CDS_LOG_KEEP = 6     # entradas de meta.cdsLog mantidas em data.json (as antigas ficam no histórico do git)
 # Proveniência (meta.provenance): primary = emissor/bolsa/SEC; secondary = agregador ou imprensa; derived = calculado de outros valores.
 TIERS = ("primary", "secondary", "derived")
-SHARES_ANCHOR_MAX_DAYS = 90   # market cap diário = preço × ações implícitas de uma âncora; acima disso, avisa para reancorar
+SHARES_ANCHOR_MAX_DAYS = 90   # market cap diário = preço × ações da capa do 10-Q/10-K; se a mais antiga passar disso, avisa para atualizar derived.sharesOut
+SHARES_DIVERGENCE_WARN = 2    # % entre as ações usadas no market cap (market cap ÷ preço) e as reportadas; acima disso, aviso (ação desatualizada ou desdobramento)
 
 
 def path(*p):
@@ -41,13 +42,20 @@ def pd5(bps):
     return None if bps is None else (1 - math.exp(-5 * (bps / 1e4) / (1 - CDS_R))) * 100
 
 
-_ANCHOR_RE = re.compile(r"ações implícita no snapshot anterior \(([^,()]+), (\d{2})/(\d{2})/(\d{4})\)")
+def shares_reported(fund):
+    """Ações em circulação (milhões) da capa do último 10-Q/10-K, de fundamentals.json: {ticker: {asOf, total, ...}}.
 
-
-def parse_shares_anchor(price_note):
-    """Âncora das ações implícitas citada em meta.priceNote, ex.: '(Slickcharts, 27/08/2026)' → {date, source}; None se não houver."""
-    m = _ANCHOR_RE.search(price_note or "")
-    return {"date": f"{m.group(4)}-{m.group(3)}-{m.group(2)}", "source": m.group(1).strip()} if m else None
+    Levanta SystemExit se faltar algum dos 7 tickers, total inválido ou data fora de AAAA-MM-DD (nada é inventado)."""
+    sh = ((fund or {}).get("derived") or {}).get("sharesOut") or {}
+    missing = [t for t in TICKERS if t not in sh]
+    if missing:
+        raise SystemExit(f"fundamentals.json: derived.sharesOut sem {missing}")
+    for t in TICKERS:
+        e = sh[t]
+        ok = isinstance(e.get("total"), (int, float)) and not isinstance(e.get("total"), bool) and e["total"] > 0
+        if not ok or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(e.get("asOf", ""))):
+            raise SystemExit(f"fundamentals.json: derived.sharesOut.{t} precisa de total > 0 e asOf AAAA-MM-DD")
+    return {t: sh[t] for t in TICKERS}
 
 
 def glossary():

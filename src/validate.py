@@ -12,7 +12,7 @@ import re
 import sys
 from datetime import date, datetime, timedelta
 
-from common import CDS_LOG_KEEP, NAMES, SHARES_ANCHOR_MAX_DAYS, TICKERS, TIERS, glossary, load, merge
+from common import CDS_LOG_KEEP, NAMES, SHARES_ANCHOR_MAX_DAYS, SHARES_DIVERGENCE_WARN, TICKERS, TIERS, glossary, load, merge
 from common import path as C_path
 
 errors, warnings = [], []
@@ -70,11 +70,26 @@ def check_provenance(m, today):
     if isinstance(mc, dict):
         a = mc.get("anchor")
         if not a:
-            warn("provenance.marketCapB sem âncora das ações implícitas (informe sharesAnchor no delta)")
+            warn("provenance.marketCapB sem âncora das ações (rode daily.py para gravá-la)")
         else:
             ad = pdate(a.get("date") or "", "provenance.marketCapB.anchor.date")
             if ad and (today - ad).days > SHARES_ANCHOR_MAX_DAYS:
-                warn(f"market cap derivado de ações implícitas de {a['date']} ({a.get('source')}, {(today-ad).days} dias): reancorar com dado novo (sharesAnchor)")
+                warn(f"market cap usa ações com capa de {a['date']} ({a.get('source')}, {(today-ad).days} dias): atualizar derived.sharesOut com o 10-Q/10-K mais novo")
+
+
+def check_shares(comps, der):
+    """Ações usadas no market cap (market cap ÷ preço) × ações reportadas (derived.sharesOut): aviso acima de SHARES_DIVERGENCE_WARN %."""
+    sh = der.get("sharesOut")
+    if not isinstance(sh, dict):
+        return
+    for c in comps:
+        e = sh.get(c["ticker"])
+        if not isinstance(e, dict) or not isnum(e.get("total")) or e["total"] <= 0 or not (isnum(c.get("price")) and c["price"] > 0 and isnum(c.get("marketCapB"))):
+            continue
+        implied = c["marketCapB"] / c["price"] * 1000
+        diff = (implied / e["total"] - 1) * 100
+        if abs(diff) > SHARES_DIVERGENCE_WARN:
+            warn(f"{c['ticker']}: ações no market cap ({implied:,.0f} mi) diferem {diff:+.1f}% das reportadas ({e['total']:,.0f} mi, capa de {e.get('asOf')}): desdobramento ou ações desatualizadas?")
 
 
 def main():
@@ -210,6 +225,7 @@ def main():
                     warn(f"CDS {t} com cotação de {dt} ({(today-dd).days} dias) — defasado")
 
     check_provenance(m, today)
+    check_shares(comps, der)
 
     # --- frescor
     if snap and (today - snap).days > 3:
