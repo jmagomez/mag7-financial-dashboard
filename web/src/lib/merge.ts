@@ -48,6 +48,8 @@ export interface DailyFile {
     audit?: { sev: "alta" | "média" | "baixa"; area: string; finding: string; action: string }[];
     catalysts?: { ticker: string; date: string; event: string; confirmed?: boolean; done?: boolean }[];
     dailyBrief?: { headline: string; bullets: string[]; sources: { label: string; url: string }[]; date: string };
+    /** Opcional (gravado por src/daily.py): nível, data e fonte dos números diários. Validado em lib/provenance.ts. */
+    provenance?: unknown;
   };
   companies: DailyCompany[];
 }
