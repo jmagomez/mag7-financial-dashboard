@@ -75,3 +75,17 @@ describe("oneOffTTM no formato v2 (passo 3)", () => {
     }
   });
 });
+
+describe("ebitdaImplB no formato v2", () => {
+  const fund = readJson<FundamentalsFile>("fundamentals.json");
+  it("mesmos números de antes da conversão", () => {
+    assert.deepEqual(unwrapDerived(fund.derived).ebitdaImplB, { AAPL: 157.4, MSFT: 241.5, NVDA: 183.3, GOOGL: 161.9, AMZN: 161.9, META: 98.6, TSLA: 9.3 });
+  });
+  it("cada empresa traz data, nível 'derived' e fonte https", () => {
+    for (const v of Object.values(fund.derived.ebitdaImplB as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
+      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
+      assert.equal(v.tier, "derived");
+      assert.ok(v.source.url.startsWith("https://"));
+    }
+  });
+});
