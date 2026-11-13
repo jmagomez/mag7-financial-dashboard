@@ -30,7 +30,7 @@ from email.mime.text import MIMEText
 from html import escape as esc
 from zoneinfo import ZoneInfo
 
-from common import CDS_ALERT, glossary, load_data, pd5
+from common import CDS_ALERT, CDS_STALE_DAYS, cds_quality, glossary, load_data, pd5
 
 URL = "https://jmagomez.github.io/mag7-financial-dashboard/"
 REPO = "https://github.com/jmagomez/mag7-financial-dashboard"
@@ -169,6 +169,19 @@ def build(d, snaps):
                  + td(fmt(rf.get("cds"))) + td("—" if a is None else asof[rf["ticker"]]) + td("~" + fmt(pd5(rf.get("cds")), 1, "%")) + "</tr>")
     ctbl += "</tbody></table>"
 
+    # qualidade dos dados (mesma medida do rodapé do painel): nível dos preços e idade dos CDS das Mag 7 na data do envio
+    tier_pt = {"primary": "primário (emissor, bolsa ou SEC)", "secondary": "secundário (agregador ou imprensa)", "derived": "derivado (calculado)"}
+    ptier = ((m.get("provenance") or {}).get("prices") or {}).get("tier")
+    cq = cds_quality(m, comps, ref_day.isoformat())
+    parts = []
+    if ptier in tier_pt:
+        parts.append(f"preços de nível {tier_pt[ptier]}")
+    if cq:
+        parts.append(f"CDS: {cq['cdsCount']} cotações, idade média {fmt(cq['cdsAvgAgeDays'], 1)} d (máx. {cq['cdsMaxAgeDays']} d), "
+                     f"{cq['cdsStale']} com mais de {CDS_STALE_DAYS} d")
+    qual_txt = "Qualidade dos dados: " + "; ".join(parts) + "." if parts else ""
+    qual_html = f"<p style='font-size:11.5px;color:#666;margin:10px 0 0'><b>Qualidade dos dados:</b> {esc('; '.join(parts))}.</p>" if parts else ""
+
     alert_html = ""
     if breaches:
         items = ", ".join(f"{t} {v:g} bps" for t, v in breaches)
@@ -226,7 +239,7 @@ def build(d, snaps):
           'text-decoration:none;font-weight:600;display:inline-block">Abrir dashboard</a></p>'
         + brief_html + gl_html + moves_html
         + '<h3 style="margin:18px 0 6px">Indicadores-chave</h3>' + tbl
-        + '<h3 style="margin:18px 0 6px">CDS 5 anos</h3>' + ctbl
+        + '<h3 style="margin:18px 0 6px">CDS 5 anos</h3>' + ctbl + qual_html
         + cat_html + aud_html
         + '<p style="font-size:11.5px;color:#999;margin-top:18px">CDS são cotações pontuais de imprensa (dado proprietário); ⚠ = cotação com mais de 30 dias. '
           'P/E, FCF yield e caixa líquido recalculados do data.json. Conteúdo informativo, sem recomendação de investimento. '
@@ -239,6 +252,8 @@ def build(d, snaps):
         lines += ["", brief.get("headline", "")] + ["- " + b for b in brief.get("bullets", [])]
     for t, a, b in cds_moves:
         lines.append(f"CDS {t}: {a:g} -> {b:g} bps")
+    if qual_txt:
+        lines += ["", qual_txt]
     text = "\n".join(lines) + "\n" + gl_txt + ("\n" if gl_txt else "")
 
     prefix = "⚠️ ALERTA — " if breaches else ""
