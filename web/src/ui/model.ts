@@ -5,6 +5,7 @@ import { type IndRow } from "../lib/indicators.ts";
 import { type AuditInput, type Finding } from "../lib/signals.ts";
 import { parseGlossary, type Glossary } from "../lib/glossary.ts";
 import { parseProvenance, type Provenance } from "../lib/provenance.ts";
+import { parseSharesOut, type SharesOut } from "../lib/shares.ts";
 import { mergeCompanies, type DailyFile, type FundamentalsFile } from "../lib/merge.ts";
 import type { CompanyInput, DerivedResult, Ticker } from "../types.ts";
 
@@ -37,6 +38,8 @@ export interface ViewModel {
   brief: Brief | null;
   /** null = data.json sem `meta.provenance` (ou malformada): a seção do rodapé some. */
   provenance: Provenance | null;
+  /** null = fundamentals.json sem `derived.sharesOut` (ou malformado): a seção do rodapé some. */
+  sharesOut: SharesOut | null;
   capexLabels: string[];
   /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
   capexIntensity: Record<string, number | null>;
@@ -153,6 +156,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     quarterLabel: fund.meta?.quarterLabel ?? "trimestre",
     glossary: parseGlossary(glossaryRaw),
     provenance: parseProvenance(daily.meta.provenance),
+    sharesOut: parseSharesOut((fund.derived as { sharesOut?: unknown }).sharesOut),
     brief: b ? { headline: b.headline, bullets: b.bullets ?? [], sources: b.sources ?? [], date: b.date } : null,
   };
 }
