@@ -1,6 +1,7 @@
 /** Modelo de visão: junta os dois JSON, calcula os derivados (núcleo da Fase 1) e resolve nomes e datas. */
 import { deriveAll, waccOf } from "../lib/finance.ts";
 import { unwrapDerived } from "../lib/valor.ts";
+import { derivedDateRows, type DateRow } from "../lib/datas.ts";
 import { capexIntensity, parseSnapshots, type Snapshot } from "../lib/credit.ts";
 import { type IndRow } from "../lib/indicators.ts";
 import { type AuditInput, type Finding } from "../lib/signals.ts";
@@ -61,6 +62,8 @@ export interface ViewModel {
   /** Linhas de EV ajustado (só empresas com os três itens confirmados). */
   evAdj: EvAdjRow[];
   evAdjNote: string;
+  /** Data, nível e fonte dos números de entrada trimestrais já no formato v2 (vazio se nenhum bloco migrou). */
+  derivedDates: DateRow[];
   capexLabels: string[];
   /** CapEx ÷ receita do último ano (%), por ticker; null sem receita válida. */
   capexIntensity: Record<string, number | null>;
@@ -171,6 +174,7 @@ export function buildModel(daily: DailyFile, fund: FundamentalsFile, snapshotsRa
     evAdjust,
     evAdj: evAdjust ? evAdjRows(companies.map((c) => String(c.ticker)), evExact, evAdjust) : [],
     evAdjNote: (fund.derived as { evAdjustNote?: string }).evAdjustNote ?? "",
+    derivedDates: derivedDateRows(fund.derived),
     cds,
     periods,
     fcfPeriods,
