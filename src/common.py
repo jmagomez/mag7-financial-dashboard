@@ -24,6 +24,7 @@ TIERS = ("primary", "secondary", "derived")
 SHARES_ANCHOR_MAX_DAYS = 90   # market cap diário = preço × ações da capa do 10-Q/10-K; se a mais antiga passar disso, avisa para atualizar derived.sharesOut
 WACC_INPUTS_MAX_DAYS = 45      # juro livre e prêmio de risco de derived.waccInputs: acima disso, aviso (atualizar na tarefa mensal)
 WACC_BETA_MAX_DAYS = 120      # betas de derived.waccInputs: acima disso, aviso
+SBC_MAX_DAYS = 180             # SBC TTM (derived.sbcTTM) e arrendamentos (derived.evAdjust): acima disso, aviso (atualizar na incorporação do trimestre)
 CDS_STALE_DAYS = 30           # cotação de CDS com mais de N dias é "defasada" (mesmo limite do painel e do validador)
 SHARES_DIVERGENCE_WARN = 2    # % entre as ações usadas no market cap (market cap ÷ preço) e as reportadas; acima disso, aviso (ação desatualizada ou desdobramento)
 

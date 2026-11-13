@@ -12,7 +12,7 @@ import re
 import sys
 from datetime import date, datetime, timedelta
 
-from common import (CDS_LOG_KEEP, NAMES, SHARES_ANCHOR_MAX_DAYS, SHARES_DIVERGENCE_WARN, TICKERS, TIERS, WACC_BETA_MAX_DAYS,
+from common import (CDS_LOG_KEEP, NAMES, SBC_MAX_DAYS, SHARES_ANCHOR_MAX_DAYS, SHARES_DIVERGENCE_WARN, TICKERS, TIERS, WACC_BETA_MAX_DAYS,
                     WACC_INPUTS_MAX_DAYS, glossary, load, merge)
 from common import path as C_path
 
@@ -136,6 +136,42 @@ def check_wacc(der, today):
             err(f"derived.waccInputs.betas.{t}.asOf {b['asOf']} está no futuro")
         elif bd and (today - bd).days > WACC_BETA_MAX_DAYS:
             warn(f"derived.waccInputs.betas.{t}: beta de {b['asOf']} ({(today-bd).days} dias): atualizar")
+
+
+def check_sbc_ev(der, today):
+    """derived.sbcTTM e derived.evAdjust (opcionais, por empresa): presentes e malformados são erro; dados com mais de SBC_MAX_DAYS, aviso."""
+    def https(where, s):
+        if not (isinstance(s, dict) and s.get("label") and str(s.get("url", "")).startswith("https://")):
+            err(f"{where}: fonte precisa de label e url https")
+
+    def dated(where, e):
+        d_ = pdate(e.get("asOf") or "", f"{where}.asOf")
+        if d_ and d_ > today:
+            err(f"{where}.asOf {e['asOf']} está no futuro")
+        elif d_ and (today - d_).days > SBC_MAX_DAYS:
+            warn(f"{where}: dado de {e['asOf']} ({(today-d_).days} dias): atualizar na incorporação do trimestre")
+
+    for key, fields in (("sbcTTM", ("valueB",)), ("evAdjust", ("opLeaseB", "finLeaseB", "nciB"))):
+        blk = der.get(key)
+        if blk is None:
+            continue
+        if not isinstance(blk, dict):
+            err(f"derived.{key} deve ser um objeto por ticker")
+            continue
+        for t, e in blk.items():
+            where = f"derived.{key}.{t}"
+            if t not in TICKERS:
+                err(f"{where}: ticker desconhecido")
+                continue
+            if not isinstance(e, dict):
+                err(f"{where} deve ser um objeto")
+                continue
+            for f in fields:
+                lo_ok = e.get(f) is not None and isnum(e[f]) and (e[f] > 0 if key == "sbcTTM" else e[f] >= 0)
+                if not (lo_ok and e[f] <= 500):
+                    err(f"{where}.{f} fora do intervalo esperado: {e.get(f)!r}")
+            https(f"{where}.source", e.get("source"))
+            dated(where, e)
 
 
 def main():
@@ -273,6 +309,7 @@ def main():
     check_provenance(m, today)
     check_shares(comps, der)
     check_wacc(der, today)
+    check_sbc_ev(der, today)
 
     # --- frescor
     if snap and (today - snap).days > 3:
