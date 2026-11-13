@@ -7,10 +7,11 @@ Regras de envio (nesta ordem):
   3. Trava diária: se history/email_log.json registra envio na data de hoje
      (fuso America/Sao_Paulo) -> NÃO envia. O arquivo é gravado pela rotina diária
      (commit [skip-email]) logo APÓS o commit final de data.json, pois a Action
-     não tem permissão de escrita no repositório.
+     não tem permissão de escrita no repositório. Com o workflow de docs/proposed/fase4/
+     (contents: write + MAG7_WRITE_LOG=1) é a própria Action que grava e commita o arquivo.
 
 Conteúdo: alerta de CDS (>100 bps), briefing do dia, o que mudou desde o snapshot
-anterior (preço e CDS), tabela de indicadores-chave recalculados, CDS com data da
+anterior (preço e CDS), tabela de indicadores-chave recálculados, CDS com data da
 cotação, próximos catalisadores e itens de auditoria de severidade alta.
 
 Antes de enviar, roda src/validate.py: erro de validação BLOQUEIA o envio (exit 1).
@@ -55,6 +56,14 @@ def commit_message():
         except Exception:
             return ""
     return ""
+
+
+def write_log(note="Gravado pela Action de envio logo após o e-mail (MAG7_WRITE_LOG=1)."):
+    """Trava de 1 e-mail/dia gravada pelo próprio envio (E1/E2). Só roda com MAG7_WRITE_LOG=1 (o workflow proposto em
+    docs/proposed/fase4/ liga e faz o commit [skip-email]); sem a variável, nada muda e a rotina diária segue gravando o arquivo."""
+    with open(LOG, "w", encoding="utf-8") as f:
+        json.dump({"lastSent": today_br().isoformat(), "note": note}, f, ensure_ascii=False)
+        f.write("\n")
 
 
 def already_sent_today():
@@ -220,7 +229,7 @@ def build(d, snaps):
         + '<h3 style="margin:18px 0 6px">CDS 5 anos</h3>' + ctbl
         + cat_html + aud_html
         + '<p style="font-size:11.5px;color:#999;margin-top:18px">CDS são cotações pontuais de imprensa (dado proprietário); ⚠ = cotação com mais de 30 dias. '
-          'P/E, FCF yield e caixa líquido recalculados do data.json. Conteúdo informativo, sem recomendação de investimento. '
+          'P/E, FCF yield e caixa líquido recálculados do data.json. Conteúdo informativo, sem recomendação de investimento. '
           f'<a href="{REPO}" style="color:#999">Repositório</a></p></div>')
 
     lines = [f"Magnificent 7 - Briefing diário ({gen})", URL]
@@ -278,6 +287,9 @@ def main():
         s.login(user, pwd)
         s.sendmail(user, dest + bcc, msg.as_string())
     print(f"E-mail enviado para {dest} | alerta: {alerted}")
+    if os.environ.get("MAG7_WRITE_LOG") == "1":
+        write_log()
+        print(f"{LOG} atualizado (lastSent = {today_br().isoformat()}).")
 
 
 if __name__ == "__main__":
