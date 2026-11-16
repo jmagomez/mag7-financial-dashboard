@@ -131,6 +131,14 @@
    "marketCapB": {"AAPL": 5180, "MSFT": 3884, "NVDA": 4025, "GOOGL": 3653, "AMZN": 2886, "META": 1590, "TSLA": 1567},
    "cds": {"MSFT": 53, "NVDA": 139, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
    "note": "Fechamento de 12/11: Motley Fool (barra de cotação das sete e selo 4:00 PM ET do GOOGL); NVDA e MSFT também em Stock Titan; META em StockAnalysis; AMZN em Marketalleys; AAPL em Gotrade (título 'Nov 12 Close'); TSLA com variação +1,7% no Gotrade. Variações: AAPL -0,21%, MSFT +0,36%, NVDA -4,34%, GOOGL +1,79%, AMZN +0,48%, META -0,82%, TSLA +1,69%. Sem snapshot de 10/11. Market cap = preço × ações implícitas. CDS sem cotação nova verificável."
+  },
+  {
+   "date": "2026-11-13",
+   "prices": {"AAPL": 356.27, "MSFT": 523.88, "NVDA": 162.85, "GOOGL": 295.77, "AMZN": 266.66, "META": 641.69, "TSLA": 390.22},
+   "marketCapB": {"AAPL": 5177, "MSFT": 3890, "NVDA": 3925, "GOOGL": 3636, "AMZN": 2883, "META": 1640, "TSLA": 1542},
+   "cds": {"MSFT": 53, "NVDA": 139, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
+   "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 69.2, "cdsMaxAgeDays": 107, "cdsStale": 3},
+   "note": "Fechamento de 13/11: histórico diário do StockAnalysis para os sete tickers (AAPL, NVDA e TSLA também na cotação da Motley Fool, 16h ET). Variações vs 12/11: AAPL +0,39%, MSFT +0,17%, NVDA -2,01%, GOOGL -0,98%, AMZN -0,29%, META +2,90%, TSLA -1,82%. Degrau de método: market cap passa de ações implícitas (27/08) para ações reportadas na capa do último 10-Q/10-K; não é movimento de preço. CDS sem cotação nova verificável."
   }
  ]
 }
