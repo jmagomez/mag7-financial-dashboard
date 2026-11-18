@@ -139,6 +139,14 @@
    "cds": {"MSFT": 53, "NVDA": 139, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
    "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 69.2, "cdsMaxAgeDays": 107, "cdsStale": 3},
    "note": "Fechamento de 13/11: histórico diário do StockAnalysis para os sete tickers (AAPL, NVDA e TSLA também na cotação da Motley Fool, 16h ET). Variações vs 12/11: AAPL +0,39%, MSFT +0,17%, NVDA -2,01%, GOOGL -0,98%, AMZN -0,29%, META +2,90%, TSLA -1,82%. Degrau de método: market cap passa de ações implícitas (27/08) para ações reportadas na capa do último 10-Q/10-K; não é movimento de preço. CDS sem cotação nova verificável."
+  },
+  {
+   "date": "2026-11-17",
+   "prices": {"AAPL": 351.91, "MSFT": 506.24, "NVDA": 155.46, "GOOGL": 280.2, "AMZN": 257.89, "META": 618.87, "TSLA": 380.11},
+   "marketCapB": {"AAPL": 5114, "MSFT": 3759, "NVDA": 3747, "GOOGL": 3445, "AMZN": 2789, "META": 1582, "TSLA": 1502},
+   "cds": {"MSFT": 53, "NVDA": 145, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
+   "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 72.0, "cdsMaxAgeDays": 111, "cdsStale": 3},
+   "note": "Fechamento de 17/11: AAPL, AMZN, META e TSLA vêm só da barra de cotações da Motley Fool (sem selo de fechamento oficial; fonte única); MSFT (-2,27%) e NVDA (-0,44%; 156,14→155,46) conferem com o CappNotes e o Kiplinger; GOOGL 280,20 (-1,24%) vem do Vista P Global e bate com o fechamento anterior de 283,72 (StockAnalysis); a Fool lista GOOG (classe C), não GOOGL. Sem snapshot de 16/11 (a rotina de 16/11 usou 13/11): variações vs. 13/11 somam dois pregões. CDS: Nvidia ~145 bps (144,5) de 12/11 (ICE Data Services via Stock News/ME News; 5 anos); demais sem cotação nova."
   }
  ]
 }
