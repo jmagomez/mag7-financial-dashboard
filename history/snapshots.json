@@ -147,6 +147,14 @@
    "cds": {"MSFT": 53, "NVDA": 145, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
    "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 72.0, "cdsMaxAgeDays": 111, "cdsStale": 3},
    "note": "Fechamento de 17/11: AAPL, AMZN, META e TSLA vêm só da barra de cotações da Motley Fool (sem selo de fechamento oficial; fonte única); MSFT (-2,27%) e NVDA (-0,44%; 156,14→155,46) conferem com o CappNotes e o Kiplinger; GOOGL 280,20 (-1,24%) vem do Vista P Global e bate com o fechamento anterior de 283,72 (StockAnalysis); a Fool lista GOOG (classe C), não GOOGL. Sem snapshot de 16/11 (a rotina de 16/11 usou 13/11): variações vs. 13/11 somam dois pregões. CDS: Nvidia ~145 bps (144,5) de 12/11 (ICE Data Services via Stock News/ME News; 5 anos); demais sem cotação nova."
+  },
+  {
+   "date": "2026-11-18",
+   "prices": {"AAPL": 352.45, "MSFT": 508.29, "NVDA": 150.96, "GOOGL": 282.44, "AMZN": 267.74, "META": 616.38, "TSLA": 383.72},
+   "marketCapB": {"AAPL": 5122, "MSFT": 3775, "NVDA": 3638, "GOOGL": 3472, "AMZN": 2895, "META": 1576, "TSLA": 1517},
+   "cds": {"MSFT": 53, "NVDA": 145, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
+   "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 73.0, "cdsMaxAgeDays": 112, "cdsStale": 3},
+   "note": "Fechamento de 18/11: NVDA 150,96 em Motley Fool (selo 4:00 PM ET), BigGo e HeyGoTrade; MSFT 508,29 no HeyGoTrade (a barra da Fool mostrava 507,31, incoerente com a variação de +US$ 2,05 sobre 506,24); GOOGL 282,44 pelo título do HeyGoTrade (+0,8%, igual ao BigGo; a Fool lista GOOG); AAPL, AMZN, META e TSLA = preço da barra da Fool, conferido pelas variações % do BigGo (+0,15%, +3,82%, -0,40%, +0,95%). Variações vs 17/11: AAPL +0,15%, MSFT +0,40%, NVDA -2,89%, GOOGL +0,80%, AMZN +3,82%, META -0,40%, TSLA +0,95%. CDS sem cotação nova verificável."
   }
  ]
 }
