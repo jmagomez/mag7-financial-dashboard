@@ -155,6 +155,14 @@
    "cds": {"MSFT": 53, "NVDA": 145, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
    "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 73.0, "cdsMaxAgeDays": 112, "cdsStale": 3},
    "note": "Fechamento de 18/11: NVDA 150,96 em Motley Fool (selo 4:00 PM ET), BigGo e HeyGoTrade; MSFT 508,29 no HeyGoTrade (a barra da Fool mostrava 507,31, incoerente com a variação de +US$ 2,05 sobre 506,24); GOOGL 282,44 pelo título do HeyGoTrade (+0,8%, igual ao BigGo; a Fool lista GOOG); AAPL, AMZN, META e TSLA = preço da barra da Fool, conferido pelas variações % do BigGo (+0,15%, +3,82%, -0,40%, +0,95%). Variações vs 17/11: AAPL +0,15%, MSFT +0,40%, NVDA -2,89%, GOOGL +0,80%, AMZN +3,82%, META -0,40%, TSLA +0,95%. CDS sem cotação nova verificável."
+  },
+  {
+   "date": "2026-11-19",
+   "prices": {"AAPL": 349.21, "MSFT": 498.3, "NVDA": 145.98, "GOOGL": 272.66, "AMZN": 257.37, "META": 596.22, "TSLA": 374.41},
+   "marketCapB": {"AAPL": 5075, "MSFT": 3700, "NVDA": 3518, "GOOGL": 3352, "AMZN": 2783, "META": 1524, "TSLA": 1480},
+   "cds": {"MSFT": 53, "NVDA": 145, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
+   "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 74.0, "cdsMaxAgeDays": 113, "cdsStale": 3},
+   "note": "Fechamento de 19/11: AAPL 349,21 (-0,92%), MSFT 498,30 (-1,78%) e NVDA 145,98 (-3,30%) conferem na barra da Motley Fool e no histórico do StockAnalysis; AMZN 257,37 (-3,87%), META 596,22 (-3,27%) e TSLA 374,41 (-2,43%) vêm só da barra da Fool (bases iguais aos fechamentos de 18/11; o StockAnalysis mostrava TSLA 377,90 intradiário); GOOGL 272,66 (-3,46%) vem do Yahoo Finance ('fechou'), mas a Fool lista GOOG (classe C) a 271,02 (-2,9%), relação atípica. Índices: S&P 500 7.175,83 (-2,0%), Nasdaq 23.879,20 (-2,3%), Dow 49.097,06 (-2,2%). CDS sem cotação nova verificável."
   }
  ]
 }
