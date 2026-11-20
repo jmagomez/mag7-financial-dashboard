@@ -124,7 +124,7 @@ export function netCashChart(m: ViewModel): ChartSpec {
     digits: 1,
     data,
     columns: ["Caixa + títulos", "Dívida financiada"],
-    summary: `${leader(data, "US$ bi", 1, "Maior caixa líquido")} ${where} Balanços do 2T 2026.`,
+    summary: `${leader(data, "US$ bi", 1, "Maior caixa líquido")} ${where} Balanços do trimestre mais recente de cada empresa (datas no rodapé).`,
   };
 }
 
@@ -185,6 +185,6 @@ export function cloudChart(m: ViewModel): ChartSpec {
     digits: 1,
     data,
     columns: ["Crescimento a/a"],
-    summary: `${leader(data, "US$ bi", 1, "Maior")}${grow} Meta, Apple e Tesla não têm segmento de nuvem.`,
+    summary: `${leader(data, "US$ bi", 1, "Maior")}${grow} Meta, Apple e Tesla não têm segmento de nuvem; a Microsoft não divulga um segmento comparável.`,
   };
 }

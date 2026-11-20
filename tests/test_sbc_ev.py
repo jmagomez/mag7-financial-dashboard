@@ -72,6 +72,6 @@ def test_erros_de_estrutura():
 
 def test_dado_velho_avisa():
     der = _real()
-    errs, warns = _check(der, today=date(2027, 2, 1))
+    errs, warns = _check(der, today=date(2027, 6, 1))
     assert errs == []
     assert any("sbcTTM.MSFT" in w for w in warns) and any("evAdjust.AMZN" in w for w in warns)

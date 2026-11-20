@@ -80,11 +80,11 @@ test("cabeçalhos da valuation: links reais, aria-sort só na coluna ativa, cliq
   assert.ok(html.includes("P/E TTM ▲"));
 });
 
-test("notas da valuation: lucro operacional e líquido citados (2T'26) conferem com fundamentals.json", () => {
+test("notas da valuation: lucro operacional e líquido citados (3T'26) conferem com fundamentals.json", () => {
   const f = JSON.parse(readFileSync(new URL("../../../fundamentals.json", import.meta.url), "utf8")) as { companies: { ticker: string; quarter?: { operatingIncomeB?: number; netIncomeB?: number } }[] };
   const text = toHtml(h("div", {}, ...VAL_NOTES.map((n) => h("p", {}, ...n)))).replace(/<[^>]+>/g, "").replace(/&gt;/g, ">");
   // [ticker, operacional citado, líquido citado]; tolerância de arredondamento de 1 casa (0,06).
-  const cited: [string, string, string][] = [["AAPL", "35,7", "29,8"], ["MSFT", "40,6", "35,8"], ["NVDA", "63,7", "59,7"], ["GOOGL", "40,8", "112,1"], ["AMZN", "27,5", "62,6"], ["META", "18,8", "15,9"], ["TSLA", "0,40", "1,11"]];
+  const cited: [string, string, string][] = [["AAPL", "35,6", "30,7"], ["MSFT", "45,9", "36,6"], ["NVDA", "77,5", "65,3"], ["GOOGL", "40,6", "26,5"], ["AMZN", "28,1", "20,7"], ["META", "13,0", "9,9"], ["TSLA", "0,7", "0,8"]];
   for (const [t, op, ni] of cited) {
     const q = f.companies.find((c) => c.ticker === t)?.quarter;
     assert.ok(q?.operatingIncomeB !== undefined && q.netIncomeB !== undefined, t);
@@ -92,6 +92,5 @@ test("notas da valuation: lucro operacional e líquido citados (2T'26) conferem 
     assert.ok(Math.abs(Number(ni.replace(",", ".")) - q.netIncomeB) <= 0.06, `${t} líquido`);
     assert.ok(text.includes(op) && text.includes(ni), `${t} citado no texto`);
   }
-  assert.ok(text.includes("Alphabet") && text.includes("Amazon") && text.includes("~2,7x"));
-  assert.ok(Math.abs(112.1 / 40.8 - 2.7) < 0.06); // a razão citada confere com os números citados
+  assert.ok(text.includes("Alphabet") && text.includes("Amazon"));
 });
