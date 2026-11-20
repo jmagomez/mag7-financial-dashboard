@@ -27,7 +27,7 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt ruff
       - name: Lint (src, tests e tools)
-        run: ruff check src tests tools- name: Lint (src, tests e tools) / run: ruff check src tests tools
+        run: ruff check src tests tools
       - name: Validar data.json, fundamentals.json e snapshots (mesmas regras do envio)
         run: python src/validate.py
       - name: Testes (schemas, invariantes, daily.py)
