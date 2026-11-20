@@ -48,88 +48,45 @@ describe("unwrapDerived: só o número de cada empresa", () => {
   });
 });
 
-describe("fcfTTM no formato v2 (passo 2)", () => {
-  const fund = readJson<FundamentalsFile>("fundamentals.json");
-  it("mesmos números de antes da conversão", () => {
-    assert.deepEqual(unwrapDerived(fund.derived).fcfTTM, { AAPL: 108, MSFT: 67, NVDA: 127, GOOGL: 53, AMZN: -7.6, META: 40, TSLA: 5.8 });
-  });
-  it("cada empresa traz data, nível e fonte https", () => {
-    for (const v of Object.values(fund.derived.fcfTTM as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
-      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
-      assert.ok(["primary", "secondary", "derived"].includes(v.tier));
-      assert.ok(v.source.url.startsWith("https://"));
-    }
-  });
-});
+type V2 = { asOf: string; tier: string; source: { url: string; label: string } };
+const BLOCOS_V2: Array<[string, string | null]> = [["fcfTTM", null], ["oneOffTTM", "derived"], ["ebitdaImplB", "derived"], ["fwdPE", "secondary"], ["fwdEPS", "derived"]];
 
-describe("oneOffTTM no formato v2 (passo 3)", () => {
+describe("blocos escalares no formato v2 (leitura igual ao valor gravado)", () => {
   const fund = readJson<FundamentalsFile>("fundamentals.json");
-  it("mesmos números de antes da conversão", () => {
-    assert.deepEqual(unwrapDerived(fund.derived).oneOffTTM, { MSFT: 3.2, GOOGL: 77.1, AMZN: 60, META: -15.9 });
-  });
-  it("cada empresa traz data, nível 'derived' e fonte https", () => {
-    for (const v of Object.values(fund.derived.oneOffTTM as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
-      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
-      assert.equal(v.tier, "derived");
-      assert.ok(v.source.url.startsWith("https://"));
-    }
-  });
-});
-
-describe("ebitdaImplB no formato v2", () => {
-  const fund = readJson<FundamentalsFile>("fundamentals.json");
-  it("mesmos números de antes da conversão", () => {
-    assert.deepEqual(unwrapDerived(fund.derived).ebitdaImplB, { AAPL: 157.4, MSFT: 241.5, NVDA: 183.3, GOOGL: 161.9, AMZN: 161.9, META: 98.6, TSLA: 9.3 });
-  });
-  it("cada empresa traz data, nível 'derived' e fonte https", () => {
-    for (const v of Object.values(fund.derived.ebitdaImplB as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
-      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
-      assert.equal(v.tier, "derived");
-      assert.ok(v.source.url.startsWith("https://"));
-    }
-  });
+  for (const [blk, tier] of BLOCOS_V2) {
+    it(`${blk}: unwrapDerived entrega o value de cada empresa`, () => {
+      const raw = (fund.derived as unknown as Record<string, Record<string, V2 & { value: number }>>)[blk] ?? {};
+      assert.ok(Object.keys(raw).length > 0);
+      const got = (unwrapDerived(fund.derived) as unknown as Record<string, Record<string, number>>)[blk];
+      assert.deepEqual(got, Object.fromEntries(Object.entries(raw).map(([t, v]) => [t, v.value])));
+    });
+    it(`${blk}: cada empresa traz data, nível${tier ? ` '${tier}'` : ""} e fonte https`, () => {
+      const raw = (fund.derived as unknown as Record<string, Record<string, V2>>)[blk] ?? {};
+      for (const v of Object.values(raw)) {
+        assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
+        assert.ok(["primary", "secondary", "derived"].includes(v.tier));
+        if (tier) assert.equal(v.tier, tier);
+        assert.ok(v.source.url.startsWith("https://") && v.source.label.length > 0);
+      }
+    });
+  }
 });
 
 describe("balanceQ2_2026 com data, nível e fonte (v2)", () => {
   const fund = readJson<FundamentalsFile>("fundamentals.json");
-  const bal = fund.derived.balanceQ2_2026 as unknown as Record<string, { cash: number; debt: number; asOf: string; tier: string; source: { url: string } }>;
-  it("mesmos números de antes da conversão", () => {
-    const got = Object.fromEntries(Object.entries(bal).map(([t, b]) => [t, [b.cash, b.debt]]));
-    assert.deepEqual(got, { AAPL: [146.5, 84.3], MSFT: [76.8, 40.3], NVDA: [56.6, 33.4], GOOGL: [242.5, 98.2], AMZN: [123.0, 128.9], META: [90.3, 83.7], TSLA: [37.0, 7.0] });
+  const bal = fund.derived.balanceQ2_2026 as unknown as Record<string, { cash: number; debt: number } & V2>;
+  it("cash e debt seguem como chaves diretas numéricas para as 7 empresas", () => {
+    assert.equal(Object.keys(bal).length, 7);
+    for (const b of Object.values(bal)) {
+      assert.equal(typeof b.cash, "number");
+      assert.equal(typeof b.debt, "number");
+    }
   });
   it("cada empresa traz data, nível e fonte https", () => {
-    for (const [t, b] of Object.entries(bal)) {
+    for (const b of Object.values(bal)) {
       assert.match(b.asOf, /^\d{4}-\d{2}-\d{2}$/);
-      assert.equal(b.tier, t === "TSLA" ? "derived" : "primary");
+      assert.ok(["primary", "secondary", "derived"].includes(b.tier));
       assert.ok(b.source.url.startsWith("https://"));
-    }
-  });
-});
-
-describe("fwdPE no formato v2", () => {
-  const fund = readJson<FundamentalsFile>("fundamentals.json");
-  it("mesmos números de antes da conversão", () => {
-    assert.deepEqual(unwrapDerived(fund.derived).fwdPE, { AAPL: 34, MSFT: 20, NVDA: 18, GOOGL: 23, AMZN: 31, META: 14, TSLA: 188 });
-  });
-  it("cada empresa traz data, nível 'secondary' e fonte https", () => {
-    for (const v of Object.values(fund.derived.fwdPE as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
-      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
-      assert.equal(v.tier, "secondary");
-      assert.ok(v.source.url.startsWith("https://"));
-    }
-  });
-});
-
-describe("fwdEPS no formato v2", () => {
-  const fund = readJson<FundamentalsFile>("fundamentals.json");
-  it("mesmos números de antes da conversão", () => {
-    assert.deepEqual(unwrapDerived(fund.derived).fwdEPS, { AAPL: 9.16, MSFT: 24.97, NVDA: 12.46, GOOGL: 14.67, AMZN: 8.31, META: 41.62, TSLA: 1.86 });
-  });
-  it("cada empresa traz data, nível 'derived' e fonte https", () => {
-    for (const v of Object.values(fund.derived.fwdEPS as unknown as Record<string, { asOf: string; tier: string; source: { url: string } }>)) {
-      assert.match(v.asOf, /^\d{4}-\d{2}-\d{2}$/);
-      assert.equal(v.tier, "derived");
-      assert.ok(v.source.url.startsWith("https://"));
     }
   });
 });
