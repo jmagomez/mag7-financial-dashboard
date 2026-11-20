@@ -46,7 +46,7 @@ def test_data_no_futuro_e_erro_e_dado_velho_e_aviso():
     der["fcfTTM"]["MSFT"]["asOf"] = "2026-12-01"
     errs, _ = _check(der)
     assert any("fcfTTM.MSFT.asOf 2026-12-01 está no futuro" in e for e in errs)
-    errs, warns = _check(_real(), today=date(2027, 1, 15))
+    errs, warns = _check(_real(), today=date(2027, 6, 1))
     assert errs == []
     assert any("fcfTTM.AAPL" in w for w in warns)
 

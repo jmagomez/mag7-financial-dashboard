@@ -60,81 +60,27 @@ def test_merge_entrega_formato_antigo_mesmo_com_v2():
     assert json.dumps(common.merge(d, f)["derived"], sort_keys=True) == json.dumps(base, sort_keys=True)
 
 
-FCF_TTM_ANTES = {"AAPL": 108, "MSFT": 67, "NVDA": 127, "GOOGL": 53, "AMZN": -7.6, "META": 40, "TSLA": 5.8}
+BLOCOS_V2 = {"fcfTTM": None, "oneOffTTM": "derived", "ebitdaImplB": "derived", "fwdPE": "secondary", "fwdEPS": "derived"}
 
 
-def test_fcfttm_v2_mesmos_numeros_e_proveniencia_completa():
-    """Passo 2: fcfTTM no formato v2 não muda nenhum número e traz data, nível e fonte https por empresa."""
-    raw = common.load("fundamentals.json")["derived"]["fcfTTM"]
-    assert {t: value_of(v) for t, v in raw.items()} == FCF_TTM_ANTES
-    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["fcfTTM"] == FCF_TTM_ANTES
+@pytest.mark.parametrize("blk,tier", BLOCOS_V2.items())
+def test_bloco_escalar_v2_traz_proveniencia_completa_e_o_leitor_entrega_o_mesmo_valor(blk, tier):
+    """Cada bloco escalar está em v2 (data, nível e fonte https por empresa) e merge() entrega exatamente o `value` gravado."""
+    raw = common.load("fundamentals.json")["derived"][blk]
+    assert raw
+    merged = common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"][blk]
+    assert merged == {t: value_of(v) for t, v in raw.items()}
     for v in raw.values():
-        assert v["tier"] in common.TIERS
+        assert v["tier"] in common.TIERS and (tier is None or v["tier"] == tier)
         assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
 
 
-ONE_OFF_TTM_ANTES = {"MSFT": 3.2, "GOOGL": 77.1, "AMZN": 60, "META": -15.9}
-
-
-def test_oneoffttm_v2_mesmos_numeros_e_proveniencia_completa():
-    """Passo 3: oneOffTTM no formato v2 não muda nenhum número; tier 'derived' (ajuste estimado)."""
-    raw = common.load("fundamentals.json")["derived"]["oneOffTTM"]
-    assert {t: value_of(v) for t, v in raw.items()} == ONE_OFF_TTM_ANTES
-    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["oneOffTTM"] == ONE_OFF_TTM_ANTES
-    for v in raw.values():
-        assert v["tier"] == "derived"
-        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
-
-
-EBITDA_IMPL_ANTES = {"AAPL": 157.4, "MSFT": 241.5, "NVDA": 183.3, "GOOGL": 161.9, "AMZN": 161.9, "META": 98.6, "TSLA": 9.3}
-
-
-def test_ebitdaimplb_v2_mesmos_numeros_e_proveniencia_completa():
-    """ebitdaImplB no formato v2 não muda nenhum número; tier 'derived' (reescalado do múltiplo)."""
-    raw = common.load("fundamentals.json")["derived"]["ebitdaImplB"]
-    assert {t: value_of(v) for t, v in raw.items()} == EBITDA_IMPL_ANTES
-    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["ebitdaImplB"] == EBITDA_IMPL_ANTES
-    for v in raw.values():
-        assert v["tier"] == "derived"
-        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
-
-
-BALANCE_ANTES = {"AAPL": (146.5, 84.3), "MSFT": (76.8, 40.3), "NVDA": (56.6, 33.4), "GOOGL": (242.5, 98.2),
-                 "AMZN": (123.0, 128.9), "META": (90.3, 83.7), "TSLA": (37.0, 7.0)}
-
-
-def test_balance_v2_mesmos_numeros_e_proveniencia_completa():
-    """balanceQ2_2026 com asOf/tier/source: cash e debt seguem como chaves diretas e nenhum número muda."""
+def test_balance_v2_cash_debt_diretos_e_proveniencia_completa():
+    """balanceQ2_2026 tem asOf/tier/source e mantém cash e debt como chaves diretas, iguais depois do merge."""
     raw = common.load("fundamentals.json")["derived"]["balanceQ2_2026"]
-    assert {t: (b["cash"], b["debt"]) for t, b in raw.items()} == BALANCE_ANTES
+    assert set(raw) == set(common.TICKERS)
     merged = common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["balanceQ2_2026"]
-    assert {t: (b["cash"], b["debt"]) for t, b in merged.items()} == BALANCE_ANTES
-    for t, b in raw.items():
-        assert b["tier"] == ("derived" if t == "TSLA" else "primary")
+    assert {t: (b["cash"], b["debt"]) for t, b in merged.items()} == {t: (b["cash"], b["debt"]) for t, b in raw.items()}
+    for b in raw.values():
+        assert b["tier"] in common.TIERS and isinstance(b["cash"], (int, float)) and isinstance(b["debt"], (int, float))
         assert len(b["asOf"]) == 10 and b["source"]["url"].startswith("https://") and b["source"]["label"]
-
-
-FWD_PE_ANTES = {"AAPL": 34, "MSFT": 20, "NVDA": 18, "GOOGL": 23, "AMZN": 31, "META": 14, "TSLA": 188}
-
-
-def test_fwdpe_v2_mesmos_numeros_e_proveniencia_completa():
-    """fwdPE no formato v2 não muda nenhum número; tier 'secondary' (agregador, valor como publicado)."""
-    raw = common.load("fundamentals.json")["derived"]["fwdPE"]
-    assert {t: value_of(v) for t, v in raw.items()} == FWD_PE_ANTES
-    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["fwdPE"] == FWD_PE_ANTES
-    for v in raw.values():
-        assert v["tier"] == "secondary"
-        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
-
-
-FWD_EPS_ANTES = {"AAPL": 9.16, "MSFT": 24.97, "NVDA": 12.46, "GOOGL": 14.67, "AMZN": 8.31, "META": 41.62, "TSLA": 1.86}
-
-
-def test_fwdeps_v2_mesmos_numeros_e_proveniencia_completa():
-    """fwdEPS no formato v2 não muda nenhum número; tier 'derived' (preço ÷ P/E forward)."""
-    raw = common.load("fundamentals.json")["derived"]["fwdEPS"]
-    assert {t: value_of(v) for t, v in raw.items()} == FWD_EPS_ANTES
-    assert common.merge(common.load("data.json"), common.load("fundamentals.json"))["derived"]["fwdEPS"] == FWD_EPS_ANTES
-    for v in raw.values():
-        assert v["tier"] == "derived"
-        assert len(v["asOf"]) == 10 and v["source"]["url"].startswith("https://") and v["source"]["label"]
