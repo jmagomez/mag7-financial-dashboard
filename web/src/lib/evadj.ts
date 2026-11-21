@@ -1,6 +1,6 @@
 /**
  * EV ajustado: EV da tabela de múltiplos (market cap − caixa líquido) + arrendamentos operacionais + arrendamentos financeiros
- * + participação de não controladores, no balanço do 2T 2026 (`derived.evAdjust` de fundamentals.json, com fonte e data).
+ * + participação de não controladores, no balanço do trimestre mais recente (`derived.evAdjust` de fundamentals.json, com fonte e data).
  * Só entra empresa com os três itens confirmados; as demais ficam n/d (nada é estimado). Opcional: bloco ausente → null.
  */
 export interface EvAdjEntry {

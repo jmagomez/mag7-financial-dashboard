@@ -81,7 +81,7 @@ export interface ViewModel {
   quarterLabel: string;
   /** Campos da tabela de valuation que vêm direto da fonte (não são calculados). */
   valuationExtras: Record<string, { divYield: number | null; grossMargin: number | null }>;
-  /** Balanço do 2T 2026 (caixa + títulos e dívida financiada), US$ bi. */
+  /** Balanço do trimestre mais recente de cada empresa (caixa + títulos e dívida financiada), US$ bi; datas em `asOf`. */
   balance: Record<string, { cash: number; debt: number } | undefined>;
   /** Segmentos de nuvem/IA do trimestre (vazio se a fonte não traz). */
   cloudSegments: { n: string; v: number; g: number }[];
