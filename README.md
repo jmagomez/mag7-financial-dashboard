@@ -106,4 +106,4 @@ Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica
 ## Aviso
 
 Conteúdo informativo, **sem recomendação de investimento**. Todos os valores em US$.
-alores em US$.
+
