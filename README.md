@@ -95,7 +95,7 @@ Todo o procedimento da rotina diária (pesquisa, `daily.py`, ordem dos commits, 
 
 ## Auditoria crítica (`meta.audit`)
 
-Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica dos dados") e resumidas no e-mail: vintages de CDS misturadas (agora datadas em `meta.cdsAsOf`), market cap por ações implícitas, EBITDA implícito/defasado no EV/EBITDA, ajuste parcial de itens não recorrentes (P/E core de Alphabet), DCF reverso com WACC único, EV sem leases/participações e a janela de resultados do 3T.
+Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica dos dados") e resumidas no e-mail: vintages de CDS misturadas (agora datadas em `meta.cdsAsOf`), market cap por ações implícitas, EBITDA TTM com definições de D&A que diferem entre empresas no EV/EBITDA, ajuste parcial de itens não recorrentes (P/E core de Alphabet), DCF reverso com WACC único, EV sem leases/participações e a janela de resultados do 3T.
 
 ## Como atualizar
 
@@ -106,3 +106,4 @@ Limitações conhecidas, por severidade, exibidas no painel ("Auditoria crítica
 ## Aviso
 
 Conteúdo informativo, **sem recomendação de investimento**. Todos os valores em US$.
+alores em US$.
