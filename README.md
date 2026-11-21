@@ -51,7 +51,7 @@ As **entradas** dos cálculos do front-end ficam em `fundamentals.json` sob `der
 - `balanceQ2_2026` — caixa + títulos negociáveis e dívida financiada por empresa (para caixa líquido e EV); guarda `{cash, debt, asOf, tier, source}`;
 - `cloudSegmentsQ2_2026` — receita e crescimento dos segmentos de nuvem/IA;
 - `fcfTTM` — FCF TTM das 7 empresas, usado como ponto de partida do DCF reverso **e como base do FCF yield exibido**;
-- `fwdPE` — P/E forward de consenso de ago/2026 (referência); `ebitdaImplB` e `fwdEPS` — denominadores implícitos usados para reescalar EV/EBITDA e P/E forward ao snapshot atual;
+- `fwdPE` — P/E forward de consenso de ago/2026 (referência); `ebitdaImplB` — EBITDA TTM dos filings (resultado operacional + depreciação e amortização) usado como denominador do EV/EBITDA; `fwdEPS` — LPA forward implícito, denominador do P/E forward reescalado ao snapshot atual;
 - `oneOffTTM` — ajustes de itens não recorrentes para o P/E core;
 - `dcfAssumptions` — WACC, crescimento terminal e horizonte do DCF reverso.
 
@@ -86,7 +86,7 @@ O histórico recente de checagens fica em `meta.cdsLog` de `data.json` (lista de
 
 - Preços, pesos e market cap: **snapshot em `meta.marketSnapshot`** (atualizado a cada pregão pela rotina diária). Preço de fechamento (StockAnalysis, conferido com outras fontes) × ações reportadas na capa do último 10-Q/10-K (`derived.sharesOut`); pesos = market cap ÷ total. O chip do cabeçalho mostra a idade; atualize para manter P/E, EV e FCF yield coerentes.
 - Resultados trimestrais/anuais: releases oficiais e SEC (10-Q/8-K).
-- EV/EBITDA e P/E forward: **reescalados** ao snapshot de preços — `derived.ebitdaImplB` (EBITDA implícito no múltiplo de jun–jul/2026) e `derived.fwdEPS` (LPA forward implícito no consenso de ago/2026; ambos nível `derived`, com data e fonte por empresa no formato v2) ficam constantes; o painel divide o EV/preço atual por eles. Revisões de EBITDA/consenso posteriores a ago/2026 NÃO estão incorporadas (ver `derived.multiplesNote`).
+- EV/EBITDA e P/E forward: **reescalados** ao snapshot de preços — `derived.ebitdaImplB` (EBITDA TTM calculado dos filings até o 3T 2026) e `derived.fwdEPS` (LPA forward implícito no consenso de ago/2026; ambos nível `derived`, com data e fonte por empresa no formato v2) ficam constantes até a próxima atualização; o painel divide o EV/preço atual por eles. Revisões de consenso posteriores a ago/2026 NÃO estão incorporadas e as definições de D&A diferem entre empresas (ver `derived.multiplesNote`).
 - CDS: cotações pontuais de imprensa, datadas por emissor em `meta.cdsAsOf` e nas notas de crédito.
 
 ## Automação
