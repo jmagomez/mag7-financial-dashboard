@@ -171,6 +171,14 @@
    "cds": {"MSFT": 53, "NVDA": 145, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
    "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 75.0, "cdsMaxAgeDays": 114, "cdsStale": 3},
    "note": "Fechamento de 20/11: os sete preços conferem entre o histórico do StockAnalysis e a barra da Motley Fool: AAPL 342,56 (-1,90%), MSFT 484,52 (-2,77%), NVDA 125,53 (-14,01%), GOOGL 265,29 (-2,70%; GOOG na Fool 264,00), AMZN 246,82 (-4,10%), META 560,84 (-5,93%) e TSLA 345,82 (-7,64%). Índices: S&P 500 6.910,39 (-3,70%), Nasdaq 22.617,73 (-5,28%), Dow 48.147,33 (-1,90%). CDS sem cotação nova verificável."
+  },
+  {
+   "date": "2026-11-24",
+   "prices": {"AAPL": 354.07, "MSFT": 496.13, "NVDA": 155.38, "GOOGL": 279.05, "AMZN": 252.29, "META": 589.82, "TSLA": 384.68},
+   "marketCapB": {"AAPL": 5145, "MSFT": 3684, "NVDA": 3745, "GOOGL": 3431, "AMZN": 2728, "META": 1508, "TSLA": 1521},
+   "cds": {"MSFT": 53, "NVDA": 145, "GOOGL": 67, "AMZN": 68, "META": 119, "ORCL": 298, "CRWV": 1155},
+   "quality": {"pricesTier": "secondary", "cdsCount": 5, "cdsAvgAgeDays": 79.0, "cdsMaxAgeDays": 118, "cdsStale": 3},
+   "note": "Fechamento de 24/11 (terça). Não há snapshot de 23/11 (o painel salta de 20/11 para 24/11): os dados de 23/11 só foram vistos em parte (Nvidia 165,05, +31,48%, e Microsoft 492,50, só no StockAnalysis). Preços de 24/11 conferem entre a barra da Motley Fool e as cotações da Fox Business (fechamento anterior + variação): AAPL 354,07 (+1,43%), MSFT 496,13 (+0,74%), NVDA 155,38 (-5,86%), GOOGL 279,05 (-1,08%; GOOG na Fool 276,58), AMZN 252,29 (-1,21%), META 589,82 (-1,30%) e TSLA 384,68 (-0,20%). Índices: S&P 500 7.201,09 (-0,5%), Nasdaq 23.733,54 (-1,5%), Dow 50.018,70 (+0,9%). CDS sem cotação nova verificável."
   }
  ]
 }
