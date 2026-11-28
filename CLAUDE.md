@@ -3,7 +3,7 @@
 Dashboard "Magnificent 7" (AAPL MSFT NVDA GOOGL AMZN META TSLA). Ao vivo: https://jmagomez.github.io/mag7-financial-dashboard/ · branch `main`.
 Público: analistas CFA / setor de tecnologia. Postura: especialista em finanças, crítico e rigoroso. Saída em **português**. Conteúdo informativo, **sem recomendação de investimento**.
 
-## Regra de ouro
+## A regra que decide qualquer dúvida
 **Nunca inventar número.** Sem fonte confiável e datada, mantenha o valor anterior ou use `n/d`. Fontes de segunda mão (ex.: Bloomberg citado por terceiros) devem ser declaradas como tal.
 
 ## Mapa de arquivos
@@ -79,6 +79,31 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 - `get_file_contents` de arquivos grandes salva em disco como JSON `[{type,text}]`.
 - A v2 não usa Chart.js (SVG próprio). O `index.html` antigo (Chart.js via CDN) só existe no histórico do git (commit `3acacf7`); `tools/golden_from_dashboard.py` o lê de lá e, no sandbox, simula o Chart.js (`page.route`).
 - O workflow dispara por push em `data.json`; qualquer mudança de caminho/trigger exige edição manual de `.github/workflows` pelo dono.
+
+## Comandos
+
+Os mesmos quatro gates que o `ci.yml` cobra, na ordem em que ele os roda:
+
+```bash
+# Dados + Python
+pip install -r requirements-dev.txt ruff
+ruff check src tests tools
+python src/validate.py            # data.json, fundamentals.json e snapshots
+python -m pytest                  # schemas, invariantes, daily.py
+python src/send_email.py --dry-run
+
+# Web (TypeScript), dentro de web/
+npm ci && npm run typecheck && npm test && npm run build
+
+# E2E, dentro de web/e2e/ (serve o dist com vite preview)
+npm ci && npx playwright install --with-deps chromium
+npm test                          # 6 rotas x 2 temas no axe, teclado, ordenacao, CSV
+npm run lighthouse                # desempenho e acessibilidade >= 95
+```
+
+`validate.yml` roda em **todo** push e PR, sem filtro de caminho, e executa
+`validate.py` mais o dry-run do e-mail. Rodar `python src/validate.py` antes de
+abrir PR evita a ida e volta.
 
 ## Prompts mínimos das tarefas agendadas
 - Diária: "Siga o `CLAUDE.md` na raiz do repositório `jmagomez/mag7-financial-dashboard` (branch main). Use `src/daily.py` para a parte numérica."
