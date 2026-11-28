@@ -83,3 +83,12 @@ Não incorporar novo trimestre na rotina diária (é a tarefa mensal/manual, aba
 ## Prompts mínimos das tarefas agendadas
 - Diária: "Siga o `CLAUDE.md` na raiz do repositório `jmagomez/mag7-financial-dashboard` (branch main). Use `src/daily.py` para a parte numérica."
 - Mensal: "Siga a seção 'Novo trimestre' do `CLAUDE.md`; mexa só em `fundamentals.json`; sem as 7 divulgações, apenas o status mensal."
+
+## Convenções comuns a todos os pipelines
+
+@CONVENCOES-COMUNS.md
+
+Esse arquivo é uma cópia sincronizada de
+https://github.com/jmagomez/convencoes-claude. Não edite a cópia daqui: a
+próxima sincronização a sobrescreve sem avisar. Mude a fonte, e o workflow
+"Sincronizar convenções" traz a mudança de volta.
